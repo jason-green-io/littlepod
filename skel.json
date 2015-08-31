@@ -1,0 +1,91 @@
+{
+  "sdfVersion": 5,
+  "name": "default",
+  "width": 1280,
+  "height": 720,
+  "exposure": 1.0,
+  "postprocess": 1,
+  "renderTime": 128383829,
+  "spp": 0,
+  "sppTarget": 1,
+  "rayDepth": 5,
+  "pathTrace": true,
+  "dumpFrequency": 500,
+  "saveSnapshots": false,
+  "emittersEnabled": false,
+  "emitterIntensity": 13.0,
+  "sunEnabled": true,
+  "stillWater": false,
+  "waterOpacity": 0.42,
+  "waterVisibility": 9.0,
+  "useCustomWaterColor": false,
+  "fogColor": {
+    "red": 0.42814502293337064,
+    "green": 0.5858024691358026,
+    "blue": 1.0
+  },
+  "fastFog": true,
+  "biomeColorsEnabled": true,
+  "transparentSky": false,
+  "FegDensity": 0.0,
+  "waterHeight": 0,
+  "world": {
+    "path": "/minecraft/worlddisk/default/",
+    "dimension": 0
+  },
+  "camera": {
+    "position": {
+      "x": -916.660791798496,
+      "y": 64.0,
+      "z": 401.23537181479344
+    },
+    "orientation": {
+      "roll": 0.0,
+      "pitch": 0.0,
+      "yaw": 0.0
+    },
+    "projectionMode": "PINHOLE",
+    "fov": 70.0,
+    "dof": "Infinity",
+    "focalOffset": 2.0
+  },
+  "sun": {
+    "altitude": 1.0471975511965976,
+    "azimuth": 1.2566370614359172,
+    "intensity": 1.25,
+    "color": {
+      "red": 1.0,
+      "green": 1.0,
+      "blue": 1.0
+    }
+  },
+  "sky": {
+    "skyYaw": 0.0,
+    "skyMirrored": true,
+    "skyLight": 1.0,
+    "mode": "SIMULATED",
+    "horizonOffset": 0.1,
+    "cloudsEnabled": false,
+    "cloudSize": 64.0,
+    "cloudOffset": {
+      "x": 0.0,
+      "y": 128.0,
+      "z": 0.0
+    },
+    "gradient": [
+      {
+        "rgb": "09B7D9",
+        "pos": 0.0
+      },
+      {
+        "rgb": "D4F5FB",
+        "pos": 1.0
+      }
+    ]
+  },
+  "cameraPresets": {
+    
+  },
+  "chunkList": [
+  ]
+}
