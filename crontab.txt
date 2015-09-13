@@ -1,0 +1,41 @@
+# Edit this file to introduce tasks to be run by cron.
+# 
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+# 
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').# 
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+# 
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+# 
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+# 
+# For more information see the manual pages of crontab(5) and cron(8)
+# 
+# m h  dom mon dow   command
+SHELL=/bin/bash
+
+*/15 * * * * /minecraft/minecraft-server.sh &>> /minecraft/minecraft-server.log
+
+0 12 * * * /minecraft/minecraft-restart.sh &> /minecraft/minecraft-restart.log
+
+
+*/1 * * * * /minecraft/minecraft-list.py &> /minecraft/minecraft-list.log
+*/20 0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,23 * * * /minecraft/minecraft-sync.sh &> /minecraft/minecraft-sync.log
+
+20,40 12 * * * /minecraft/minecraft-sync.sh &> /minecraft/minecraft-sync.log
+
+
+10 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> /minecraft/minecraft-overviewer.log
+10 0,4,8,12,16,20 * * * /minecraft/minecraft-overviewerpoi.sh &> /minecraft/minecraft-overviewerpoi.log
+
+*/5 * * * * /minecraft/minecraft-who.py &> /minecraft/minecraft-who.log
+*/5 * * * * /minecraft/minecraft-stats.py &> /minecraft/minecraft-stats.log
+*/15 * * * * /minecraft/minecraft-chat.sh
