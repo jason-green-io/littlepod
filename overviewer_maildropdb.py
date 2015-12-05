@@ -41,7 +41,8 @@ def maildropFilteruniversal( poi, dim ):
                     print player
                     return player + ' maildrop'
     elif poi['id'] == "Sign":
-        print poi
+        pass
+ # print poi
 
 
 markersover = [ dict(name="maildrops overworld", icon="icons/black/postal.png", filterFunction=maildropFilterOverworld, checked=True) ]

@@ -268,6 +268,9 @@ playernum = cur.fetchall()
 cur.execute("SELECT * from achievementsfinal")
 achievements = cur.fetchall()
 
+cur.execute("SELECT * FROM quickie")
+quickie = cur.fetchall()
+
 conn.close
 # print players
 
@@ -283,6 +286,31 @@ genshame(shame)
 lagfinal = genlag(lag, playernum)
 print lagfinal
 
+
+totalminutes = 0
+for each in quickie:
+    totalminutes += each[1]
+
+totalplayer = len(quickie)
+
+
+with open("/minecraft/quickie.txt", "w") as outfile:
+    line = ("<gold^During the last week ><dark_purple^" +
+            str(totalplayer) +
+            "><gold^ players played ><dark_purple^" +
+            "%.1F" % (totalminutes / 60.0) +
+            "><gold^ hours. Average: ><dark_purple^" +
+            "%.1F" % (totalminutes / 60.0 / totalplayer) +
+            "><gold^ hours per player>")
+    print line
+    outfile.write(line)
+
+filenames = ['/minecraft/topmotd.txt', '/minecraft/quickie.txt']
+with open('/minecraft/motd.txt', 'w') as outfile:
+    for fname in filenames:
+        with open(fname) as infile:
+            outfile.write(infile.read())
+
 with open('/minecraft/web/who/motd.html', 'w') as outfile:
     outfile.write("""
     <style type="text/css" media="screen">
@@ -290,7 +318,7 @@ a:link { color:white; }
 a:visited { color:white; }
 </style>
 <link rel="stylesheet" href="../font.css">
-    <div class="status" style="width: 90%;padding: 5px;color: white;background:rgba(0,0,0,0.75); font-size: 75%;font-family: minecraftfont;">
+    <div class="status" style="padding: 5px;color: white;background:rgba(0,0,0,0.75); font-size: 75%;font-family: minecraftfont;">
                   """)
     for line in open("/minecraft/motd.txt", "r").readlines():
         outfile.write(showandtellraw.tohtml(line) + "</br>")

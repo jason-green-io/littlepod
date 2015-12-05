@@ -3,6 +3,8 @@
 import sys
 sys.path.append('/minecraft')
 import rcon
+import yaml
+from slacker import Slacker
 
 
 def send(command):
@@ -17,5 +19,15 @@ def send(command):
     return response
 
 
+def slack(string):
+
+    config = yaml.load(file('/minecraft/python-rtmbot/rtmbot.conf', 'r'))
+    token = config["SLACK_TOKEN"]
+    slack = Slacker( token )
+    chanID = slack.im.open("U056203SZ").body["channel"]["id"]
+    slack.chat.post_message(chanID, string, as_user=True)
+
+
 if __name__ == "__main__":
     send(sys.argv[1])
+

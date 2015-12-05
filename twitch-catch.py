@@ -40,7 +40,7 @@ logging.basicConfig(level=logging.DEBUG,
                     )
 
 def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=None ):
-    consumer = oauth.Consumer( key=twitteroauthkey , secret=twitteroauthsecret )
+    consumer = oauth.Consumer( key=ConsumerKey , secret=ConsumerSecret )
     token = oauth.Token( key=key, secret=secret )
     client = oauth.Client( consumer, token )
     (resp,content) = client.request( url, method=http_method, body=post_body, headers=http_headers )
@@ -49,7 +49,7 @@ def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=N
 def tweetbook():
     logging.debug( "Making a tweetbook" )
     h= HTMLParser.HTMLParser()
-    favs = json.loads(oauth_req( "https://api.twitter.com/1.1/favorites/list.json?count=10&screen_name=" + twitter, "2211785663-GLdNAqIjo3h65jiFjeqUY98QXdvmGX3NHjPWFGF", "OPR10JrNLViJezTAPkiwrxOYdIcegLgXXjTk3IQUYcwzh" ))
+    favs = json.loads(oauth_req( "https://api.twitter.com/1.1/favorites/list.json?count=10&screen_name=" + twitter, AccessToken, AccessTokenSecret ))
 #    print favs
     bookline = ""
     bookline +='/give greener_ca minecraft:written_book 1 0 {"title":"Tweets", "author":"The Internet","pages":['

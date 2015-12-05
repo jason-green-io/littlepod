@@ -14,20 +14,13 @@ import showandtellraw
 #import overviewer-chests
 
 def poi2text(poi, json=json):
-    text = ["Text1", "Text2", "Text3", "Text4"]
-    newtext =[]
-    print poi
-
-    for poitext in text:
-        parsedjson = json.loads(poi[poitext])
-        print repr(parsedjson)
-        if type(parsedjson) == unicode:
-            newtext.append(parsedjson)
-        else:
-            newtext.append(parsedjson["text"])
-    return u"\n".join(newtext)
+    return u"\n".join([poi["Text1"], poi["Text2"], poi["Text3"], poi["Text4"]])
 
 
+def spawnfilter(poi):
+    if poi["id"] == "spawn":
+        print poi
+        return poi
 
 def signFilterLocations(poi, poi2text=poi2text):
     if poi['id'] == 'Sign' and "*map*" in poi['Text1']:
@@ -79,10 +72,10 @@ NetherTrans = [ dict(name="NetherTrans purple", icon="icons/purple/highway.png",
 
 Home =  [ dict(name="Homes", icon="icons/orange/house.png", filterFunction=signFilterHome, createInfoWindow=True, checked=True) ]
 Grinder =  [ dict(name="Grinders", icon="icons/black/supermarket.png", filterFunction=signFilterGrinder, createInfoWindow=True, checked=True) ]
+spawn =  [ dict(name="Spawn Chunks", icon="", filterFunction=spawnfilter, createInfoWindow=True, checked=True) ]
 
 
-
-markers = overviewer_chestactivity.markergenerator + Locations + NetherTrans + Home + Grinder
+markers = spawn + overviewer_chestactivity.markergenerator + Locations + NetherTrans + Home + Grinder
 
 #markers += overviewer_playeractivity.markers
 #markers += overviewer_chestactivity.markerdiff
@@ -93,9 +86,29 @@ markersOverworld = markers + overviewer_maildropdb.markersover
 markersEnd = markers + overviewer_maildropdb.markersend
 markersNether = markers + overviewer_maildropdb.markersnether
 
-manualchest = ''
-
-
+spawnpoi = [ dict(id="spawn",
+                 text="",
+                 color="yellow",
+                 x=20000,
+                 y=64,
+                 z=20000,
+                 polyline=(dict(x=-320, y=64, z=144),
+                           dict(x=-64, y=64, z=144),
+                           dict(x=-64,y=64,z=400),
+                           dict(x=-320,y=64, z=400),
+                           dict(x=-320, y=64, z=144))),
+            dict(id="spawn",
+                 text="",
+                 color="orange",
+                 x=20000,
+                 y=64,
+                 z=20000,
+                 polyline=(dict(x=-288, y=64, z=176),
+                           dict(x=-96, y=64, z=176),
+                           dict(x=-96,y=64,z=368),
+                           dict(x=-288,y=64, z=368),
+                           dict(x=-288, y=64, z=176)))]
+manualpois = spawnpoi
 end_smooth_lighting = [Base(), EdgeLines(), SmoothLighting(strength=0.5)]
 
 #manualchest = overviewer_chestactivity.diff( "1432992000", "1432993800"  )
@@ -122,31 +135,7 @@ renders["north"] = {
     "rendermode" : smooth_lighting,
     "northdirection" : "upper-left",
     'markers': markersOverworld,
-    'manualpois' : ''
-}
-renders["east"] = {
-    "world": "Barlynaland",
-    "title": "East",
-    "rendermode" : smooth_lighting,
-    "northdirection" : "lower-left",
-    'markers': markersOverworld,
-    'manualpois' : manualchest
-}
-renders["south"] = {
-    "world": "Barlynaland",
-    "title": "South",
-    "rendermode" : smooth_lighting,
-    "northdirection" : "lower-right",
-    'markers': markersOverworld,
-    'manualpois' : manualchest
-}
-renders["west"] = {
-    "world": "Barlynaland",
-    "title": "West",
-    "rendermode" : smooth_lighting,
-    "northdirection" : "upper-right",
-    'markers': markersOverworld,
-    'manualpois' : manualchest
+    'manualpois' : manualpois
 }
 renders["end"] = {
     "world": "Barlynaland",

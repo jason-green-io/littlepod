@@ -32,6 +32,7 @@ def diff( epoch1, epoch2, day, chestlist=chestlist  ):
         fileepoch1 = files[0]
         fileepoch2 = files[-1]
         print "Found  start:", time.strftime("%Y/%m/%d, %H:%M:%S", time.localtime(int(fileepoch1.rsplit('/',1)[1].split('.')[0]))), "end:", time.strftime("%Y/%m/%d, %H:%M:%S", time.localtime(int(fileepoch2.rsplit('/',1)[1].split('.')[0])))
+        print fileepoch1, fileepoch2
 
         epoch1missing = not os.path.exists( fileepoch1 )
         epoch2missing = not os.path.exists( fileepoch2 )
@@ -43,8 +44,8 @@ def diff( epoch1, epoch2, day, chestlist=chestlist  ):
 
 
 
-    oldchestlist = [ json.loads( chest.strip() ) for chest in open(fileepoch1, 'r').readlines() ]
-    chestlist = [ json.loads( chest.strip() ) for chest in open(fileepoch2, 'r').readlines() ]
+    oldchestlist = [ json.loads( chest.strip() ) for chest in open(fileepoch1, 'r').readlines() if "LootTable" not in chest ]
+    chestlist = [ json.loads( chest.strip() ) for chest in open(fileepoch2, 'r').readlines() if "LootTable" not in chest]
 
 
     chestlistcompare = {}
@@ -54,7 +55,6 @@ def diff( epoch1, epoch2, day, chestlist=chestlist  ):
     for chest in chestlist:
     #    print chest
         total = defaultdict( int )
-
         for item in chest["Items"]:
             total[ item["id"] ] += item["Count"]
 
