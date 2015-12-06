@@ -1,3 +1,3 @@
 #! /bin/bash
 
-murmur -ini /minecraft/host/config/murmur.ini -fg
+/usr/sbin/murmurd -ini /minecraft/host/config/murmur.ini -fg
