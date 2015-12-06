@@ -1,5 +1,11 @@
 #!/bin/bash
 #rsync -a /minecraft/worlddisk/ /run/shm/world
 
-cgexec -g blkio,cpu:minecraft java -jar $(ls /minecraft/minecraft_server.15w* | tail -n 1) nogui
+VERSION=$(cat /minecraft/host/config/mcversion)
+
+cd /minecraft/host/mcdata
+
+wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$VERSION/minecraft_server.$VERSION.jar
+
+cgexec -g blkio,cpu:minecraft java -jar minecraft_server.$VERSION.jar nogui
 
