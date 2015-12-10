@@ -1,4 +1,5 @@
-start ()
+#! /bin/bash
+mcstart ()
 {
 
 VERSION=$(cat /minecraft/host/config/mcversion)
@@ -10,21 +11,26 @@ if [[ ! -f minecraft_server.$VERSION.jar ]]; then
 	wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$VERSION/minecraft_server.$VERSION.jar
 fi
 
-java -jar minecraft_server.$VERSION.jar nogui
+tmux neww -t minecraft:7 "java -jar minecraft_server.$VERSION.jar nogui"
 }
 
-restart ()
+mcstop ()
+{
+
+/minecraft/vanillabean.py "/stop"
+}
+
+mcrestart ()
 {
 
 /minecraft/vanillabean.py "/say server restarting in 30 seconds"
 sleep 30
-/minecraft/minecraft-sync.sh &>> /minecraft/minecraft-sync.log
-
-/minecraft/vanillabean.py "/stop"
+#/minecraft/minecraft-sync.sh &>> /minecraft/minecraft-sync.log
+mcstop
 sleep 10
-/minecraft/minecraft-server.sh
-
+mcstart
 }
+
 
 sync ()
 {
@@ -50,8 +56,14 @@ sleep 10
 echo "$(date) sync done"
 }
 
-case in $1
+case $1 in
 start)
-start
+mcstart
 ;;
-
+restart)
+mcrestart
+;;
+stop)
+mcstop
+;;
+esac
