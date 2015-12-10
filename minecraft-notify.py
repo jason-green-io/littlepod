@@ -13,13 +13,14 @@ import showandtellraw
 import vanillabean
 
 UUID = ""
-
+dbfile = '/minecraft/host/other/littlepod.db'
+mcfolder = '/minecraft/host/mcdata'
 def lag(match):
     ts = match.groups()[0]
     ms = match.groups()[1]
     tick = match.groups()[2]
 
-    conn = sqlite3.connect('/minecraft/barlynaland.db')
+    conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
     cur.execute("INSERT INTO loglag VALUES (?,?)", (datetime.datetime.now(), tick))
@@ -49,7 +50,7 @@ def status( match ):
     name = match.groups()[1]
     message = match.groups()[2]
     print name, message
-    conn = sqlite3.connect('/minecraft/barlynaland.db')
+    conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
     if message.startswith("!"):
@@ -99,7 +100,7 @@ def joins(match):
 #                r = requests.post(url, params=headers)
 #
     if message == "joined":
-        conn = sqlite3.connect('/minecraft/barlynaland.db')
+        conn = sqlite3.connect(dbfile)
         cur = conn.cursor()
 
         for each in open( "/minecraft/motd.txt", "r" ).readlines():
@@ -196,7 +197,7 @@ def acheivements(match):
 
 
 def minecraftlistener():
-    logfile = os.path.abspath("/minecraft/logs/latest.log")
+    logfile = os.path.abspath(mcfolder + "/logs/latest.log")
     f = open(logfile, "r")
     file_len = os.stat(logfile)[stat.ST_SIZE]
     f.seek(file_len)
