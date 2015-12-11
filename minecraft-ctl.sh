@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 toram ()
 {
     rsync -av /minecraft/host/mcdata/* /dev/shm/world 

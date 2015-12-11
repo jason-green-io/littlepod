@@ -13,8 +13,10 @@ import showandtellraw
 import vanillabean
 
 UUID = ""
-dbfile = '/minecraft/host/other/littlepod.db'
+dbfile = '/minecraft/host/otherdata/littlepod.db'
 mcfolder = '/minecraft/host/mcdata'
+motdfile = '/minecraft/host/config/motd.txt
+
 def lag(match):
     ts = match.groups()[0]
     ms = match.groups()[1]
@@ -103,7 +105,7 @@ def joins(match):
         conn = sqlite3.connect(dbfile)
         cur = conn.cursor()
 
-        for each in open( "/minecraft/motd.txt", "r" ).readlines():
+        for each in open( motdfile, "r" ).readlines():
 
             message = u"/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
             print message
