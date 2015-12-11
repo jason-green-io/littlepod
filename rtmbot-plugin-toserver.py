@@ -13,6 +13,7 @@ crontable = []
 crontable.append( [300, "updateusers"])
 crontable.append( [60, "notifymaildrops"])
 outputs = []
+dbfile = '/minecraft/host/otherdata/littlepod.db'
 
 config = yaml.load(file('/minecraft/python-rtmbot/rtmbot.conf', 'r'))
 token = config["SLACK_TOKEN"]
@@ -31,7 +32,7 @@ def updateusers():
     global members
 
     members = { member["id"] : member["name"] for member in slack.users.list().body["members"] }
-    conn = sqlite3.connect("/minecraft/barlynaland.db")
+    conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
     for each in members.items():
@@ -58,7 +59,7 @@ def coordsmessage( coords ):
 def notifymaildrops():
     dimdict = { "n" : "2" , "e" : "1", "o" : "0" }
 
-    conn = sqlite3.connect("/minecraft/barlynaland.db")
+    conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
     cur.execute("SELECT * FROM newmaildrops")

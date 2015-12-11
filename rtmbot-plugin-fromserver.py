@@ -17,7 +17,7 @@ crontable = []
 crontable.append( [300, "getusers"])
 outputs = []
 members = {}
-
+dbfile = '/minecraft/host/otherdata/littlepod.db'
 
 #boxcarkey = open("/minecraft/boxcar.io.key", "r").readline().strip()
 #
@@ -45,7 +45,7 @@ FREEGEOPIP_URL = 'http://ip-api.com/json/'
 def getusers():
     global members
 
-    conn = sqlite3.connect("/minecraft/barlynaland.db")
+    conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
     cur .execute("SELECT * FROM slackusers")
