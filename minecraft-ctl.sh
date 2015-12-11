@@ -21,7 +21,7 @@ mcstart ()
         wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$VERSION/minecraft_server.$VERSION.jar
     fi
 
-    tmux neww -t minecraft:7 "java -jar minecraft_server.$VERSION.jar nogui"
+    /usr/bin/tmux neww -t minecraft:7 "java -jar minecraft_server.$VERSION.jar nogui"
 }
 
 mcstop ()
