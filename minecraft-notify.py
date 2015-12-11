@@ -15,7 +15,7 @@ import vanillabean
 UUID = ""
 dbfile = '/minecraft/host/otherdata/littlepod.db'
 mcfolder = '/minecraft/host/mcdata'
-motdfile = '/minecraft/host/config/motd.txt
+motdfile = '/minecraft/host/config/motd.txt'
 
 def lag(match):
     ts = match.groups()[0]
