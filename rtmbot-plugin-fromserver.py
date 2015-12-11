@@ -18,7 +18,7 @@ crontable.append( [300, "getusers"])
 outputs = []
 members = {}
 dbfile = '/minecraft/host/otherdata/littlepod.db'
-
+mcfolder = '/minecraft/host/mcdata'
 #boxcarkey = open("/minecraft/boxcar.io.key", "r").readline().strip()
 #
 FREEGEOPIP_URL = 'http://ip-api.com/json/'
@@ -85,7 +85,7 @@ def shellquotes( string ):
 def minecraftlistener():
     global members
     lastplayer = "Dinnerbone"
-    logfile = os.path.abspath("/minecraft/logs/latest.log")
+    logfile = os.path.abspath(mcfolder + "/logs/latest.log")
     f = codecs.open(logfile,"r", "utf-8")
     file_len = os.stat(logfile)[stat.ST_SIZE]
     f.seek(file_len)
