@@ -1,6 +1,8 @@
-#! /bin/bash
+#!/bin/bash
 
-sudo cp /minecraft/host/config/cgconfig.conf /etc 
+mv /minecraft/rtmbot-plugin* /minecraft/python-rtmbot/plugins
+
+cp /minecraft/host/config/rtmbot.conf /minecraft/python-rtmbot
 
 /minecraft/minecraft-server.sh
 
