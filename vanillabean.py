@@ -6,6 +6,8 @@ import rcon
 import yaml
 from slacker import Slacker
 
+config = '/minecraft/host/config/'
+mcdaata = '/minecraft/host/mcdata/'
 
 def send(command):
     host, port, password = ("127.0.0.1", 25575, "babybee")
@@ -21,7 +23,7 @@ def send(command):
 
 def slack(string):
 
-    config = yaml.load(file('/minecraft/python-rtmbot/rtmbot.conf', 'r'))
+    config = yaml.load(file(config + 'rtmbot.conf', 'r'))
     token = config["SLACK_TOKEN"]
     slack = Slacker( token )
     chanID = slack.im.open("U056203SZ").body["channel"]["id"]
@@ -30,7 +32,7 @@ def slack(string):
 
 def getplayers():
     players = []
-    with open('/minecraft/host/mcdata/whitelist.json', 'r') as infile:
+    with open(mcdata + 'whitelist.json', 'r') as infile:
         players = [ player[ 'name' ].lower() for player in json.load( infile ) ]
     return players
 
