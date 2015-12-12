@@ -8,13 +8,17 @@ import glob
 from collections import defaultdict
 
 chestlist = []
+otherdata = '/minecraft/host/otherdata'
 
 def chests( poi, chestilist=chestlist ):
     if poi['id'] == 'Chest':
         timenow = int(time.time())
         filetime = timenow - ( timenow % ( 20 * 60 ) )
         #filetime = time.strftime("%Y%m%d%H%M")
-        with open( '/minecraft/god/chests/' + str(filetime) + '.json', 'a+' ) as file:
+        chestfile = otherdata + '/chests/' + str(filetime) + '.json'
+        if not os.path.exists(os.path.dirname(chestfile)):
+            os.makedirs(os.path.dirname(chestfile))
+        with open( chestfile, 'a+' ) as file:
 
             file.write( json.dumps(poi) + '\n' )
 
@@ -26,7 +30,7 @@ def diff( epoch1, epoch2, day, chestlist=chestlist  ):
         return []
 
 
-    files = sorted([file for file in glob.glob("/minecraft/god/chests/*.json") if int(file.rsplit('/',1)[1].split('.')[0]) >= epoch1 and int(file.rsplit('/',1)[1].split('.')[0]) <= epoch2 ])
+    files = sorted([file for file in glob.glob(otherdata + "/chests/*.json") if int(file.rsplit('/',1)[1].split('.')[0]) >= epoch1 and int(file.rsplit('/',1)[1].split('.')[0]) <= epoch2 ])
 
     try:
         fileepoch1 = files[0]
