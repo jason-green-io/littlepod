@@ -1,4 +1,6 @@
 #!/bin/bash
+
+CLIENTVERSION=1.8.9
 toram ()
 {
     rsync -av /minecraft/host/mcdata/* /dev/shm/world 
@@ -22,8 +24,8 @@ mcstart ()
     
     fi
     
-    if [[ ! -f $VERSION.jar ]]; then
-        wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$VERSION/$VERSION.jar
+    if [[ ! -f $CLIENTVERSION.jar ]]; then
+        wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENTVERSION/$CLIENTVERSION.jar
     fi
     
     /usr/bin/tmux neww -t minecraft:7 "/usr/bin/java -jar minecraft_server.$VERSION.jar nogui"
