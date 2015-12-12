@@ -8,10 +8,6 @@ sys.path.append('/minecraft')
 import overviewer_chestactivity
 import overviewer_maildropdb
 # import overviewer_playeractivity
-import something
-import tmux
-import showandtellraw
-#import overviewer-chests
 
 def poi2text(poi, json=json):
     return u"\n".join([poi["Text1"], poi["Text2"], poi["Text3"], poi["Text4"]])
