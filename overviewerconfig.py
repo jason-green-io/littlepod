@@ -116,15 +116,8 @@ texturepath = "/minecraft/1.8.jar"
 processes = 1
 outputdir = "/minecraft/web/map"
 customwebassets = "/minecraft/web/map/template"
-snapshotpath = "/minecraft/worlddisk/.zfs/snapshot"
 
-snapshots = os.listdir( snapshotpath )
-snapshots.remove( 'latest' )
-
-latestsnapshot = snapshotpath + '/' + max(snapshots)
-
-print latestsnapshot
-worlds["Barlynaland"] = latestsnapshot
+worlds["Barlynaland"] = '/minecraft/host/mcdata/world'
 renders["north"] = {
     "world": "Barlynaland",
     "title": "North",
