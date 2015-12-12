@@ -28,6 +28,13 @@ def slack(string):
     slack.chat.post_message(chanID, string, as_user=True)
 
 
+def getplayers():
+    players = []
+    with open('/minecraft/host/mcdata/whitelist.json', 'r') as infile:
+        players = [ player[ 'name' ].lower() for player in json.load( infile ) ]
+    return players
+
+
 if __name__ == "__main__":
     send(sys.argv[1])
 

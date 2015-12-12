@@ -2,7 +2,7 @@
 import sqlite3
 import sys
 sys.path.append('/minecraft')
-import something
+import vanillabean
 
 dimdict = { "nether" : "2" , "end" : "1", "over" : "0" }
 
@@ -26,7 +26,7 @@ def maildropFilteruniversal( poi, dim ):
             rawplayer = poi['CustomName']
             hidden = rawplayer[0] == "."
             player = rawplayer.lstrip(".")
-            if player.lower() in something.getplayers():
+            if player.lower() in vanillabean.getplayers():
 
                 conn = sqlite3.connect('/minecraft/barlynaland.db')
                 cur = conn.cursor()
