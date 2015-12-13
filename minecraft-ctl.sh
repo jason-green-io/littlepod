@@ -3,12 +3,12 @@
 CLIENTVERSION=1.8.9
 toram ()
 {
-    rsync -av /minecraft/host/mcdata/* /dev/shm/world 
+    rsync -av /minecraft/host/mcdata/* /dev/shm/ 
 }
 
 fromram ()
 {
-    rsync -av /dev/shm/world/* /minecraft/host/mcdata    
+    rsync -av /dev/shm/* /minecraft/host/mcdata    
 }
 
 mcstart ()
@@ -27,7 +27,8 @@ mcstart ()
     if [[ ! -f $CLIENTVERSION.jar ]]; then
         wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENTVERSION/$CLIENTVERSION.jar
     fi
-    
+    toram
+    cd /dev/shm 
     /usr/bin/tmux neww -t minecraft:7 "/usr/bin/java -jar minecraft_server.$VERSION.jar nogui"
 }
 
@@ -35,6 +36,7 @@ mcstop ()
 {
 
     /minecraft/vanillabean.py "/stop"
+    fromram
 }
 
 mcrestart ()

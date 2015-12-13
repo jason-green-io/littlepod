@@ -21,21 +21,22 @@
 # 
 # m h  dom mon dow   command
 SHELL=/bin/bash
+LOGS=/minecraft/host/otherdata/logs
 
-*/15 * * * * /minecraft/minecraft-server.sh &>> /minecraft/minecraft-server.log
+*/15 * * * * /minecraft/minecraft-server.sh &>> $LOGS/minecraft-server.log
 
-0 12 * * * /minecraft/minecraft-restart.sh &> /minecraft/minecraft-restart.log
-0 0 * * * /minecraft/minecraft-whitelistupdate.py &>> /minecraft/minecraft-whitelistupdate.log
+0 12 * * * /minecraft/minecraft-restart.sh &> $LOGS/minecraft-restart.log
+0 0 * * * /minecraft/minecraft-whitelistupdate.py &>> $LOGS/minecraft-whitelistupdate.log
 
 */1 * * * * /minecraft/minecraft-list.py &> /minecraft/minecraft-list.log
-*/20 0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,23 * * * /minecraft/minecraft-sync.sh &> /minecraft/minecraft-sync.log
+*/20 0,1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,23 * * * /minecraft/minecraft-sync.sh &> $LOGS/minecraft-sync.log
 
-20,40 12 * * * /minecraft/minecraft-sync.sh &> /minecraft/minecraft-sync.log
+20,40 12 * * * /minecraft/minecraft-sync.sh &> $LOGS/minecraft-sync.log
 
 
-10 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> /minecraft/minecraft-overviewer.log
-10-59/20 * * * * /minecraft/minecraft-overviewerpoi.sh &> /minecraft/minecraft-overviewerpoi.log
+10 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> $LOGS/minecraft-overviewer.log
+10-59/20 * * * * /minecraft/minecraft-overviewerpoi.sh &> $LOGS/minecraft-overviewerpoi.log
 
-*/5 * * * * /minecraft/minecraft-status.py &> /minecraft/minecraft-status.log
-*/1 * * * * /minecraft/minecraft-stats.py &> /minecraft/minecraft-stats.log
+*/5 * * * * /minecraft/minecraft-status.py &> $LOGS/minecraft-status.log
+*/1 * * * * /minecraft/minecraft-stats.py &> $LOGS/minecraft-stats.log
 #*/15 * * * * /minecraft/minecraft-chat.sh
