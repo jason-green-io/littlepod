@@ -1,14 +1,16 @@
 #!/bin/bash
 
 CLIENTVERSION=1.8.9
-toram ()
+tobackup ()
 {
-    rsync -av /minecraft/host/mcdata/* /dev/shm/ 
+    echo "Sending to backup"
+    rsync -av /minecraft/host/mcdata/world /minecraft/host/otherdata/mcbackup
 }
 
 fromram ()
 {
-    rsync -av /dev/shm/* /minecraft/host/mcdata    
+    echo "Syncing ramdisk to disk"
+    rsync -av /dev/shm/world /minecraft/host/mcdata    
 }
 
 mcstart ()
@@ -27,8 +29,6 @@ mcstart ()
     if [[ ! -f $CLIENTVERSION.jar ]]; then
         wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENTVERSION/$CLIENTVERSION.jar
     fi
-    toram
-    cd /dev/shm 
     /usr/bin/tmux neww -t minecraft:7 "/usr/bin/java -jar minecraft_server.$VERSION.jar nogui"
 }
 
@@ -36,7 +36,8 @@ mcstop ()
 {
 
     /minecraft/vanillabean.py "/stop"
-    fromram
+    sleep 5
+    tobackup
 }
 
 mcrestart ()
@@ -55,13 +56,14 @@ sync ()
 {
     #echo "$(date) Sending sava-all to server"
     /minecraft/vanillabean.py "/save-off" 
+    sleep 2
     /minecraft/vanillabean.py "/save-all" 
 
     sleep 10
 
     #echo "$(date) Syncing ramdisk with disk"
-    fromram
-    echo "$(date) Creating snapshot"
+    tobackup
+    #echo "$(date) Creating snapshot"
     # sudo zfs snapshot main/minecraft/world@$(date +%Y%m%d%H%M)
 
     sleep 10
@@ -80,5 +82,8 @@ mcrestart
 ;;
 stop)
 mcstop
+;;
+sync)
+sync
 ;;
 esac
