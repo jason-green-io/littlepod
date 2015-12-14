@@ -11,7 +11,7 @@ import sqlite3
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-
+dbfile = '/minecraft/host/otherdata/littlepod.db'
 
 def digits(val, digits):
         hi = long(1) << (digits * 4)
@@ -53,7 +53,7 @@ class MyHandler(FileSystemEventHandler):
         print filename
         pos = getpos(filename)
         print pos
-        conn = sqlite3.connect("/minecraft/barlynaland.db", timeout=30)
+        conn = sqlite3.connect(dbfile, timeout=30)
         cur = conn.cursor()
         cur.execute("INSERT INTO location (UUID, dim, x, y, z) VALUES (?,?,?,?,?)", pos)
 

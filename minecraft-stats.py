@@ -4,6 +4,7 @@ import time
 import vanillabean
 import sqlite3
 
+dbfile = '/minecraft/host/otherdata/littlepod.db'
 
 def tps():
     vanillabean.send("/debug start")
@@ -17,7 +18,7 @@ def tps():
     tps = round(float(result[6].strip("("))/float(result[4]))
     print tps
 
-    conn = sqlite3.connect("/minecraft/barlynaland.db")
+    conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
     cur.execute("INSERT INTO lag (tps) VALUES (?)", (tps,))

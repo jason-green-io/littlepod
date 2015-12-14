@@ -189,7 +189,7 @@ def acheivements(match):
     name = match.groups()[1]
     ach = match.groups()[2]
 
-    conn = sqlite3.connect("barlynaland.db")
+    conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
     cur.execute("INSERT INTO achievements VALUES (?,?,?)", (datetime.datetime.now(), name, ach))

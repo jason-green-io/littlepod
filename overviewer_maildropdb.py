@@ -4,6 +4,8 @@ import sys
 sys.path.append('/minecraft')
 import vanillabean
 
+dbfile = '/minecraft/host/otherdata/littlebean.db'
+
 dimdict = { "nether" : "2" , "end" : "1", "over" : "0" }
 
 
@@ -28,7 +30,7 @@ def maildropFilteruniversal( poi, dim ):
             player = rawplayer.lstrip(".")
             if player.lower() in vanillabean.getplayers():
 
-                conn = sqlite3.connect('/minecraft/barlynaland.db')
+                conn = sqlite3.connect(dbfile)
                 cur = conn.cursor()
                 # cur.execute('insert into maildrop values (?,?,?,?,?)', (dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z']), player, False, len(poi['Items']), hidden))
                 coords = dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z'])

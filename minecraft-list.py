@@ -4,6 +4,7 @@ import vanillabean
 import sqlite3
 import datetime
 
+dbfile = '/minecraft/host/otherdata/littlepod.db'
 response = vanillabean.send("/list")
 numplayers = response.split()[2].split("/")[0]
 players = response.split(":")[1].split(',')
@@ -13,7 +14,7 @@ players = response.split(":")[1].split(',')
 # print teleplayers
 # teleplayers = [(each[0], each[2].strip(','), each[3].strip(','), each[4]) for each in teleplayers if len(each) > 0]
 # print teleplayers
-conn = sqlite3.connect('/minecraft/barlynaland.db')
+conn = sqlite3.connect(dbfile)
 cur = conn.cursor()
 
 if int(numplayers) > 0:
