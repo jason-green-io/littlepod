@@ -25,7 +25,7 @@ LOGS=/minecraft/host/otherdata/logs
 
 */15 * * * * /minecraft/minecraft-server.sh &>> $LOGS/minecraft-server.log
 
-0 12 * * * /minecraft/minecraft-restart.sh &> $LOGS/minecraft-restart.log
+0 12 * * * /minecraft/minecraft-ctl.sh restart&> $LOGS/minecraft-restart.log
 0 0 * * * /minecraft/minecraft-whitelistupdate.py &>> $LOGS/minecraft-whitelistupdate.log
 
 */1 * * * * /minecraft/minecraft-list.py &> /minecraft/minecraft-list.log
