@@ -6,6 +6,10 @@ import datetime
 import showandtellraw
 import sqlite3
 
+dbfile = '/minecraft/host/otherdata/littlepod.db'
+webdata = '/minecraft/host/webdata'
+config = /minecraft/host/config'
+
 servergradient = ["#FFAA00", "#F69900", "#EE8800", "#E57600", "#DD6600", "#D45500", "#CC4400", "#C33300", "#BB2100", "#B21000", "#AA0000", "#970000", "#840000", "#710000", "#5E0000", "#4B0000", "#380000", "#250000", "#120000", "#000000"]
 oldgradient = ["#FFAA00", "#F08D00", "#E27100", "#D45500", "#C63800", "#B81C00", "#AA0000", "#880000", "#660000", "#440000", "#210000", "#000000"]
 gradient = ["#FFAA00", "#FCA400", "#F99E00", "#F69900", "#F39300", "#F08D00", "#EE8800", "#EB8200", "#E87C00", "#E57600", "#E27100", "#DF6B00", "#DD6600", "#DA6000", "#D75A00", "#D45500", "#D14F00", "#CE4900", "#CC4400", "#C93E00", "#C63800", "#C33300", "#C02D00", "#BD2700", "#BB2100", "#B81C00", "#B51600", "#B21000", "#AF0B00", "#AC0500", "#AA0000", "#A40000", "#9E0000", "#980000", "#920000", "#8C0000", "#860000", "#800000", "#7B0000", "#750000", "#6F0000", "#690000", "#630000", "#5D0000", "#570000", "#520000", "#4C0000", "#460000", "#400000", "#3A0000", "#340000", "#2E0000", "#290000", "#230000", "#1D0000", "#170000", "#110000", "#0B0000", "#050000", "#000000"]
@@ -69,7 +73,7 @@ def genshame(shame):
 
 
 
-conn = sqlite3.connect('/minecraft/barlynaland.db', detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+conn = sqlite3.connect(dbfile, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 cur = conn.cursor()
 
 cur.execute("SELECT * FROM groups")
@@ -87,7 +91,7 @@ statstop = """# Status
 
 ## Server message
 
-[gimmick:iframe({height: '120px', width: '100%'})](who/motd.html)
+[gimmick:iframe({height: '120px', width: '100%'})](motd.html)
 
 ## Last 2 weeks
 
@@ -119,7 +123,7 @@ for each in quickie:
 totalplayer = len(quickie)
 
 
-with open("/minecraft/quickie.txt", "w") as outfile:
+with open(config + "/quickie.txt", "w") as outfile:
     line = ("<gold^During the last week ><dark_purple^" +
             str(totalplayer) +
             "><gold^ players played ><dark_purple^" +
@@ -130,13 +134,13 @@ with open("/minecraft/quickie.txt", "w") as outfile:
     print line
     outfile.write(line)
 
-filenames = ['/minecraft/topmotd.txt', '/minecraft/quickie.txt']
-with open('/minecraft/motd.txt', 'w') as outfile:
+filenames = [config + '/topmotd.txt', config + '/quickie.txt']
+with open(config + '/motd.txt', 'w') as outfile:
     for fname in filenames:
         with open(fname) as infile:
             outfile.write(infile.read())
 
-with open('/minecraft/web/who/motd.html', 'w') as outfile:
+with open(webdata + '/motd.html', 'w') as outfile:
     outfile.write("""
     <style type="text/css" media="screen">
 a:link { color:white; }
@@ -145,11 +149,11 @@ a:visited { color:white; }
 <link rel="stylesheet" href="../font.css">
     <div class="status" style="padding: 5px;color: white;background:rgba(0,0,0,0.75); font-size: 75%;font-family: minecraftfont;">
                   """)
-    for line in open("/minecraft/motd.txt", "r").readlines():
+    for line in open(config + "/motd.txt", "r").readlines():
         outfile.write(showandtellraw.tohtml(line) + "</br>")
 
     outfile.write('</div>')
 
 
-with open("/minecraft/web/site/status.md", "w") as outfile:
+with open(webdata + "/status.md", "w") as outfile:
     outfile.write(stats)
