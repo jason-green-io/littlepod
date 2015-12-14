@@ -5,7 +5,8 @@ import json
 import sqlite3
 import vanillabean
 
-dbfile = '/minecraft/host/otherdate/littlepod.db'
+dbfile = '/minecraft/host/otherdata/littlepod.db'
+mcdata = '/minecraft/host/mcdata'
 
 conn = sqlite3.connect(dbfile)
 cur = conn.cursor()
@@ -18,7 +19,7 @@ print expired
 for name in expired:
     vanillabean.send("/whitelist remove " + name[0])
 
-whitelist = [(each["name"], each["uuid"]) for each in json.load(open("/minecraft/whitelist.json"))]
+whitelist = [(each["name"], each["uuid"]) for each in json.load(open(mcdata + "/whitelist.json"))]
 
 cur.execute("DROP TABLE whitelist")
 cur.execute("CREATE TABLE whitelist (name, uuid)")
