@@ -4,6 +4,7 @@ import os
 import time
 import datetime
 import json
+import yaml
 import requests
 import re
 import sqlite3
@@ -12,13 +13,18 @@ sys.path.append('/minecraft')
 import showandtellraw
 import vanillabean
 
-UUID = ""
+with open('/minecraft/host/config', 'r') as configfile:
+    config = yaml.load(configfile)
 
-dbfile = '/minecraft/host/otherdata/littlepod.db'
-mcfolder = '/minecraft/host/mcdata'
+
+dbfile = config['dbfile']
+mcfolder = config['mcfolder']
 motdfile = '/minecraft/host/config/motd.txt'
-URL = "barlynaland.greener.ca"
-servername = "Barlynaland"
+URL = config['URL']
+servername = config['name']
+
+
+UUID = ""
 
 def lag(match):
     ts = match.groups()[0]
@@ -45,7 +51,7 @@ def tellcoords( coords ):
 def telllinks( links ):
     for each in links:
         print each
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^Barlynaland> [_Link_|" + each + "]"))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [_Link_|" + each + "]"))
 
 
 

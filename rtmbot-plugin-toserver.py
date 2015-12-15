@@ -13,12 +13,21 @@ crontable = []
 crontable.append( [300, "updateusers"])
 crontable.append( [60, "notifymaildrops"])
 outputs = []
-dbfile = '/minecraft/host/otherdata/littlepod.db'
-URL = 'barlynaland.greener.ca'
-servername = 'Barlynaland'
 
-config = yaml.load(file('/minecraft/python-rtmbot/rtmbot.conf', 'r'))
-token = config["SLACK_TOKEN"]
+with open('/minecraft/host/config', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+dbfile = config['dbfile']
+mcfolder = config['mcfolder']
+URL = config['URL']
+servername = config['name']
+
+
+
+
+slackconfig = yaml.load(file('/minecraft/python-rtmbot/rtmbot.conf', 'r'))
+token = slackconfig["SLACK_TOKEN"]
 slack = Slacker( token )
 #slack = Slacker( "xoxb-5189863816-slDjc50BZI7XxGZwY2nmDTqu" )
 

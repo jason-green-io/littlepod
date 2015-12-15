@@ -6,6 +6,7 @@ import socket
 import os
 import time
 import json
+import yaml
 import requests
 import re
 import subprocess
@@ -18,9 +19,15 @@ crontable.append( [300, "getusers"])
 outputs = []
 members = {}
 
-dbfile = '/minecraft/host/otherdata/littlepod.db'
-mcfolder = '/minecraft/host/mcdata'
-URL = 'barlynaland.greener.ca'
+with open('/minecraft/host/config', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+dbfile = config['dbfile']
+mcfolder = config['mcfolder']
+URL = config['URL']
+
+
 
 #boxcarkey = open("/minecraft/boxcar.io.key", "r").readline().strip()
 #
