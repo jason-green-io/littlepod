@@ -4,7 +4,7 @@ CLIENTVERSION=1.8.9
 tobackup ()
 {
     echo "Sending to backup"
-    rsync -av /minecraft/host/mcdata/world /minecraft/host/otherdata/mcbackup
+    rsync -av --inplace --delete /minecraft/host/mcdata/world /minecraft/host/otherdata/mcbackup
 }
 
 fromram ()
