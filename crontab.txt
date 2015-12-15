@@ -39,4 +39,6 @@ LOGS=/minecraft/host/otherdata/logs
 
 */5 * * * * /minecraft/minecraft-status.py &> $LOGS/minecraft-status.log
 
+*/5 * * * * /minecraft/minecraft-graphs.py &> $LOGS/minecraft-graphs.log
+
 */1 * * * * /minecraft/minecraft-stats.py &> $LOGS/minecraft-stats.log
