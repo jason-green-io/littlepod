@@ -29,7 +29,7 @@ LOGS=/minecraft/host/otherdata/logs
 
 0 0 * * * /minecraft/minecraft-whitelistupdate.py &>> $LOGS/minecraft-whitelistupdate.log
 
-*/1 * * * * /minecraft/minecraft-list.py &> /minecraft/minecraft-list.log
+*/1 * * * * /minecraft/minecraft-list.py &> $LOGS/minecraft-list.log
 
 5 */6 * * * /minecraft/minecraft-ctl.sh sync &> $LOGS/minecraft-sync.log
 
