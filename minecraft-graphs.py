@@ -15,7 +15,7 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
 
 
 dbfile = config['dbfile']
-
+webdata = config['webdata']
 
 lag = [("2015-01-01 00:00:00",0)]
 
@@ -105,5 +105,5 @@ ax2.set_yticks(xrange(0, len(procs) + 1))
 
 fig.set_size_inches(20.48, 10.24)
 plt.tight_layout()
-plt.savefig("/minecraft/web/who/stats.png",  dpi=100)
+plt.savefig(webdata + "/stats.png",  dpi=100)
 
