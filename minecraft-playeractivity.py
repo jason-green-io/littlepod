@@ -66,7 +66,7 @@ class MyHandler(FileSystemEventHandler):
         conn.commit()
         conn.close()
 
-watch_directory = mcfolder + "/playerdata"       # Get watch_directory parameter
+watch_directory = mcfolder + "/world/playerdata"       # Get watch_directory parameter
 
 event_handler = MyHandler()
 
