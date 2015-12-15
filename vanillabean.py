@@ -7,7 +7,7 @@ import yaml
 from slacker import Slacker
 
 config = '/minecraft/host/config/'
-mcdaata = '/minecraft/host/mcdata/'
+mcdata = '/minecraft/host/mcdata/'
 
 def send(command):
     host, port, password = ("127.0.0.1", 25575, "babybee")

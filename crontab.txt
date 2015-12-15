@@ -31,7 +31,7 @@ LOGS=/minecraft/host/otherdata/logs
 
 */1 * * * * /minecraft/minecraft-list.py &> $LOGS/minecraft-list.log
 
-5 */6 * * * /minecraft/minecraft-ctl.sh sync &> $LOGS/minecraft-sync.log
+5-59/20 * * * * /minecraft/minecraft-ctl.sh sync &> $LOGS/minecraft-sync.log
 
 15 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> $LOGS/minecraft-overviewer.log
 
