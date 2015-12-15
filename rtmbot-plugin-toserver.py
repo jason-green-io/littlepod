@@ -19,7 +19,7 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
 
 
 dbfile = config['dbfile']
-mcfolder = config['mcfolder']
+mcfolder = config['mcdata']
 URL = config['URL']
 servername = config['name']
 

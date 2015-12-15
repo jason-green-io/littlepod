@@ -11,7 +11,7 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
 
 
-mcfolder = config['mcfolder']
+mcfolder = config['mcdata']
 
 config = '/minecraft/host/config'
 
