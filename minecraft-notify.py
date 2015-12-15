@@ -13,9 +13,12 @@ import showandtellraw
 import vanillabean
 
 UUID = ""
+
 dbfile = '/minecraft/host/otherdata/littlepod.db'
 mcfolder = '/minecraft/host/mcdata'
 motdfile = '/minecraft/host/config/motd.txt'
+URL = "barlynaland.greener.ca"
+servername = "Barlynaland"
 
 def lag(match):
     ts = match.groups()[0]
@@ -36,7 +39,7 @@ def tellcoords( coords ):
     for each in coords:
         print each, each[0], each[1], each[2]
 
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^Barlynaland> [Map: _" + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] +  "_|http://barlynaland.greener.ca/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0]"))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [Map: _" + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] +  "_|http://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0]"))
 
 
 def telllinks( links ):
@@ -125,7 +128,7 @@ def joins(match):
             elif dim == "o":
                 worldnum = "0"
 
-            toserver = '/tellraw ' + name + ' ' + showandtellraw.tojson('<green^Maildrop> for you at ' + dim + ' [_' + x + ', ' + y + ', ' + z + '_|http://barlynaland.greener.ca/map/#/' + x + '/' + y + '/' + z + '/-1/' + worldnum + '/0]' )
+            toserver = '/tellraw ' + name + ' ' + showandtellraw.tojson('<green^Maildrop> for you at ' + dim + ' [_' + x + ', ' + y + ', ' + z + '_|http://' + URL + '/map/#/' + x + '/' + y + '/' + z + '/-1/' + worldnum + '/0]' )
             vanillabean.send( toserver )
 
         cur.execute('insert into joins values (?,?,?,?)', (datetime.datetime.now(), name, UUID.get(name, "Unknown"), ip))

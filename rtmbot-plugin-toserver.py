@@ -14,6 +14,8 @@ crontable.append( [300, "updateusers"])
 crontable.append( [60, "notifymaildrops"])
 outputs = []
 dbfile = '/minecraft/host/otherdata/littlepod.db'
+URL = 'barlynaland.greener.ca'
+servername = 'Barlynaland'
 
 config = yaml.load(file('/minecraft/python-rtmbot/rtmbot.conf', 'r'))
 token = config["SLACK_TOKEN"]
@@ -50,7 +52,7 @@ def coordsmessage( coords ):
     for each in coords:
         print each, each[0], each[1], each[2]
 
-        message.append( ">Map: " + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] + "\n>http://barlynaland.greener.ca/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0" )
+        message.append( ">Map: " + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] + "\n>http://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0" )
 
     return " ".join( message )
 
@@ -71,7 +73,7 @@ def notifymaildrops():
         ID, coords = each
         dim, x, y, z = coords.split(',')
         chanID = slack.im.open(ID).body["channel"]["id"]
-        outputs.append([chanID, 'Maildrop for you at ' + " ".join([dim[0] ,  x , y , z]) + '\nhttp://barlynaland.greener.ca/map/#/' + x  + '/' + y + '/' + z + '/-1/' + dimdict[ dim[0] ] + '/0'])
+        outputs.append([chanID, 'Maildrop for you at ' + " ".join([dim[0] ,  x , y , z]) + '\nhttp://' + URL + '/map/#/' + x  + '/' + y + '/' + z + '/-1/' + dimdict[ dim[0] ] + '/0'])
 
         cur.execute("UPDATE maildrop SET notified=1 WHERE coords = ?", (coords,))
 
@@ -129,7 +131,7 @@ def formattext( message ):
 def telllinks( links ):
     for each in links:
         print each
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^Barlynaland> [_Link_|" + each + "]"))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [_Link_|" + each + "]"))
 
 
 
@@ -139,4 +141,4 @@ def tellcoords( coords ):
     for each in coords:
         print each, each[0], each[1], each[2]
 
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^Barlynaland> [Map: _" + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] +  "_|http://barlynaland.greener.ca/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0]"))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [Map: _" + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] +  "_|http://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0]"))

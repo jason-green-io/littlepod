@@ -17,8 +17,11 @@ crontable = []
 crontable.append( [300, "getusers"])
 outputs = []
 members = {}
+
 dbfile = '/minecraft/host/otherdata/littlepod.db'
 mcfolder = '/minecraft/host/mcdata'
+URL = 'barlynaland.greener.ca'
+
 #boxcarkey = open("/minecraft/boxcar.io.key", "r").readline().strip()
 #
 FREEGEOPIP_URL = 'http://ip-api.com/json/'
@@ -71,7 +74,7 @@ def coordsmessage( coords ):
     for each in coords:
         print each, each[0], each[1], each[2]
 
-        message.append( ">Map: " + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] + "\n>http://barlynaland.greener.ca/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0" )
+        message.append( ">Map: " + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] + "\n>http://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0" )
 
     return " ".join( message )
 

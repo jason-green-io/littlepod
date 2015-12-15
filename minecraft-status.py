@@ -9,6 +9,7 @@ import sqlite3
 dbfile = '/minecraft/host/otherdata/littlepod.db'
 webdata = '/minecraft/host/webdata'
 config = '/minecraft/host/config'
+URL = 'barlynaland.greener.ca'
 
 servergradient = ["#FFAA00", "#F69900", "#EE8800", "#E57600", "#DD6600", "#D45500", "#CC4400", "#C33300", "#BB2100", "#B21000", "#AA0000", "#970000", "#840000", "#710000", "#5E0000", "#4B0000", "#380000", "#250000", "#120000", "#000000"]
 oldgradient = ["#FFAA00", "#F08D00", "#E27100", "#D45500", "#C63800", "#B81C00", "#AA0000", "#880000", "#660000", "#440000", "#210000", "#000000"]
@@ -104,7 +105,7 @@ list of players that have been online in the lest 2 weeks sorted by playtime
 
 statsmid = """## Last 24 hours activity
 
-![lag](http://barlynaland.greener.ca/who/stats.png)
+![lag](http://""" + URL + """/who/stats.png)
 
 ## List of shame
 
