@@ -3,8 +3,14 @@
 import vanillabean
 import sqlite3
 import datetime
+import yaml
 
-dbfile = '/minecraft/host/otherdata/littlepod.db'
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+dbfile = config['dbfile']
+
 response = vanillabean.send("/list")
 numplayers = response.split()[2].split("/")[0]
 players = response.split(":")[1].split(',')

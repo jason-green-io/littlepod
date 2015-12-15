@@ -7,7 +7,7 @@ import datetime
 import showandtellraw
 import sqlite3
 
-with open('/minecraft/host/config', 'r') as configfile:
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
 
 
@@ -17,7 +17,7 @@ URL = config['URL']
 servername = config['name']
 webdata = config['/minecraft/host/webdata']
 
-config = '/minecraft/host/config'
+config = '/minecraft/host/config/server.yaml'
 
 servergradient = ["#FFAA00", "#F69900", "#EE8800", "#E57600", "#DD6600", "#D45500", "#CC4400", "#C33300", "#BB2100", "#B21000", "#AA0000", "#970000", "#840000", "#710000", "#5E0000", "#4B0000", "#380000", "#250000", "#120000", "#000000"]
 oldgradient = ["#FFAA00", "#F08D00", "#E27100", "#D45500", "#C63800", "#B81C00", "#AA0000", "#880000", "#660000", "#440000", "#210000", "#000000"]

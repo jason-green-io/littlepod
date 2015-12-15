@@ -6,12 +6,18 @@ import shutil
 import sys
 import time
 import os
+import yaml
 import nbt2yaml
 import sqlite3
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-dbfile = '/minecraft/host/otherdata/littlepod.db'
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+dbfile = config['dbfile']
+
 
 def digits(val, digits):
         hi = long(1) << (digits * 4)

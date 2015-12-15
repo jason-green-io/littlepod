@@ -1,12 +1,16 @@
 #!/usr/bin/python
 
-
+import yaml
 import json
 import sqlite3
 import vanillabean
 
-dbfile = '/minecraft/host/otherdata/littlepod.db'
-mcdata = '/minecraft/host/mcdata'
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+dbfile = config['dbfile']
+mcfolder = config['mcfolder']
 
 conn = sqlite3.connect(dbfile)
 cur = conn.cursor()
@@ -19,7 +23,7 @@ print expired
 for name in expired:
     vanillabean.send("/whitelist remove " + name[0])
 
-whitelist = [(each["name"], each["uuid"]) for each in json.load(open(mcdata + "/whitelist.json"))]
+whitelist = [(each["name"], each["uuid"]) for each in json.load(open(mcfolder + "/whitelist.json"))]
 
 cur.execute("DROP TABLE whitelist")
 cur.execute("CREATE TABLE whitelist (name, uuid)")

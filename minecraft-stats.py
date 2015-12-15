@@ -3,8 +3,14 @@
 import time
 import vanillabean
 import sqlite3
+import yaml
 
-dbfile = '/minecraft/host/otherdata/littlepod.db'
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+dbfile = config['dbfile']
+
 
 def tps():
     vanillabean.send("/debug start")

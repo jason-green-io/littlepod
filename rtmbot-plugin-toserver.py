@@ -14,7 +14,7 @@ crontable.append( [300, "updateusers"])
 crontable.append( [60, "notifymaildrops"])
 outputs = []
 
-with open('/minecraft/host/config', 'r') as configfile:
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
 
 

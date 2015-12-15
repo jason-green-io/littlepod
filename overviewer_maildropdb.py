@@ -3,8 +3,13 @@ import sqlite3
 import sys
 sys.path.append('/minecraft')
 import vanillabean
+import yaml
 
-dbfile = '/minecraft/host/otherdata/littlebean.db'
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+dbfile = config['dbfile']
 
 dimdict = { "nether" : "2" , "end" : "1", "over" : "0" }
 

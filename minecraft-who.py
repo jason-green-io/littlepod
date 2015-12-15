@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import yaml
 import time
 import gzip
 import datetime
@@ -14,7 +15,12 @@ servergradient = ["#FFAA00", "#F69900", "#EE8800", "#E57600", "#DD6600", "#D4550
 oldgradient = ["#FFAA00", "#F08D00", "#E27100", "#D45500", "#C63800", "#B81C00", "#AA0000", "#880000", "#660000", "#440000", "#210000", "#000000"]
 gradient = ["#FFAA00", "#FCA400", "#F99E00", "#F69900", "#F39300", "#F08D00", "#EE8800", "#EB8200", "#E87C00", "#E57600", "#E27100", "#DF6B00", "#DD6600", "#DA6000", "#D75A00", "#D45500", "#D14F00", "#CE4900", "#CC4400", "#C93E00", "#C63800", "#C33300", "#C02D00", "#BD2700", "#BB2100", "#B81C00", "#B51600", "#B21000", "#AF0B00", "#AC0500", "#AA0000", "#A40000", "#9E0000", "#980000", "#920000", "#8C0000", "#860000", "#800000", "#7B0000", "#750000", "#6F0000", "#690000", "#630000", "#5D0000", "#570000", "#520000", "#4C0000", "#460000", "#400000", "#3A0000", "#340000", "#2E0000", "#290000", "#230000", "#1D0000", "#170000", "#110000", "#0B0000", "#050000", "#000000"]
 
-dbfile = '/minecraft/host/otherdata/littlepod.db'
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+dbfile = config['dbfile']
+
 
 groupsfinal = []
 playertimesfinal = []

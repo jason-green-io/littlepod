@@ -6,8 +6,13 @@ import rcon
 import yaml
 from slacker import Slacker
 
-config = '/minecraft/host/config/'
-mcdata = '/minecraft/host/mcdata/'
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+mcfolder = config['mcfolder']
+
+config = '/minecraft/host/config'
 
 def send(command):
     host, port, password = ("127.0.0.1", 25575, "babybee")
@@ -23,7 +28,7 @@ def send(command):
 
 def slack(string):
 
-    config = yaml.load(file(config + 'rtmbot.conf', 'r'))
+    config = yaml.load(file(config + '/rtmbot.conf', 'r'))
     token = config["SLACK_TOKEN"]
     slack = Slacker( token )
     chanID = slack.im.open("U056203SZ").body["channel"]["id"]
@@ -32,7 +37,7 @@ def slack(string):
 
 def getplayers():
     players = []
-    with open(mcdata + 'whitelist.json', 'r') as infile:
+    with open(mcfolder + '/whitelist.json', 'r') as infile:
         players = [ player[ 'name' ].lower() for player in json.load( infile ) ]
     return players
 

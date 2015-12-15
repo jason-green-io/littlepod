@@ -6,10 +6,16 @@ matplotlib.rcParams['font.family'] = 'Minecraftia'
 matplotlib.rcParams['font.size'] = 10
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import yaml
 import sqlite3
 import datetime
 
-dbfile = '/minecraft/host/otherdata/littlepod.db'
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+dbfile = config['dbfile']
+
 
 lag = [("2015-01-01 00:00:00",0)]
 

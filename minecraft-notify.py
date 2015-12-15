@@ -13,7 +13,7 @@ sys.path.append('/minecraft')
 import showandtellraw
 import vanillabean
 
-with open('/minecraft/host/config', 'r') as configfile:
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
 
 
