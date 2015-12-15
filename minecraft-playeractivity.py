@@ -15,7 +15,7 @@ from watchdog.events import FileSystemEventHandler
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
 
-
+mcfolder = config['mcdata']
 dbfile = config['dbfile']
 
 
@@ -66,7 +66,7 @@ class MyHandler(FileSystemEventHandler):
         conn.commit()
         conn.close()
 
-watch_directory = "/minecraft/world/playerdata"       # Get watch_directory parameter
+watch_directory = mcfolder + "/playerdata"       # Get watch_directory parameter
 
 event_handler = MyHandler()
 
