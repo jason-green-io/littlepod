@@ -113,7 +113,7 @@ list of players that have been online in the lest 2 weeks sorted by playtime
 
 statsmid = """## Last 24 hours activity
 
-![lag](http://""" + URL + """/who/stats.png)
+![lag](http://""" + URL + """/stats.png)
 
 ## List of shame
 
