@@ -15,7 +15,7 @@ dbfile = config['dbfile']
 mcfolder = config['mcdata']
 URL = config['URL']
 servername = config['name']
-webdata = config['/minecraft/host/webdata']
+webdata = config['webdata']
 
 config = '/minecraft/host/config/server.yaml'
 
