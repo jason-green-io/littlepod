@@ -41,13 +41,13 @@ def gengroups(players):
         social = ""
 
         if youtube:
-            social += '[![youtube](/who/youtube.png)](http://youtube.com/' + youtube + ')'
+            social += '[![youtube](youtube.png)](http://youtube.com/' + youtube + ')'
         if twitter:
-            social += '[![twitter](/who/twitter.png)](http://twitter.com/' + twitter + ')'
+            social += '[![twitter](twitter.png)](http://twitter.com/' + twitter + ')'
         if reddit:
-            social += '[![reddit](/who/reddit.png)](http://reddit.com/u/' + reddit + ')'
+            social += '[![reddit](reddit.png)](http://reddit.com/u/' + reddit + ')'
         if twitch:
-            social += '[![twitch](/who/twitch.png)](http://twitch.tv/' + twitch + ')'
+            social += '[![twitch](twitch.png)](http://twitch.tv/' + twitch + ')'
 
 
         # print bool(maildrop)
