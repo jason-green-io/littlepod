@@ -1,8 +1,8 @@
 # littlepod
 
-This is where I'll be putting everything Barlynaland uses to be awesome.
+"The word vanilla, derived from the diminutive of the Spanish word vaina (vaina itself meaning sheath or pod), translates simply as "little pod"."
 
-starting with 
+`littlepod` is a set of scripts, Python modules and config files that wrap vanilla miecraft. There are used in conjunction with Docker to create servers.
 
 ## spin-o-lapse.py
 
