@@ -1,4 +1,4 @@
-# minecraft
+# littlepod
 
 This is where I'll be putting everything Barlynaland uses to be awesome.
 
