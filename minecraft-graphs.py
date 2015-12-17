@@ -29,7 +29,6 @@ lag += cur.fetchall()
 
 cur.execute('select * from activity where datetime > datetime("now", "-1 day")')
 activity = cur.fetchall()
-
 cur.execute('SELECT process, ts, end  FROM process WHERE ts > datetime("now", "-1 day")')
 process = cur.fetchall()
 
@@ -42,7 +41,8 @@ timespan = [datetime.datetime.now() - datetime.timedelta(days=1), datetime.datet
 hours = mdates.HourLocator()
 hoursFmt = mdates.DateFormatter('%H')
 
-
+if activity == []:
+    activity = [("2015-01-01 00:00:00.0", "No players active")]
 
 
 ax = []
