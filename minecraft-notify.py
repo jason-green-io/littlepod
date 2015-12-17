@@ -115,9 +115,9 @@ def joins(match):
         try:
             for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
-            message = u"/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
-            print message
-            vanillabean.send( message )
+                message = u"/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
+                print message
+                vanillabean.send( message )
         except:
             pass
         cur.execute("SELECT * FROM maildrop WHERE slots > 0 and name = ? COLLATE NOCASE", (name,))
