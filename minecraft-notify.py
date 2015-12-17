@@ -19,10 +19,9 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
 
 dbfile = config['dbfile']
 mcfolder = config['mcdata']
-motdfile = '/minecraft/host/config/motd.txt'
 URL = config['URL']
 servername = config['name']
-
+otherdata = config['otherdata']
 
 UUID = ""
 
@@ -114,7 +113,7 @@ def joins(match):
         conn = sqlite3.connect(dbfile)
         cur = conn.cursor()
 
-        for each in open( motdfile, "r" ).readlines():
+        for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
             message = u"/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
             print message

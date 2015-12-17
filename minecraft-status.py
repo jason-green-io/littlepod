@@ -16,6 +16,7 @@ mcfolder = config['mcdata']
 URL = config['URL']
 servername = config['name']
 webdata = config['webdata']
+otherdata = config["otherdata"]
 
 config = '/minecraft/host/config'
 
@@ -132,7 +133,7 @@ for each in quickie:
 totalplayer = len(quickie)
 
 
-with open(config + "/quickie.txt", "w") as outfile:
+with open(otherdata + "/quickie.txt", "w") as outfile:
     line = ("<gold^During the last week ><dark_purple^" +
             str(totalplayer) +
             "><gold^ players played ><dark_purple^" +
@@ -143,8 +144,8 @@ with open(config + "/quickie.txt", "w") as outfile:
     print line
     outfile.write(line)
 
-filenames = [config + '/topmotd.txt', config + '/quickie.txt']
-with open(config + '/motd.txt', 'w') as outfile:
+filenames = [config + '/topmotd.txt', otherdata + '/quickie.txt']
+with open(otherdata + '/motd.txt', 'w') as outfile:
     for fname in filenames:
         with open(fname) as infile:
             outfile.write(infile.read())
@@ -158,7 +159,7 @@ a:visited { color:white; }
 <link rel="stylesheet" href="../font.css">
     <div class="status" style="padding: 5px;color: white;background:rgba(0,0,0,0.75); font-size: 75%;font-family: minecraftfont;">
                   """)
-    for line in open(config + "/motd.txt", "r").readlines():
+    for line in open(otherdata + "/motd.txt", "r").readlines():
         outfile.write(showandtellraw.tohtml(line) + "</br>")
 
     outfile.write('</div>')
