@@ -112,13 +112,14 @@ def joins(match):
     if message == "joined":
         conn = sqlite3.connect(dbfile)
         cur = conn.cursor()
-
-        for each in open( otherdata + "/motd.txt", "r" ).readlines():
+        try:
+            for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
             message = u"/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
             print message
             vanillabean.send( message )
-
+        except:
+            pass
         cur.execute("SELECT * FROM maildrop WHERE slots > 0 and name = ? COLLATE NOCASE", (name,))
         maildrop = cur.fetchall()
 
