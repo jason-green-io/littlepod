@@ -12,10 +12,16 @@ sudo cron
 cd /minecraft
 
 if [[ ! -d /minecraft/host/otherdata/logs ]]; then
-   echo "Creating folders for other data"
+    echo "Creating folders for other data"
     mkdir -p /minecraft/host/otherdata/logs
 else
-   echo "Found otherdata and logs"
+    echo "Found otherdata and logs folder"
+    if [[ ! -f /minecraft/host/otherdata/littlepod.db ]]; then
+        echo "Database not found, creating"
+        sqlite3 /minecraft/host/otherdata/littlepod.db < /minecraft/create-database.sql
+    else
+        echo "Found database"
+    fi
 fi
 
 if [[ ! -d /minecraft/host/webdata ]]; then
