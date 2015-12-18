@@ -1,0 +1,10 @@
+# Change these values
+
+URL: "web-hostname"
+name: "name of your server"
+
+# These should stay unless you know what you're doing
+mcdata: "/minecraft/host/mcdata"
+webdata: "/minecraft/host/webdata"
+dbfile: "/minecraft/host/otherdata/littlepod.db"
+otherdata: "/minecraft/host/otherdata"
