@@ -23,3 +23,4 @@ CREATE VIEW playernum as select datetime(ts,"unixepoch"), count(name) from (sele
 CREATE VIEW achievementsfinal as select ts, UUID, achievement from achievements natural join playerUUID where ts > datetime("now", "-14 days");
 CREATE VIEW lagfinal as select datetime(ts), ticks from loglag where ts > datetime("now", "-1 day");
 CREATE VIEW quickie as select name, count(datetime) from activity where datetime > datetime("now", "-7 days") group by name order by count(datetime) desc;
+.quit
