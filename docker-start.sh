@@ -34,6 +34,18 @@ fi
 if [[ ! -d /minecraft/host/mcdata ]]; then
     echo "Creating folder for Minecraft world data"
     mkdir /minecraft/host/mcdata
+    if [[ ! -h /minecraft/host/mcdata/server.properties ]]; then
+        echo "Linking config"
+        ln -s /minecraft/host/config/server.properties /minecraft/host/mcdata
+    else
+        echo "Config already linked"
+    fi
+    if [[ ! -f /minecraft/host/config/eula.txt]]; then
+        echo "Agreeing to eula"
+        echo "eula=true" > /minecraft/host/mcdata/eula.txt
+    else
+        echo "eula already agreed"    
+    fi
 else
     echo "Found Minecraft world folder"
 fi
