@@ -4,7 +4,7 @@
 if [[ ! -h /minecraft/python-rtmbot/rtmbot.conf ]]; then
     echo "Creating link to rtmbot.conf"
     ln -s /minecraft/host/config/rtmbot.conf /minecraft/python-rtmbot/
-    mv /minecraft/rtmbot-plugin* /minecraft/python-rtmbot/plugins
+    cp /minecraft/rtmbot-plugin* /minecraft/python-rtmbot/plugins
 fi
 
 sudo cron
@@ -52,7 +52,7 @@ fi
 
 if [[ ! -d /minecraft/host/config ]]; then
     echo "Config files not found, creating folder with defaults"
-    mv skelconfig /minecraft/host/config
+    cp -r skelconfig/* /minecraft/host/config
 else
     echo "Found config folder"
 fi
