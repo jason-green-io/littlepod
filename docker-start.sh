@@ -31,6 +31,13 @@ else
     echo "Found webdata"
 fi
 
+if [[ ! -d /minecraft/host/config ]]; then
+    echo "Config files not found, creating folder with defaults"
+    cp -r /mineraft/skelconfig /minecraft/host/config
+else
+    echo "Found config folder"
+fi
+
 if [[ ! -d /minecraft/host/mcdata ]]; then
     echo "Creating folder for Minecraft world data"
     mkdir /minecraft/host/mcdata
@@ -50,12 +57,6 @@ else
     echo "Found Minecraft world folder"
 fi
 
-if [[ ! -d /minecraft/host/config ]]; then
-    echo "Config files not found, creating folder with defaults"
-    cp -r skelconfig/* /minecraft/host/config
-else
-    echo "Found config folder"
-fi
 
 echo "Customize your config files then run ./minecraft-server.sh"
 
