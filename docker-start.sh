@@ -33,7 +33,8 @@ fi
 
 if [[ ! -d /minecraft/host/config ]]; then
     echo "Config files not found, creating folder with defaults"
-    cp -r /mineraft/skelconfig /minecraft/host/config
+    mkdir /minecraft/host/config
+    cp -r /mineraft/skelconfig/* /minecraft/host/config
 else
     echo "Found config folder"
 fi
