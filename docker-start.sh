@@ -40,7 +40,7 @@ if [[ ! -d /minecraft/host/mcdata ]]; then
     else
         echo "Config already linked"
     fi
-    if [[ ! -f /minecraft/host/config/eula.txt]]; then
+    if [[ ! -f /minecraft/host/config/eula.txt ]]; then
         echo "Agreeing to eula"
         echo "eula=true" > /minecraft/host/mcdata/eula.txt
     else
