@@ -112,7 +112,7 @@ def process_message( data ):
         message = " ".join(yup)
 
 
-        sendtext = formattext(u"<" + members[ data["user"] ] + u"> " + message)
+        sendtext = formattext(u"@" + members[ data["user"] ] + u" " + message)
         print repr(sendtext)
         vanillabean.send(sendtext)
 

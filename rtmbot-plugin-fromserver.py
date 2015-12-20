@@ -29,8 +29,6 @@ URL = config['URL']
 
 
 
-#boxcarkey = open("/minecraft/boxcar.io.key", "r").readline().strip()
-#
 FREEGEOPIP_URL = 'http://ip-api.com/json/'
 #
 #SAMPLE_RESPONSE = """
@@ -138,7 +136,7 @@ def minecraftlistener():
             ##    if player == lastplayer and not time.time() >= lasttime + 60:
            #         finalmessage = message
               #  else:
-                finalmessage = u"`" + player +"` \n" + message
+                finalmessage = u"<" + player +"> " + message
                 lastplayer = player
                 lasttime = time.time()
 
