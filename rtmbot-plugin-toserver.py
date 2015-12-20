@@ -22,7 +22,9 @@ dbfile = config['dbfile']
 mcfolder = config['mcdata']
 URL = config['URL']
 servername = config['name']
-
+slackadminusers = config['slackadminusers']
+slackadminchans = config['slackadminchan']
+slackchan = config['slackchan']
 
 
 
@@ -91,7 +93,7 @@ def notifymaildrops():
 
 
 def process_message( data ):
-    if "reply_to" not in data and data["channel"] == "C056203TF":
+    if "reply_to" not in data and data["channel"] == slackchan:
         yup = []
         for each in data["text"].split():
             if each[0] == '<' and each[-1] =='>':
@@ -118,15 +120,15 @@ def process_message( data ):
         if coordscomma:
             print coordscomma
             tellcoords( coordscomma )
-            outputs.append( ["C056203TF", coordsmessage( coordscomma ) ] )
+            outputs.append( [slackchan, coordsmessage( coordscomma ) ] )
 
         links = re.findall('<(https?://\S+)>', data["text"])
         print links
         if links:
             telllinks( links )
 
-    elif data["channel"] == "D055KRDQU" and data["user"] == "U056203SZ":
-        outputs.append(["D055KRDQU", vanillabean.send(data["text"].strip("."))])
+    elif data["channel"] in slackadminchans and data["user"] in slackadminusers:
+        outputs.append([data["channel"], vanillabean.send(data["text"].strip("."))])
 
 
 def formattext( message ):
