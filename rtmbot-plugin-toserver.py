@@ -23,7 +23,7 @@ mcfolder = config['mcdata']
 URL = config['URL']
 servername = config['name']
 slackadminusers = config['slackadminusers']
-slackadminchans = config['slackadminchan']
+slackadminchans = config['slackadminchans']
 slackchan = config['slackchan']
 
 
