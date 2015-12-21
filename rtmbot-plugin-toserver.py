@@ -8,6 +8,9 @@ sys.path.append('/minecraft')
 import showandtellraw
 import vanillabean
 import sqlite3
+import HTMLParser
+
+html = HTMLParser.HTMLParser()
 
 crontable = []
 crontable.append( [300, "updateusers"])
@@ -114,7 +117,7 @@ def process_message( data ):
 
         sendtext = formattext(u"@" + members[ data["user"] ] + u" " + message)
         print repr(sendtext)
-        vanillabean.send(sendtext)
+        vanillabean.send(html.unescape(sendtext))
 
         coordscomma = re.findall("^([OENoen]) (-?\d+), (-?\d+)", data["text"])
         if coordscomma:
