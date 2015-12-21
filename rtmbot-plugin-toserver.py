@@ -115,7 +115,7 @@ def process_message( data ):
         message = " ".join(yup)
 
 
-        sendtext = formattext(u"@" + members[ data["user"] ] + u" " + message)
+        sendtext = formattext(u"@" + members[ data["user"] ], message)
         print repr(sendtext)
         vanillabean.send(html.unescape(sendtext))
 
@@ -134,10 +134,10 @@ def process_message( data ):
         outputs.append([data["channel"], vanillabean.send(data["text"].strip("."))])
 
 
-def formattext( message ):
+def formattext( member, message ):
 
-    slacktext =  u'{"text" : "#", "color" : "dark_purple" }'
-    finalline = u'/tellraw @a {"text" : "", "extra" : [' + slacktext + ',' + '{ "text" : " ' + jsonquotes(message) + '"}]}'
+    slacktext =  u'{"text" : "# ", "color" : "dark_purple" }'
+    finalline = u'/tellraw @a {"text" : "", "extra" : [' + slacktext + ',' + '{"color" : "gold", "text" : "' + member + ' "}, ' + '{ "text" : "' + jsonquotes(message) + '"}]}'
     print type(finalline)
     return finalline
 
