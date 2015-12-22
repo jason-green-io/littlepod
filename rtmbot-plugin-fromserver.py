@@ -136,7 +136,7 @@ def minecraftlistener():
             ##    if player == lastplayer and not time.time() >= lasttime + 60:
            #         finalmessage = message
               #  else:
-                finalmessage = u"<" + player +"> " + message
+                finalmessage = u"*<" + player +">* " + message
                 lastplayer = player
                 lasttime = time.time()
 
@@ -152,7 +152,7 @@ def minecraftlistener():
 
             if leaveparsematch:
                 player = leaveparsematch.groups()[0]
-                outputs.append( ["C056203TF", "><" + player + "> left the server"  ] )
+                outputs.append( ["C056203TF", ">*<" + player + ">* left the server"  ] )
             if ipparsematch:
                 parsed = ipparsematch.groups()
                 # print ipparsematch.groups()
@@ -181,7 +181,7 @@ def minecraftlistener():
 #                print line
 #                print joinparsematch.groups()
                 player = parsed[0]
-                outputs.append( ["C056203TF", "><" + player + ">  joined the server"  ] )
+                outputs.append( ["C056203TF", ">*<" + player + ">*  joined the server"  ] )
 
                 ip = parsed[1].split(':')[0]
                 message = "joined"
