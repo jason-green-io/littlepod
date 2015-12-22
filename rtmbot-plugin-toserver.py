@@ -98,7 +98,7 @@ def notifymaildrops():
 def process_message( data ):
     if "reply_to" not in data and data["channel"] == slackchan:
         yup = []
-        words = ata["text"].split()
+        words = data["text"].split()
         if words[0][0] == "*" and words[0][-1] == "*":
             words[0] = words[0].strip("*")
         for each in words:
