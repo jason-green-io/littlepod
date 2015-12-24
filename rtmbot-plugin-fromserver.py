@@ -26,6 +26,7 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
 dbfile = config['dbfile']
 mcfolder = config['mcdata']
 URL = config['URL']
+slackchan = config['slackchan']
 
 
 
@@ -142,17 +143,17 @@ def minecraftlistener():
 
 
                 print repr(finalmessage)
-                outputs.append( ["C056203TF", finalmessage.encode('utf-8')  ] )
+                outputs.append( [slackchan, finalmessage.encode('utf-8')  ] )
 
                 if coordscomma:
 #                    print chatlisten.groups()[1]
 #                    print coordscomma
 #
-                    outputs.append( ["C056203TF", coordsmessage( coordscomma ) ] )
+                    outputs.append( [slackchan, coordsmessage( coordscomma ) ] )
 
             if leaveparsematch:
                 player = leaveparsematch.groups()[0]
-                outputs.append( ["C056203TF", ">*<" + player + ">* left the server"  ] )
+                outputs.append( [slackchan, ">*<" + player + ">* left the server"  ] )
             if ipparsematch:
                 parsed = ipparsematch.groups()
                 # print ipparsematch.groups()
@@ -181,7 +182,7 @@ def minecraftlistener():
 #                print line
 #                print joinparsematch.groups()
                 player = parsed[0]
-                outputs.append( ["C056203TF", ">*<" + player + ">*  joined the server"  ] )
+                outputs.append( [slackchan, ">*<" + player + ">*  joined the server"  ] )
 
                 ip = parsed[1].split(':')[0]
                 message = "joined"
