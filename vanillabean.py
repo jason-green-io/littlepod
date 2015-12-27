@@ -24,7 +24,7 @@ def send(command):
     client.disconnect()
 
     print u"Server << " +repr( response)
-    return response
+    return repr(response)
 
 
 def slack(string):
