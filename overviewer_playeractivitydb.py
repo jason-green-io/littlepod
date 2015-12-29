@@ -27,11 +27,11 @@ timeframe = '"-7 days"'
 conn = sqlite3.connect(dbfile, timeout=20)
 cur = conn.cursor()
 
-cur.execute('SELECT datetime, name, x, y, z FROM location WHERE datetime > datetime("now", '+timeframe+') AND dim == 0')
+cur.execute('SELECT datetime, name, x, y, z FROM location NATURAL JOIN playerUUID WHERE datetime > datetime("now", '+timeframe+') AND dim == 0')
 over = cur.fetchall()
-cur.execute('SELECT datetime, name, x, y, z FROM location WHERE datetime > datetime("now", '+timeframe+') AND dim == -1')
+cur.execute('SELECT datetime, name, x, y, z FROM location NATURAL JOIN palyerUUID WHERE datetime > datetime("now", '+timeframe+') AND dim == -1')
 nether = cur.fetchall()
-cur.execute('SELECT datetime, name, x, y, z FROM location WHERE datetime > datetime("now", '+timeframe+') AND dim == 1')
+cur.execute('SELECT datetime, name, x, y, z FROM location NATURAL JOIN playerUUID WHERE datetime > datetime("now", '+timeframe+') AND dim == 1')
 end = cur.fetchall()
 
 conn.commit()
