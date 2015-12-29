@@ -99,7 +99,7 @@ mcversion = "1.8.9"
 
 texturepath = "/minecraft/host/mcdata/" + mcversion + ".jar"
 print texturepath
-#processes = 1
+processes = 1
 outputdir = "/minecraft/host/webdata/map"
 customwebassets = "/minecraft/host/webdata/map/template"
 
