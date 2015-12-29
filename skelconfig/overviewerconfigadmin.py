@@ -12,7 +12,7 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
 
 URL = config['URL']
-mapadminsecret = config["mapadminscret"]
+mapadminsecret = config["mapadminsecret"]
 
 def poi2text(poi):
     text = ["Text1", "Text2", "Text3", "Text4"]
