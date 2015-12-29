@@ -42,3 +42,5 @@ LOGS=/minecraft/host/otherdata/logs
 */5 * * * * /minecraft/minecraft-graphs.py &> $LOGS/minecraft-graphs.log
 
 */1 * * * * /minecraft/minecraft-stats.py &> $LOGS/minecraft-stats.log
+
+0 */2 * * * /minecraft/minecraft-overviewerpoiadmin.sh &> $LOGS/minecraft-overviewerpoiadmin.log
