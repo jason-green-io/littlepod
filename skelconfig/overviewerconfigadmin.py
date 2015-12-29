@@ -12,6 +12,7 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
 
 URL = config['URL']
+mapadminsecret = config["mapadminscret"]
 
 def poi2text(poi):
     text = ["Text1", "Text2", "Text3", "Text4"]
@@ -47,7 +48,7 @@ mcversion = "1.8.9"
 
 texturepath = "/minecraft/host/mcdata/" + mcversion + ".jar"
 processes = 1
-outputdir = "/minecraft/host/webdata/map/admin/"
+outputdir = "/minecraft/host/webdata/map/" + mapadminsecret + "/"
 customwebassets = "/minecraft/host/webdata/map/template"
 base = 'http://' + URL + '/map/'
 

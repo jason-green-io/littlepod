@@ -8,6 +8,9 @@ slackadminusers:
 
 slackchan: ""
 
+# secret string to access the admin map at /map/secret
+mapadminsecret: ""
+
 # These should stay unless you know what you're doing
 mcdata: "/minecraft/host/mcdata"
 webdata: "/minecraft/host/webdata"
