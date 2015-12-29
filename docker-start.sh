@@ -26,7 +26,7 @@ fi
 
 if [[ ! -d /minecraft/host/webdata ]]; then
     echo "Creating folder for webdata with defaults"
-    mkdir -p /minecraft/host/webdata/map
+    mkdir -p /minecraft/host/webdata/map/admin
     cp -r /minecraft/skelwebdata/* /minecraft/host/webdata
 else
     echo "Found webdata"
