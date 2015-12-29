@@ -53,7 +53,7 @@ customwebassets = "/minecraft/host/webdata/map/template"
 base = 'http://' + URL + '/map/'
 
 
-worlds["littlepod"] = /minecraft/host/otherdata/mcbackup/world
+worlds["littlepod"] = "/minecraft/host/otherdata/mcbackup/world"
 renders["north"] = {
     "world": "littlepod",
     "title": "North",
