@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -u
 '''
 Created on 2014-07-03
 '''
@@ -9,7 +9,9 @@ import os
 import yaml
 import nbt2yaml
 import sqlite3
+import json
 from watchdog.observers import Observer
+from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import FileSystemEventHandler
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
@@ -17,7 +19,7 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
 
 mcfolder = config['mcdata']
 dbfile = config['dbfile']
-
+otherdata = config["otherdata"]
 
 def digits(val, digits):
         hi = long(1) << (digits * 4)
@@ -47,32 +49,87 @@ def getpos(filename):
 '''
 Extend FileSystemEventHandler to be able to write custom on_any_event method
 '''
-class MyHandler(FileSystemEventHandler):
+class PosHandler(PatternMatchingEventHandler):
+    '''
+    Overwrite the methods for creation, deletion, modification, and moving
+    to get more information as to what is happening on output
+    '''
+    patterns = ["*.dat"]
+
+    def on_moved(self, event):
+        if not event.is_directory:
+            time.sleep(1)
+            filename = event.dest_path
+            # print filename
+            pos = getpos(filename)
+            # print pos
+            conn = sqlite3.connect(dbfile, timeout=30)
+            cur = conn.cursor()
+            cur.execute("INSERT INTO location (UUID, dim, x, y, z) VALUES (?,?,?,?,?)", pos)
+
+            conn.commit()
+            conn.close()
+
+'''
+Extend FileSystemEventHandler to be able to write custom on_any_event method
+'''
+class StatHandler(FileSystemEventHandler):
     '''
     Overwrite the methods for creation, deletion, modification, and moving
     to get more information as to what is happening on output
     '''
 
-    def on_moved(self, event):
+    def on_modified(self, event):
         time.sleep(1)
-        filename = event.dest_path
-        print filename
-        pos = getpos(filename)
-        print pos
+        filename = event.src_path
+        # print filename
+        
+        name = filename.split("/")[-1].split(".")[0]
+        pastname = otherdata + "/stats/" + name + ".past.json"
+        print name,
+        newjson = []
+        oldjson = []
+        diff = {}
+
+        try:
+            with open(pastname, "r") as statfile:
+                oldjson = json.load(statfile)
+        except:
+            pass
+        with open(filename, "r") as statfile:
+            newjson = json.load(statfile)
+            pass 
+        listofstats = newjson.keys() 
+        listofstats.remove("achievement.exploreAllBiomes")
+        
+        for key in listofstats:
+            if int(newjson[key]) > int(oldjson[key]):
+                diff.update({key: int(newjson[key]) - int(oldjson[key])})
+
+        print diff
         conn = sqlite3.connect(dbfile, timeout=30)
         cur = conn.cursor()
-        cur.execute("INSERT INTO location (UUID, dim, x, y, z) VALUES (?,?,?,?,?)", pos)
+        cur.execute("INSERT INTO stats (UUID, stats) VALUES (?,?)", (name, str(diff)))
 
         conn.commit()
         conn.close()
 
-watch_directory = mcfolder + "/world/playerdata"       # Get watch_directory parameter
+        shutil.copyfile(filename, pastname)
 
-event_handler = MyHandler()
+pos_watch_directory = mcfolder + "/world/playerdata"       # Get watch_directory parameter
+stat_watch_directory = mcfolder + "/world/stats"       # Get watch_directory parameter
 
-observer = Observer()
-observer.schedule(event_handler, watch_directory, True)
-observer.start()
+pos_event_handler = PosHandler()
+stat_event_handler = StatHandler()
+
+pos_observer = Observer()
+pos_observer.schedule(pos_event_handler, pos_watch_directory, True)
+
+stat_observer = Observer()
+stat_observer.schedule(stat_event_handler, stat_watch_directory, True)
+
+pos_observer.start()
+stat_observer.start()
 
 '''
 Keep the script running or else python closes without stopping the observer
@@ -82,5 +139,8 @@ try:
     while True:
         time.sleep(1)
 except KeyboardInterrupt:
-    observer.stop()
-observer.join()
+    pos_observer.stop()
+    stat_observer.stop()
+
+pos_observer.join()
+stat_observer.join()
