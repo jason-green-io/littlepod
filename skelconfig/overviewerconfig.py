@@ -71,16 +71,16 @@ Grinder =  [ dict(name="Grinders", icon="icons/black/supermarket.png", filterFun
 spawn =  [ dict(name="Spawn Chunks", icon="", filterFunction=spawnfilter, createInfoWindow=True, checked=True) ]
 
 
-markers = spawn + overviewer_chestactivity.markergenerator + Locations + NetherTrans + Home + Grinder
+markers = spawn + Locations + NetherTrans + Home + Grinder
 
 #markers += overviewer_playeractivity.markers
 #markers += overviewer_chestactivity.markerdiff
 
 print overviewer_maildropdb.markersover
 
-markersOverworld = markers + overviewer_maildropdb.markersover
-markersEnd = markers + overviewer_maildropdb.markersend
-markersNether = markers + overviewer_maildropdb.markersnether
+markersOverworld = markers + overviewer_maildropdb.markersover + overviewer_chestactivity.overmarker
+markersEnd = markers + overviewer_maildropdb.markersend + overviewer_chestactivity.endmarker
+markersNether = markers + overviewer_maildropdb.markersnether + overviewer_chestactivity.nethermarker
 
 spawnpoi = []
 

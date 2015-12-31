@@ -10,7 +10,7 @@ rm -r $ADMIN
 
 mkdir $ADMIN
 
-overviewer.py --config=/minecraft/host/config/overviewerconfigadmin.py --genpoi
+overviewer.py --skip-scan --config=/minecraft/host/config/overviewerconfigadmin.py --genpoi
 
 for file in /minecraft/host/webdata/map/*; do
     ln -s $file $ADMIN
