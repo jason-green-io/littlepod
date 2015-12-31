@@ -45,7 +45,6 @@ def maildropFilteruniversal( poi, dim ):
 
 
                 if not hidden:
-                    print player
                     return player + ' maildrop'
     elif poi['id'] == "Sign":
         pass

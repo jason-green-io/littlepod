@@ -37,7 +37,6 @@ end = cur.fetchall()
 conn.commit()
 conn.close()
 players = {poi[1] for poi in over + nether + end}
-print players
 keys = ("datetime","name","x","y","z")
 
 overpoi = [dict(zip(keys, poi), id="player") for poi in over]
@@ -45,4 +44,3 @@ netherpoi = [dict(zip(keys, poi), id="player") for poi in nether]
 endpoi = [dict(zip(keys, poi), id="player") for poi in end]
 
 markers =[dict(name="player " + player, icon="https://minotar.net/avatar/"+player+"/16", filterFunction=genfilter(player)) for player in players]
-print markers
