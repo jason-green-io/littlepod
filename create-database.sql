@@ -12,6 +12,7 @@ CREATE TABLE loglag (ts, ticks);
 CREATE TABLE location (datetime DEFAULT CURRENT_TIMESTAMP, UUID, dim, x, y, z);
 CREATE TABLE process (ts DEFAULT CURRENT_TIMESTAMP, process, id, end);
 CREATE TABLE whitelist (name, uuid);
+CREATE TABLE stats (datetime DEFAULT CURRENT_TIMESTAMP, UUID, stats);
 CREATE VIEW playerUUID as select name, UUID from (select * from joins order by date asc) group by UUID;
 CREATE VIEW onlineplayers as select name from activity where datetime >= DATETIME("now", "-2 minutes") group by name;
 CREATE VIEW newmaildrops as select ID, coords from maildrop inner join slackusers where (maildrop.name = slackusers.name COLLATE NOCASE and notified = 0 and slots > 0);

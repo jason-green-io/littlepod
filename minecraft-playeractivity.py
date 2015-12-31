@@ -80,41 +80,42 @@ class StatHandler(FileSystemEventHandler):
     '''
 
     def on_modified(self, event):
-        time.sleep(1)
-        filename = event.src_path
-        # print filename
-        
-        name = filename.split("/")[-1].split(".")[0]
-        pastname = otherdata + "/stats/" + name + ".past.json"
-        print name,
-        newjson = []
-        oldjson = []
-        diff = {}
+        if not event.is_directory:
+            time.sleep(1)
+            filename = event.src_path
+            # print filename
+            
+            name = filename.split("/")[-1].split(".")[0]
+            pastname = otherdata + "/stats/" + name + ".past.json"
+            print name,
+            newjson = {} 
+            oldjson = {}
+            diff = {}
 
-        try:
-            with open(pastname, "r") as statfile:
-                oldjson = json.load(statfile)
-        except:
-            pass
-        with open(filename, "r") as statfile:
-            newjson = json.load(statfile)
-            pass 
-        listofstats = newjson.keys() 
-        listofstats.remove("achievement.exploreAllBiomes")
-        
-        for key in listofstats:
-            if int(newjson[key]) > int(oldjson[key]):
-                diff.update({key: int(newjson[key]) - int(oldjson[key])})
+            try:
+                with open(pastname, "r") as statfile:
+                    oldjson = json.load(statfile)
+            except:
+                pass
+            with open(filename, "r") as statfile:
+                newjson = json.load(statfile)
+                pass 
+            listofstats = newjson.keys() 
+            listofstats.remove("achievement.exploreAllBiomes")
+            
+            for key in listofstats:
+                if int(newjson[key]) > int(oldjson.get(key,"0")):
+                    diff.update({key: int(newjson[key]) - int(oldjson.get(key,"0"))})
 
-        print diff
-        conn = sqlite3.connect(dbfile, timeout=30)
-        cur = conn.cursor()
-        cur.execute("INSERT INTO stats (UUID, stats) VALUES (?,?)", (name, str(diff)))
+            print diff
+            conn = sqlite3.connect(dbfile, timeout=30)
+            cur = conn.cursor()
+            cur.execute("INSERT INTO stats (UUID, stats) VALUES (?,?)", (name, str(diff)))
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+            conn.close()
 
-        shutil.copyfile(filename, pastname)
+            shutil.copyfile(filename, pastname)
 
 pos_watch_directory = mcfolder + "/world/playerdata"       # Get watch_directory parameter
 stat_watch_directory = mcfolder + "/world/stats"       # Get watch_directory parameter
