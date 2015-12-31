@@ -36,9 +36,10 @@ markersOverworld = markers
 markersEnd = markers
 markersNether = markers
 
-overmanualpois = overviewer_playeractivitydb.overpoi + overviewer_chestactivity.POIs
-nethermanualpois = overviewer_playeractivitydb.netherpoi
-endmanualpois = overviewer_playeractivitydb.endpoi
+overmanualpois = overviewer_playeractivitydb.overpoi + overviewer_chestactivity.overpoi
+nethermanualpois = overviewer_playeractivitydb.netherpoi + overviewer_chestactivity.netherpoi
+endmanualpois = overviewer_playeractivitydb.endpoi + overviewer_chestactivity.endpoi
+
 
 end_smooth_lighting = [Base(), EdgeLines(), SmoothLighting(strength=0.5)]
 
@@ -47,7 +48,7 @@ defaultzoom = 9
 mcversion = "1.8.9"
 
 texturepath = "/minecraft/host/mcdata/" + mcversion + ".jar"
-processes = 1
+processes = 4
 outputdir = "/minecraft/host/webdata/map/" + mapadminsecret + "/"
 customwebassets = "/minecraft/host/webdata/map/template"
 base = 'http://' + URL + '/map/'

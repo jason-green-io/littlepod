@@ -10,12 +10,26 @@ from collections import defaultdict
 chestlist = []
 otherdata = '/minecraft/host/otherdata'
 
-def chests( poi, chestilist=chestlist ):
+timenow = int(time.time())
+filetime = timenow
+
+
+def chestsOverworld(poi, filetime=filetime):
+    return chestsUniversal(poi, "o", filetime)
+
+
+def chestsNether(poi, filetime=filetime):
+    return chestsUniversal(poi, "n", filetime)
+
+
+def chestsEnd(poi, filetime=filetime):
+    return chestsUniversal(poi, "e", filetime)
+
+def chestsUniversal( poi, dim, filetime ):
     if poi['id'] == 'Chest':
-        timenow = int(time.time())
-        filetime = timenow - ( timenow % ( 20 * 60 ) )
+        
         #filetime = time.strftime("%Y%m%d%H%M")
-        chestfile = otherdata + '/chests/' + str(filetime) + '.json'
+        chestfile = otherdata + '/chests/' + str(filetime) + "." + dim + '.json'
         if not os.path.exists(os.path.dirname(chestfile)):
             os.makedirs(os.path.dirname(chestfile))
         with open( chestfile, 'a+' ) as file:
@@ -23,15 +37,17 @@ def chests( poi, chestilist=chestlist ):
             file.write( json.dumps(poi) + '\n' )
 
 
-def diff( epoch1, epoch2, day, chestlist=chestlist  ):
+def diff( epoch1, epoch2, day, dim ):
+    POIs = []
 
-    print "Chest activity - Search start:", time.strftime("%Y/%m/%d, %H:%M:%S", time.localtime(int(epoch1))), "end:", time.strftime("%Y/%m/%d, %H:%M:%S", time.localtime(int(epoch2))), "day", day
+    print "Chest activity " + dim + " - Search start:", time.strftime("%Y/%m/%d, %H:%M:%S", time.localtime(int(epoch1))), "end:", time.strftime("%Y/%m/%d, %H:%M:%S", time.localtime(int(epoch2))), "day", day
     if epoch1 == "" and epoch2 == "":
-        return []
+        return POIs
 
 
-    files = sorted([file for file in glob.glob(otherdata + "/chests/*.json") if int(file.rsplit('/',1)[1].split('.')[0]) >= epoch1 and int(file.rsplit('/',1)[1].split('.')[0]) <= epoch2 ])
+    files = sorted([file for file in glob.glob(otherdata + "/chests/*." + dim + ".json") if int(file.rsplit('/',1)[1].split('.')[0]) >= epoch1 and int(file.rsplit('/',1)[1].split('.')[0]) <= epoch2 ])
 
+    print files
     try:
         fileepoch1 = files[0]
         fileepoch2 = files[-1]
@@ -43,7 +59,7 @@ def diff( epoch1, epoch2, day, chestlist=chestlist  ):
     except:
         pass
         print "files missing, skipping"
-        return []
+        return POIs
 
 
 
@@ -92,14 +108,15 @@ def diff( epoch1, epoch2, day, chestlist=chestlist  ):
 
     return [ { "id": "chestactivity" + str(day), "x" : chest[0][0], "y" : chest[0][1],  "z" : chest[0][2], "contents" : "\n".join(chest[1]) } for chest in diffdict.items() ]
 
-
 def filterchest0(poi):
     if poi['id'] == 'chestactivity0':
         return poi['contents']
 
+
 def filterchest1(poi):
     if poi['id'] == 'chestactivity1':
         return poi['contents']
+
 
 def filterchest2(poi):
     if poi['id'] == 'chestactivity2':
@@ -110,23 +127,27 @@ def filterchest3(poi):
     if poi['id'] == 'chestactivity3':
         return poi['contents']
 
+
 def filterchest4(poi):
     if poi['id'] == 'chestactivity4':
         return poi['contents']
 
 
-chest0 = [ dict(name="Chest Activity - today", icon="icons/black/chest.pngg", filterFunction=filterchest0, createInfoWindow=True, checked=False)]
+
+
+chest0 = [ dict(name="Chest Activity - today", icon="icons/black/chest.png", filterFunction=filterchest0, createInfoWindow=True, checked=False)]
 chest1 = [ dict(name="Chest Activity - yesterday", icon="icons/black/chest.png", filterFunction=filterchest1, createInfoWindow=True, checked=False)]
 chest2 = [ dict(name="Chest Activity - 2 days ago", icon="icons/black/chest.png", filterFunction=filterchest2, createInfoWindow=True, checked=False)]
 chest3 = [ dict(name="Chest Activity - 3 days ago", icon="icons/black/chest.png", filterFunction=filterchest3, createInfoWindow=True, checked=False)]
 chest4 = [ dict(name="Chest Activity - last 31 days", icon="icons/black/chest.png", filterFunction=filterchest4, createInfoWindow=True, checked=False)]
 
 
+
 day = 24 * 3600
 hour = 60 * 60
 twenty = 20 * 60
 now = int(time.time())
-now = now - (now % twenty) - twenty
+now = now 
 todayepoch = now - (now % day)
 yesterdayepoch = todayepoch - day
 days2agoepoch = yesterdayepoch - day
@@ -139,21 +160,35 @@ range2 = endrange - ( endrange % twenty)
 range1 = range2 - 3 * hour
 
 
-specified = diff( range1, range2, 4 )
-days3 = diff( days3agoepoch, days2agoepoch, 3 )
-days2 = diff( days2agoepoch, yesterdayepoch, 2 )
-yesterday = diff( yesterdayepoch, todayepoch, 1 )
-today = diff( todayepoch, now, 0 )
+ospecified = diff( range1, range2, 4, "o" )
+odays3 = diff( days3agoepoch, days2agoepoch, 3, "o" )
+odays2 = diff( days2agoepoch, yesterdayepoch, 2, "o" )
+oyesterday = diff( yesterdayepoch, todayepoch, 1, "o" )
+otoday = diff( todayepoch, now, 0, "o" )
 
+nspecified = diff( range1, range2, 4, "n" )
+ndays3 = diff( days3agoepoch, days2agoepoch, 3, "n" )
+ndays2 = diff( days2agoepoch, yesterdayepoch, 2, "n" )
+nyesterday = diff( yesterdayepoch, todayepoch, 1, "n" )
+ntoday = diff( todayepoch, now, 0, "n" )
 
-#nether = days3[2] + days2[2] + yesterday[2] + today[2] + specified[2]
-#over = days3[1] + days2[1] + yesterday[1] + today[1] + specified[1]
-#end = days3[0] + days2[0] + yesterday[0] + today[0] + specified[0]
+especified = diff( range1, range2, 4, "e" )
+edays3 = diff( days3agoepoch, days2agoepoch, 3, "e" )
+edays2 = diff( days2agoepoch, yesterdayepoch, 2, "e" )
+eyesterday = diff( yesterdayepoch, todayepoch, 1, "e" )
+etoday = diff( todayepoch, now, 0, "e" )
+
 markers = chest1 + chest2 + chest3 + chest0 + chest4
-POIs = specified + days3 + days2 + yesterday + today
 
-markergenerator = [ dict(name="Chest Activity generator", filterFunction=chests, checked=False) ]
+overpoi = ospecified + odays3 + odays2 + oyesterday + otoday
+netherpoi = nspecified + ndays3 + ndays2 + nyesterday + ntoday
+endpoi = especified + edays3 + edays2 + eyesterday + etoday
+
+print endpoi
+
+overmarker = [ dict(name="Chest Activity generator over", filterFunction=chestsOverworld, checked=False) ]
+nethermarker = [ dict(name="Chest Activity generator nether", filterFunction=chestsNether, checked=False) ]
+endmarker = [ dict(name="Chest Activity generator end", filterFunction=chestsEnd, checked=False) ]
 
 
-# print diff( "1432992000", "1432993800"  )
 
