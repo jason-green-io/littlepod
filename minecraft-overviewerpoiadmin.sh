@@ -6,7 +6,8 @@ parse_yaml /minecraft/host/config/server.yaml config_
 
 ADMIN=$config_webdata/map/$config_mapadminsecret
 echo Removing $ADMIN
-rm -r $ADMIN
+
+rm -r $ADMIN/*
 
 mkdir $ADMIN
 
