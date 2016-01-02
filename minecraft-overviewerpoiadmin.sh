@@ -18,9 +18,9 @@ else
     ADMIN=$config_webdata/map/$config_mapadminsecret/latest
     echo Removing $ADMIN
 
-    rm -r $ADMIN/latest/*
+    rm -r $ADMIN/*
 
-    mkdir $ADMIN/latest
+    mkdir $ADMIN
 
     overviewer.py --skip-scan --config=/minecraft/host/config/overviewerconfigadmin.py --genpoi
 
