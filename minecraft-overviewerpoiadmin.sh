@@ -4,12 +4,27 @@
 eval $(parse_yaml /minecraft/host/config/server.yaml "config_")
 parse_yaml /minecraft/host/config/server.yaml config_
 
-ADMIN=$config_webdata/map/$config_mapadminsecret
+if [[ $1 == "yesterday" ]]; do
+    yesterday=$(date -d @$(($(date +%s) - 24 * 3600)) +%Y%m%d)
+    ADMIN=$config_webdata/map/$config_mapadminsecret/$yesterday
+    mkdir $ADMIN
+
+    overviewer.py --skip-scan --config=/minecraft/host/config/overviewerconfigadmin.py --genpoi yesterday
+
+    for file in /minecraft/host/webdata/map/*; do
+        ln -s $file $ADMIN
+    done
+
+
+
+
+
+ADMIN=$config_webdata/map/$config_mapadminsecret/latest
 echo Removing $ADMIN
 
-rm -r $ADMIN/*
+rm -r $ADMIN/latest/*
 
-mkdir $ADMIN
+mkdir $ADMIN/latest
 
 overviewer.py --skip-scan --config=/minecraft/host/config/overviewerconfigadmin.py --genpoi
 
