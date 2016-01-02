@@ -44,3 +44,5 @@ LOGS=/minecraft/host/otherdata/logs
 */1 * * * * /minecraft/minecraft-stats.py &> $LOGS/minecraft-stats.log
 
 */20 * * * * /minecraft/minecraft-overviewerpoiadmin.sh &> $LOGS/minecraft-overviewerpoiadmin.log
+
+20 0 */1 * * /minecraft/minecraft-overviewerpoiadmin.sh yesterday &> $LOGS/minecraft-overviewerpoiadmin.log
