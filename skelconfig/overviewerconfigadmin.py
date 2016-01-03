@@ -75,6 +75,7 @@ renders["north"] = {
     "world": "littlepod",
     "title": "North",
     "rendermode" : smooth_lighting,
+    'dimension' : 'overworld',
     "northdirection" : "upper-left",
     'markers': markersOverworld,
     'base' : base,
@@ -82,7 +83,7 @@ renders["north"] = {
 }
 renders["end"] = {
     "world": "littlepod",
-    "title": "End",
+    "title": "North",
     "northdirection" : "upper-left",
     'markers': markersEnd ,
     "base" : base,
@@ -92,7 +93,7 @@ renders["end"] = {
 }
 renders["nether"] = {
     "world": "littlepod",
-    "title": "Nether",
+    "title": "North",
     "northdirection" : "upper-left",
     'markers': markersNether ,
     "base" : base,
