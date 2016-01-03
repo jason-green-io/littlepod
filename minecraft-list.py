@@ -13,7 +13,7 @@ dbfile = config['dbfile']
 
 response = vanillabean.send("/list")
 numplayers = response.split()[2].split("/")[0]
-players = response.strip("'").split(":")[1].split(",")
+players = response.replace("Saving...", "").strip("'").split(":")[1].split(",")
 
 # response = vanillabean.send("/tp @a ~ ~ ~")
 # teleplayers = [(each.split()) for each in response.split("Teleported")]
