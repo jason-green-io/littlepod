@@ -115,7 +115,7 @@ def minecraftlistener():
                 f.seek(pos)
         else:
             joinparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$", line )
-            leaveparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: ([\w ]*) left the game$", line )
+            infoparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: ([\w]*) (.*)$", line )
             chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(\w*)\> (.*)", line )
             playerlistparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$", line )
             statusparsematch = re.match( "^\[(.*)\] \[Server thread/INFO\]: <(\w*)> \*\*\*(.*)$", line )
@@ -151,9 +151,16 @@ def minecraftlistener():
 #
                     outputs.append( [slackchan, coordsmessage( coordscomma ) ] )
 
-            if leaveparsematch:
-                player = leaveparsematch.groups()[0]
-                outputs.append( [slackchan, ">*<" + player + ">* left the server"  ] )
+            if infoparsematch:
+		player = infoparsematch.groups()[0]
+		keyword = infoparsematch.groups[1].split()[0]
+		if keyword == "left":
+			outputs.append( [slackchan, ">*<" + player + ">* left the server"  ] )
+		elif keyword == "joined":
+			pass
+		else:
+			outputs.append( [slackchan, ">*<" + player + ">* " + infoparsematch.groups[1]] )
+
             if ipparsematch:
                 parsed = ipparsematch.groups()
                 # print ipparsematch.groups()
