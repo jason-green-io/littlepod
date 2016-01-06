@@ -153,13 +153,13 @@ def minecraftlistener():
 
             if infoparsematch:
 		player = infoparsematch.groups()[0]
-		keyword = infoparsematch.groups[1].split()[0]
+		keyword = infoparsematch.groups()[1].split()[0]
 		if keyword == "left":
 			outputs.append( [slackchan, ">*<" + player + ">* left the server"  ] )
 		elif keyword == "joined":
 			pass
 		else:
-			outputs.append( [slackchan, ">*<" + player + ">* " + infoparsematch.groups[1]] )
+			outputs.append( [slackchan, ">*<" + player + ">* " + infoparsematch.groups()[1]] )
 
             if ipparsematch:
                 parsed = ipparsematch.groups()
