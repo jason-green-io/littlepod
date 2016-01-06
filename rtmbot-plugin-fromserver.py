@@ -158,6 +158,8 @@ def minecraftlistener():
 			outputs.append( [slackchan, ">*<" + player + ">* left the server"  ] )
 		elif keyword == "joined":
 			pass
+		elif keyword == "lost":
+			pass
 		else:
 			outputs.append( [slackchan, ">*<" + player + ">* " + infoparsematch.groups()[1]] )
 
