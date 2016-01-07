@@ -110,10 +110,11 @@ def minecraftlistener():
                 time.sleep( 5 )
                 f = codecs.open(logfile, "r","utf-8")
                 pos = f.tell()
+		restartdone = False
             else:
                 time.sleep( 1 )
                 f.seek(pos)
-        else:
+	else:
             joinparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$", line )
             infoparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: ([\w]*) (.*)$", line )
             chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(\w*)\> (.*)", line )
@@ -165,7 +166,11 @@ def minecraftlistener():
 			pass
 		elif "players online" in message:
 			pass
-		else:
+		elif keyword = "Starting":
+			serverrestart = True
+		elif keyword = "Done":
+			serverrestart = False
+		elif not serverrestart:
 			outputs.append( [slackchan, ">*<" + player + ">* " + message] )
 
             if ipparsematch:
