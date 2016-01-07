@@ -166,7 +166,7 @@ def minecraftlistener():
 			pass
 		elif "players online" in message:
 			pass
-		elif keyword == "Starting":
+		elif keyword == "Starting" or keyword == "Stopping":
 			serverrestart = True
 		elif keyword == "Done":
 			serverrestart = False
