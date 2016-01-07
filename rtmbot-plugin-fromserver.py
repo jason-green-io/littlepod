@@ -163,7 +163,7 @@ def minecraftlistener():
 			pass
 		elif "whie-listed" in message:
 			pass
-		elif: "players online" in message:
+		elif "players online" in message:
 			pass
 		else:
 			outputs.append( [slackchan, ">*<" + player + ">* " + message] )
