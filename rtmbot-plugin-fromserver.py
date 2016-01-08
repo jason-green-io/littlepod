@@ -167,9 +167,9 @@ def minecraftlistener():
 			pass
 		elif "players online" in message:
 			pass
-		elif keyword == "Starting" or keyword == "Stopping":
+		elif player == "Starting" or player == "Stopping":
 			serverrestart = True
-		elif keyword == "Done":
+		elif player == "Done":
 			serverrestart = False
 		elif not serverrestart:
 			outputs.append( [slackchan, ">*<" + player + ">* " + message] )
