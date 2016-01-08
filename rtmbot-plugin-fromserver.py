@@ -29,6 +29,7 @@ URL = config['URL']
 slackchan = config['slackchan']
 
 
+serverrestart = False
 
 FREEGEOPIP_URL = 'http://ip-api.com/json/'
 #
@@ -92,6 +93,7 @@ def shellquotes( string ):
 
 
 def minecraftlistener():
+    serverrestart = False
     global members
     lastplayer = "Dinnerbone"
     logfile = os.path.abspath(mcfolder + "/logs/latest.log")
@@ -110,7 +112,6 @@ def minecraftlistener():
                 time.sleep( 5 )
                 f = codecs.open(logfile, "r","utf-8")
                 pos = f.tell()
-		restartdone = False
             else:
                 time.sleep( 1 )
                 f.seek(pos)
