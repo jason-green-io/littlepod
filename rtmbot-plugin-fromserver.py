@@ -154,7 +154,8 @@ def minecraftlistener():
                     outputs.append( [slackchan, coordsmessage( coordscomma ) ] )
 
             if infoparsematch:
-		player = infoparsematch.groups()[0]
+		deathwords = ["blew", "burned", "drowned", "experienced", "fell", "got", "hit", "starved", "suffocated", "tried", "walked", "was", "went", "withered"]
+                player = infoparsematch.groups()[0]
 		keyword = infoparsematch.groups()[1].split()[0]
 		message = infoparsematch.groups()[1]
 		if keyword == "left":
@@ -163,15 +164,7 @@ def minecraftlistener():
 			pass
 		elif keyword == "lost":
 			pass
-		elif "whie-listed" in message:
-			pass
-		elif "players online" in message:
-			pass
-		elif player == "Starting" or player == "Stopping":
-			serverrestart = True
-		elif player == "Done":
-			serverrestart = False
-		elif not serverrestart:
+		elif keyword in deathwords:
 			outputs.append( [slackchan, ">*<" + player + ">* " + message] )
 
             if ipparsematch:
