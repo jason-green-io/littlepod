@@ -34,7 +34,7 @@ slackchan = config['slackchan']
 slackconfig = yaml.load(file('/minecraft/python-rtmbot/rtmbot.conf', 'r'))
 token = slackconfig["SLACK_TOKEN"]
 slack = Slacker( token )
-#slack = Slacker( "xoxb-5189863816-slDjc50BZI7XxGZwY2nmDTqu" )
+
 
 members = { member["id"] : member["name"] for member in slack.users.list().body["members"] }
 
