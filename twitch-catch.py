@@ -21,11 +21,25 @@ import urllib
 import json
 import socket
 import string
+import yaml
 import oauth2 as oauth
-import HTMLParser
 sys.path.append('/minecraft')
 import vanillabean
-from twitch_catch_conf import *
+
+
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
+
+
+mcfolder = config['mcdata']
+ConsumerKey = config['ConsumerKey']
+ConsumerSecret = config['ConsumerSecret']
+AccessToken = config['AccessToken']
+AccessTokenSecret = config['AccessTokenSecret']
+twitchircpass = config['twitchircpass']
+twitchname = config['twitchname']
+minecraftname = config['minecraftname']
+twitter = config['twitter']
 
 followers = {}
 newfollowers = []
@@ -176,7 +190,7 @@ def publicmessage( groups ):
     elif command == "!":
         sendtotwitch( "Commands available are: !ip, !xxxxxxxxxx" )
     else:
-        finalline  = '/tellraw ' + minecraftname  + ' {"text":"","extra":[' + twitchmessage( time ) + ',' + colorname( name ) + ',{"text":"' + message.replace('"', r'\"') + '","color":"aqua"}]}'
+        finalline  = u'/tellraw ' + minecraftname  + ' {"text":"","extra":[' + twitchmessage( time ) + ',' + colorname( name ) + ',{"text":"' + message.replace('"', r'\"') + '","color":"aqua"}]}'
         vanillabean.send( finalline )
 
 
@@ -206,7 +220,7 @@ def colorname( name ):
 
 
 def minecraftlistener():
-    logfile = os.path.abspath("/minecraft/logs/latest.log")
+    logfile = os.path.abspath("/minecraft/host/mcdata/logs/latest.log")
     f = open(logfile,"r")
     file_len = os.stat(logfile)[stat.ST_SIZE]
     f.seek(file_len)
@@ -252,7 +266,6 @@ def minecraftlistener():
 
 def twitchlistener():
 
-    global PASS
     HOST="irc.twitch.tv"
     PORT=6667
     NICK="greener_ca"
@@ -262,7 +275,7 @@ def twitchlistener():
     def connect():
         logging.debug("Conecting to IRC using " + REALNAME)
         s.connect((HOST, PORT))
-        s.send("PASS %s\r\n" % PASS)
+        s.send("PASS %s\r\n" % twitchircpass)
         s.send("NICK %s\r\n" % NICK)
         s.send("USER %s %s bla :%s\r\n" % (IDENT, HOST, REALNAME))
         s.send("JOIN %s\r\n" % "#greener_ca")

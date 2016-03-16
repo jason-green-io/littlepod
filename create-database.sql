@@ -4,6 +4,8 @@ CREATE TABLE status (name PRIMARY KEY, status, twitter, youtube, twitch, reddit)
 CREATE TABLE activity (datetime, name);
 CREATE TABLE joins(date, name, UUID, IP);
 CREATE TABLE slackusers (ID primary key, name);
+CREATE TABLE slackemails (ID primary key, email);
+CREATE TABLE emailtoUUID (email primary key, UUID);
 CREATE TABLE test (name, UUID);
 CREATE TABLE test2 (datetime, name);
 CREATE TABLE lag (ts DEFAULT CURRENT_TIMESTAMP, tps);
@@ -13,6 +15,7 @@ CREATE TABLE location (datetime DEFAULT CURRENT_TIMESTAMP, UUID, dim, x, y, z);
 CREATE TABLE process (ts DEFAULT CURRENT_TIMESTAMP, process, id, end);
 CREATE TABLE whitelist (name, uuid);
 CREATE TABLE stats (datetime DEFAULT CURRENT_TIMESTAMP, UUID, stats);
+CREATE TABLE builds (coords primary key, name, text, ts default CURRENT_TIMESTAMP);
 CREATE VIEW playerUUID as select name, UUID from (select * from joins order by date asc) group by UUID;
 CREATE VIEW onlineplayers as select name from activity where datetime >= DATETIME("now", "-2 minutes") group by name;
 CREATE VIEW newmaildrops as select ID, coords from maildrop inner join slackusers where (maildrop.name = slackusers.name COLLATE NOCASE and notified = 0 and slots > 0);

@@ -6,6 +6,7 @@ import time
 import datetime
 import showandtellraw
 import sqlite3
+import subprocess
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -81,6 +82,23 @@ def genshame(shame):
     return shamefinal
 
 
+def genbuilds(builds):
+    buildfinal =[] 
+    for each in builds:
+        name = each[0]
+        coords = each[1].split("|")
+        buildfinal.append( "##" + name)
+        for coord in coords:
+            link = coordstolink(coord)
+            subprocess.call("/usr/bin/phantomjs --debug=true /minecraft/makethumbnails.js " + link + " /minecraft/host/webdata/thumbs/" + coord + ".png", shell=True)
+            buildfinal.append( "[!["+ coord + "](thumbs/" + coord +  ".png)](" + link + ")")
+    return "\n".join(buildfinal)
+         
+        
+def coordstolink(coords):
+    worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }    
+    dim, x, y, z = tuple(coords.split(","))
+    return "http://" + URL + "/map/#/" + x + "/" + y + "/" + z + "/-2/" + worlddict[dim][1] + "/0"
 
 
 conn = sqlite3.connect(dbfile, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
@@ -95,13 +113,11 @@ shame = cur.fetchall()
 cur.execute("SELECT * FROM quickie")
 quickie = cur.fetchall()
 
+cur.execute('select name, group_concat(coords,"|") from maildrop where hidden != 1 and ts > datetime("now", "-30 minutes") group by name')
+builds = cur.fetchall()
 conn.close
 
 statstop = """# Status
-
-## Server message
-
-[gimmick:iframe({height: '120px', width: '100%'})](motd.html)
 
 ## Last 2 weeks
 
@@ -167,3 +183,7 @@ a:visited { color:white; }
 
 with open(webdata + "/status.md", "w") as outfile:
     outfile.write(stats)
+
+buildfinal = genbuilds(builds)
+with open(webdata + "/builds.md", "w") as outfile:
+    outfile.write(buildfinal)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CLIENTVERSION=1.8.9
+CLIENTVERSION=1.9
 tobackup ()
 {
     echo "Sending to backup"
@@ -29,7 +29,8 @@ mcstart ()
     if [[ ! -f $CLIENTVERSION.jar ]]; then
         wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENTVERSION/$CLIENTVERSION.jar
     fi
-    /usr/bin/tmux neww -t minecraft:7 "/usr/bin/java -jar minecraft_server.$VERSION.jar nogui"
+    cp /minecraft/host/mcdata/world/data/villages.dat.bak /minecraft/host/mcdata/world/data/villages.dat
+    /usr/bin/tmux neww -t minecraft:7 "/usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean"
 }
 
 mcstop ()

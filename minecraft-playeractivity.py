@@ -87,7 +87,6 @@ class StatHandler(FileSystemEventHandler):
             
             name = filename.split("/")[-1].split(".")[0]
             pastname = otherdata + "/stats/" + name + ".past.json"
-            print name,
             newjson = {} 
             oldjson = {}
             diff = {}
@@ -101,19 +100,23 @@ class StatHandler(FileSystemEventHandler):
                 newjson = json.load(statfile)
                 pass 
             listofstats = newjson.keys() 
-            listofstats.remove("achievement.exploreAllBiomes")
+            removestats = ["achievement.exploreAllBiomes", "stat.timeSinceDeath", "stat.playOneMinute", "stat.walkOneCm", "stat.sprintOneCm"]
+            for rstat in removestats:
+                if rstat in listofstats:
+                    listofstats.remove(rstat)
             
             for key in listofstats:
                 if int(newjson[key]) > int(oldjson.get(key,"0")):
                     diff.update({key: int(newjson[key]) - int(oldjson.get(key,"0"))})
 
-            print diff
-            conn = sqlite3.connect(dbfile, timeout=30)
-            cur = conn.cursor()
-            cur.execute("INSERT INTO stats (UUID, stats) VALUES (?,?)", (name, str(diff)))
+            if diff:
+                print name, diff
+                conn = sqlite3.connect(dbfile, timeout=30)
+                cur = conn.cursor()
+                cur.execute("INSERT INTO stats (UUID, stats) VALUES (?,?)", (name, str(diff)))
 
-            conn.commit()
-            conn.close()
+                conn.commit()
+                conn.close()
 
             shutil.copyfile(filename, pastname)
 

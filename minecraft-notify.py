@@ -9,9 +9,15 @@ import requests
 import re
 import sqlite3
 import sys
+import oauth2 as oauth
 sys.path.append('/minecraft')
 import showandtellraw
 import vanillabean
+import urllib
+import schedule
+
+sys.path.append('/minecraft/host/config')
+from twitch_catch_conf import *
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -24,6 +30,35 @@ servername = config['name']
 otherdata = config['otherdata']
 
 UUID = ""
+
+
+
+def daily():
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+    cur.execute('select count(datetime) as total, name from activity where datetime >= datetime("now", "-7 days") group by name order by total desc limit 1')
+    top = cur.fetchall()[0]
+    
+    conn.commit()
+    conn.close()  
+    vanillabean.tweet("Congrats to " + top[1] + " for playing " + str(top[0]) + " minutes this week!")
+
+def weekly():
+    pass
+
+def monthly():
+    pass
+
+
+schedule.every().monday.at("07:00").do(daily)
+#schedule.every(5).minutes.do(daily)
+
+def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=None ):
+    consumer = oauth.Consumer( key=ConsumerKey , secret=ConsumerSecret )
+    token = oauth.Token( key=key, secret=secret )
+    client = oauth.Client( consumer, token )
+    (resp,content) = client.request( url, method=http_method, body=post_body, headers=http_headers )
+    return content
 
 def lag(match):
     ts = match.groups()[0]
@@ -95,28 +130,19 @@ def joins(match):
     # print name
     ip = parsed[1].split(':')[0]
     message = "joined"
-#                try:
-#                    hostaddr = socket.gethostbyaddr( ip )[0]
-#                except:
-#                    hostaddr = "none"
-#                ipinfo = getgeo( ip )
-#                ipstat= " ".join( [ip, hostaddr, ipinfo["countryCode"], ipinfo["regionName"], ipinfo["city"], ipinfo["as"] ] )
-#                print ipstat
-#                headers = {"user_credentials" : boxcarkey,
-#                "notification[title]": name + " " + message + " " + ipstat,
-#                "notification[source_name]" : "Barlynaland" }
-#                url= "https://new.boxcar.io/api/notifications"
-#
-#                r = requests.post(url, params=headers)
-#
+    
+    #tweetmessage = urllib.urlencode({"status": name + " " + message})
+    #response = json.loads(oauth_req( "https://api.twitter.com/1.1/statuses/update.json?" + tweetmessage, AccessToken, AccessTokenSecret, http_method="POST"))
+    #print response
+    
     if message == "joined":
         conn = sqlite3.connect(dbfile)
         cur = conn.cursor()
         try:
             for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
+                time.sleep(1)
                 message = u"/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
-                print message
                 vanillabean.send( message )
         except:
             pass
@@ -124,7 +150,7 @@ def joins(match):
         maildrop = cur.fetchall()
 
         for mail in maildrop:
-            coords, name, notify, slots, hidden = mail
+            coords, name, notify, slots, hidden, ts = mail
             dim, x, y, z = coords.split(",")
 
             if dim == "e":
@@ -193,6 +219,31 @@ def ip(match):
     r = requests.post(url, params=headers)
 
 
+def playerlist(numplayers, listofplayers):
+
+    players = listofplayers.split(":")[3].split(",")
+    
+    print numplayers, players
+
+    # response = vanillabean.send("/tp @a ~ ~ ~")
+    # teleplayers = [(each.split()) for each in response.split("Teleported")]
+    # print teleplayers
+    # teleplayers = [(each[0], each[2].strip(','), each[3].strip(','), each[4]) for each in teleplayers if len(each) > 0]
+    # print teleplayers
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+
+    if int(numplayers) > 0:
+        for player in players:
+            cur.execute('INSERT INTO activity (datetime, name) VALUES (?,?)', (datetime.datetime.now(), player.strip()))
+
+    # for location in teleplayers:
+    #     cur.execute('INSERT INTO location (name, x, y, z) VALUES(?,?,?,?)', location)
+
+    conn.commit()
+    conn.close()
+
+
 def acheivements(match):
 
     name = match.groups()[1]
@@ -205,9 +256,12 @@ def acheivements(match):
 
     conn.commit()
     conn.close()
+    
 
 
 def minecraftlistener():
+    nextlineforlist = False
+    numplayers = 0
     logfile = os.path.abspath(mcfolder + "/logs/latest.log")
     f = open(logfile, "r")
     file_len = os.stat(logfile)[stat.ST_SIZE]
@@ -215,10 +269,10 @@ def minecraftlistener():
     pos = f.tell()
     UUID = {}
 
-    getnextline = False
     while True:
         pos = f.tell()
         line = f.readline().strip()
+        schedule.run_pending()
         if not line:
             if os.stat(logfile)[stat.ST_SIZE] < pos:
                 f.close()
@@ -238,6 +292,16 @@ def minecraftlistener():
             ipparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$", line )
             achievementmatch = re.match("^\[(.*)\] \[Server thread/INFO\]: " + "(\w*) has just earned the achievement \[(.*)\]$", line)
             lagmatch = re.match( "^\[(.*)\] \[Server thread/WARN\]: Can't keep up! Did the system time change, or is the server overloaded\? Running (\d*)ms behind, skipping (\d*) tick\(s\)$", line )
+
+            
+            if nextlineforlist:
+               
+                nextlineforlist = False    
+                playerlist(numplayers, line)
+
+            if playerlistparsematch:
+                numplayers = playerlistparsematch.groups()[1]
+                nextlineforlist = True
 
             if achievementmatch:
                 acheivements(achievementmatch)
