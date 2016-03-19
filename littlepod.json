@@ -1,0 +1,20 @@
+{
+  "apps" : [{
+    // Application #1
+    "name"        : "minecraft-discord",
+    "script"      : "minecraft-discord.py",
+    "args"        : "",
+    "cwd"         : "/minecraft",
+    "env": {
+      "UNBUFFEREDPYTHON": "yes",
+    },
+  },{
+    // Application #2
+    "name"       : "minecraft-vanillabean",
+    "script"     : "minecraft-vanillabean.sh",
+    "cwd"         : "/minecraft",
+    "env": {
+      "UNBUFFEREDPYTHON": "yes",
+    }
+  }]
+}
