@@ -1,3 +1,4 @@
+#!/usr/bin/python3 -u
 import asyncio
 import yaml
 import os
@@ -57,14 +58,14 @@ def tellcoords( coords ):
 
 
 
-@client.event
-async def on_status(member, old_game, old_status):
+@client.async_event
+def on_status(member, old_game, old_status):
     print(old_status)
     print(member.name)
     print(member.status)
 
-@client.event
-async def on_message(message):
+@client.async_event
+def on_message(message):
     # we do not want the bot to reply to itself
     if message.author == client.user:
         return
@@ -82,22 +83,23 @@ async def on_message(message):
 
         if coordscomma:
             
-            await client.send_message(channelobject, coordsmessage( coordscomma ))
+            yield from client.send_message(channelobject, coordsmessage( coordscomma ))
             tellcoords(coordscomma)
 
         if links:
            telllinks( links )
 
     if message.channel.id == privchannel:
-        await client.send_message(privchannelobject, vanillabean.send(message.content))
+        yield from client.send_message(privchannelobject, vanillabean.send(message.content))
 
-@client.event
-async def on_ready():
+
+@client.async_event
+def on_ready():
     print('Logged in as')
     print((client.user.name))
     print((client.user.id))
     print('------')
-    await client.send_message(discord.Object(id="143000115144032265"),"I crashed, but I'm back now.") 
+    yield from client.send_message(discord.Object(id="143000115144032265"),"I crashed, but I'm back now.") 
 
 def getgeo(ip):
     FREEGEOPIP_URL = 'http://ip-api.com/json/'
@@ -109,8 +111,9 @@ def getgeo(ip):
     return response.json()
 
 
-async def my_background_task():
-    await client.wait_until_ready()
+@asyncio.coroutine 
+def my_background_task():
+    yield from client.wait_until_ready()
     channel = discord.Object(id="143000115144032265")
     privchannel = discord.Object(id="142731669076574208")
 
@@ -134,13 +137,13 @@ async def my_background_task():
             if not line:
                 if os.stat(logfile)[stat.ST_SIZE] < pos:
                     f.close()
-                    await asyncio.sleep(5) # task runs every 60 seconds
+                    yield from asyncio.sleep(5) # task runs every 60 seconds
                     time.sleep( 5 )
                     f = codecs.open(logfile, "r","utf-8")
                     pos = f.tell()
                 else:
                     
-                    await asyncio.sleep(1) # task runs every 60 seconds
+                    yield from asyncio.sleep(1) # task runs every 60 seconds
                     f.seek(pos)
             else:
                 chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(\w*)\> (.*)", line )
@@ -177,13 +180,13 @@ async def my_background_task():
 
 
                     print(repr(finalmessage))
-                    await client.send_message(channel, finalmessage)
+                    yield from client.send_message(channel, finalmessage)
 
                     if coordscomma:
     #                    print chatlisten.groups()[1]
     #                    print coordscomma
     #
-                        await client.send_message(channel, coordsmessage( coordscomma ))
+                        yield from client.send_message(channel, coordsmessage( coordscomma ))
                         tellcoords(coordscomma)
 
                 if infoparsematch:
@@ -192,13 +195,13 @@ async def my_background_task():
                     keyword = infoparsematch.groups()[1].split()[0]
                     message = infoparsematch.groups()[1]
                     if keyword == "left":
-                        await client.send_message(channel, "`" + player + "` left the server")
+                        yield from client.send_message(channel, "`" + player + "` left the server")
                     elif keyword == "joined":
                         pass
                     elif keyword == "lost":
                         pass
                     elif keyword in deathwords:
-                        await client.send_message(channel, "`" + player + "` " + message)
+                        yield from client.send_message(channel, "`" + player + "` " + message)
 
                 if ipparsematch:
                     parsed = ipparsematch.groups()
@@ -212,7 +215,7 @@ async def my_background_task():
 
                     ipinfo = getgeo( ip )
                     ipstat= " ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
-                    await client.send_message(privchannel, "`" + name + "` !!!DENIED!!! " + ipstat)
+                    yield from client.send_message(privchannel, "`" + name + "` !!!DENIED!!! " + ipstat)
     #                print ipstat
     #                headers = {"user_credentials" : boxcarkey,
     #                "notification[title]": name + " " + "!!DENIED!!!" + " " + ipstat,
@@ -227,7 +230,7 @@ async def my_background_task():
     #                print line
     #                print joinparsematch.groups()
                     player = parsed[0]
-                    await client.send_message(channel, "`" + player + "`  joined the server")
+                    yield from client.send_message(channel, "`" + player + "`  joined the server")
 
                     ip = parsed[1].split(':')[0]
                     message = "joined"
@@ -238,14 +241,14 @@ async def my_background_task():
                     ipinfo = getgeo( ip )
                     ipstat= u" ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
                     # print(repr(ipstat))
-                    await client.send_message(privchannel, "`" + player + "` " + ipstat)
+                    yield from client.send_message(privchannel, "`" + player + "` " + ipstat)
 
 
 
 loop = asyncio.get_event_loop()
 
 try:
-    asyncio.ensure_future(my_background_task())
+    asyncio.async(my_background_task())
     # loop.run_until_complete(client.login('barlynaland@greener.ca', 'FoAiNcGnZJK7LXnfQsZC2vkVgYYnexT'))
     loop.run_until_complete(client.run('barlynaland@greener.ca', 'FoAiNcGnZJK7LXnfQsZC2vkVgYYnexT'))
 except Exception:
