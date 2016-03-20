@@ -16,5 +16,29 @@
     "env": {
       "UNBUFFEREDPYTHON": "yes",
     }
+  },{
+    // Application #3
+    "name"       : "minecraft-twistd",
+    "script"     : "minecraft-twistd.sh",
+    "cwd"         : "/minecraft",
+    "env": {
+      "UNBUFFEREDPYTHON": "yes",
+    }
+  },{
+    // Application #4
+    "name"       : "minecraft-notify",
+    "script"     : "minecraft-notify.py",
+    "cwd"         : "/minecraft",
+    "env": {
+      "UNBUFFEREDPYTHON": "yes",
+    }
+  },{
+    // Application #5
+    "name"       : "minecraft-playeractivity",
+    "script"     : "minecraft-playeractivity.py",
+    "cwd"         : "/minecraft",
+    "env": {
+      "UNBUFFEREDPYTHON": "yes",
+    }
   }]
 }
