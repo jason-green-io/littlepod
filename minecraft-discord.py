@@ -11,7 +11,7 @@ import sys
 sys.path.append('/minecraft/discord.py')
 import discord
 import vanillabean
-import showandtellrawnew as showandtellraw
+import showandtellraw
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)

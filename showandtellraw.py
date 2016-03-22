@@ -32,17 +32,17 @@ def tohtml( string ):
         style = []
         text = each.get("text")
 #        print each
-        if "color" in each:
+        if each.has_key("color"):
             style.append( "color: " + colorlist.get(each.get("color")) +";")
-        if "bold" in each:
+        if each.has_key("bold"):
             style.append( "font-weight: bold;")
-        if "underlined" in each:
+        if each.has_key("underlined"):
             style.append( "text-decoration: underline;" )
-        if "strikethrough" in each:
+        if each.has_key( "strikethrough" ):
             style.append( "text-decoration: line-through;" )
-        if "italic" in each:
+        if each.has_key( "italic" ):
             style.append( "font-style: italic;" )
-        if "clickEvent" in each:
+        if each.has_key("clickEvent"):
             text = '<a target="_blank" href="' + each.get("clickEvent").get("value") + '">' + text + '</a>'
 
         html.append( '<span style="' + "".join(style) + '">' + text + '</span>' )
@@ -228,6 +228,6 @@ def parse( string ):
 
 if __name__ == "__main__":
 
-    print(string)
-    print(tojson(string))
-    print(tohtml( string ))
+    print (string)
+    print (tojson(string))
+    print (tohtml( string ))
