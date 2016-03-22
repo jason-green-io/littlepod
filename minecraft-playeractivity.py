@@ -25,8 +25,10 @@ otherdata = config["otherdata"]
 
 def digits(val, digits):
         hi = int(1) << (digits * 4)
-        return hex(hi | (val & (hi-1)))[3:-1]
-
+        
+        uuidPart = hex(hi | (val & (hi-1)))[3:]
+        # print(uuidPart)
+        return uuidPart
 
 def getUUID(least, most):
         return digits(most >> 32, 8) + "-" + digits(most >> 16, 4) + "-" + digits(most, 4) + "-" + digits(least >> 48, 4) + "-" + digits(least, 12)
@@ -39,7 +41,7 @@ def getpos(filename):
     dimension = nbtdata["Dimension"].value
     UUIDleast = nbtdata["UUIDLeast"].value
     UUIDmost = nbtdata["UUIDMost"].value
-    #print [ tag for tag in nbt ]
+    # print(UUIDleast, UUIDmost)
     UUID =  getUUID( int(UUIDleast), int(UUIDmost))
     (x1, y1, z1) = tuple(position)
     x1=int(x1)
