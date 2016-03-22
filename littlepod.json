@@ -4,7 +4,7 @@
     "name"        : "minecraft-discord",
     "script"      : "minecraft-discord.py",
     "args"        : "",
-    "interpreter" : "python3",
+    "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
     "env": {
       "UNBUFFEREDPYTHON": "yes",
@@ -26,7 +26,7 @@
     // Application #4
     "name"       : "minecraft-notify",
     "script"     : "minecraft-notify.py",
-    "interpreter" : "python3",
+    "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
     "env": {
       "UNBUFFEREDPYTHON": "yes",
@@ -35,7 +35,7 @@
     // Application #5
     "name"       : "minecraft-playeractivity",
     "script"     : "minecraft-playeractivity.py",
-    "interpreter" : "python3",
+    "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
     "env": {
       "UNBUFFEREDPYTHON": "yes",
