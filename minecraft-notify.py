@@ -13,7 +13,6 @@ import oauth2 as oauth
 sys.path.append('/minecraft')
 import showandtellraw
 import vanillabean
-import urllib
 import schedule
 
 sys.path.append('/minecraft/host/config')
@@ -77,14 +76,14 @@ def tellcoords( coords ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
 
     for each in coords:
-        print each, each[0], each[1], each[2]
+        print(each, each[0], each[1], each[2])
 
         vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [Map: _" + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] +  "_|http://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0]"))
 
 
 def telllinks( links ):
     for each in links:
-        print each
+        print(each)
         vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [_Link_|" + each + "]"))
 
 
@@ -94,7 +93,7 @@ def status( match ):
 
     name = match.groups()[1]
     message = match.groups()[2]
-    print name, message
+    print(name, message)
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
@@ -142,7 +141,7 @@ def joins(match):
             for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
                 time.sleep(1)
-                message = u"/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
+                message = "/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
                 vanillabean.send( message )
         except:
             pass
@@ -170,21 +169,21 @@ def joins(match):
 
 def chat(match):
     coordscomma = re.findall("^([OENoen]) (-?\d+), (-?\d+)", match.groups()[1])
-    links = re.findall(ur'https?://\S+', match.groups()[1])
+    links = re.findall(r'https?://\S+', match.groups()[1])
     if coordscomma:
-        print match.groups()[1]
-        print coordscomma
+        print(match.groups()[1])
+        print(coordscomma)
 
         tellcoords( coordscomma )
     if links:
-        print links
+        print(links)
         telllinks( links )
 
 
 def setUUID(match):
     global UUID
     UUID = {match.groups()[0]: match.groups()[1]}
-    print UUID
+    print(UUID)
 
 
 def leaves(match):
@@ -199,8 +198,8 @@ def leaves(match):
 
 def ip(match):
     parsed = ematch.groups()
-    print line
-    print match.groups()
+    print(line)
+    print(match.groups())
     name = parsed[0]
     ip = parsed[1].split(':')[0]
     try:
@@ -210,7 +209,7 @@ def ip(match):
 
     ipinfo = getgeo( ip )
     ipstat= " ".join( [ip, hostaddr, ipinfo["countryCode"], ipinfo["regionName"], ipinfo["city"], ipinfo["as"] ] )
-    print ipstat
+    print(ipstat)
     headers = {"user_credentials" : boxcarkey,
     "notification[title]": name + " " + "!!DENIED!!!" + " " + ipstat,
     "notification[source_name]" : "Barlynaland" }
@@ -223,7 +222,7 @@ def playerlist(numplayers, listofplayers):
 
     players = listofplayers.split(":")[3].split(",")
     
-    print numplayers, players
+    print(numplayers, players)
 
     # response = vanillabean.send("/tp @a ~ ~ ~")
     # teleplayers = [(each.split()) for each in response.split("Teleported")]

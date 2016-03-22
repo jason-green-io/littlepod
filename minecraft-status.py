@@ -74,9 +74,9 @@ def gengroups(players):
 
 def genshame(shame):
     shamefinal =""
-
+    print(shame)
     for each in shame:
-        lastlogin, playername, UUID, ip = each
+        lastlogin, playername, UUID, ip, ts = each
         shamefinal += "|" + playername + "|" + str(lastlogin) + "|\n"
 
     return shamefinal
@@ -115,6 +115,10 @@ quickie = cur.fetchall()
 
 cur.execute('select name, group_concat(coords,"|") from maildrop where hidden != 1 and ts > datetime("now", "-30 minutes") group by name')
 builds = cur.fetchall()
+
+cur.execute('select count(name) from whitelist')
+numwhitelist = cur.fetchall()[0][0]
+
 conn.close
 
 statstop = """# Status
@@ -152,7 +156,9 @@ totalplayer = len(quickie)
 with open(otherdata + "/quickie.txt", "w") as outfile:
     line = ("<gold^During the last week ><dark_purple^" +
             str(totalplayer) +
-            "><gold^ players played ><dark_purple^" +
+            "><gold^ players out of >" +
+            "<dark_purple^" + str(numwhitelist) + " >" +
+            "<gold^played ><dark_purple^" +
             "%.1F" % (totalminutes / 60.0) +
             "><gold^ hours. Average: ><dark_purple^" +
             "%.1F" % (totalminutes / 60.0 / totalplayer) +

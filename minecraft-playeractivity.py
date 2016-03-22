@@ -7,12 +7,14 @@ import sys
 import time
 import os
 import yaml
-import nbt2yaml
 import sqlite3
 import json
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import FileSystemEventHandler
+sys.path.append("/minecraft/NBT")
+
+import nbt
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -22,7 +24,7 @@ dbfile = config['dbfile']
 otherdata = config["otherdata"]
 
 def digits(val, digits):
-        hi = long(1) << (digits * 4)
+        hi = int(1) << (digits * 4)
         return hex(hi | (val & (hi-1)))[3:-1]
 
 
@@ -31,18 +33,20 @@ def getUUID(least, most):
 
 
 def getpos(filename):
-    nbt = nbt2yaml.parse_nbt(open( filename, "r" ))
-    position = [ bla.data for bla in nbt.data if bla.name == "Pos"]
-    dimension = [ bla.data for bla in nbt.data if bla.name == "Dimension"]
-    UUIDleast =[ bla.data for bla in nbt.data if bla.name == "UUIDLeast"]
-    UUIDmost =[ bla.data for bla in nbt.data if bla.name == "UUIDMost"]
+    nbtdata = nbt.nbt.NBTFile(filename)
+    
+    position = [ bla.value for bla in nbtdata["Pos"] ]
+    dimension = nbtdata["Dimension"].value
+    UUIDleast = nbtdata["UUIDLeast"].value
+    UUIDmost = nbtdata["UUIDMost"].value
     #print [ tag for tag in nbt ]
-    UUID =  getUUID( int(UUIDleast[0]), int(UUIDmost[0]))
-    (x1, y1, z1) = position[0][1]
+    UUID =  getUUID( int(UUIDleast), int(UUIDmost))
+    (x1, y1, z1) = tuple(position)
     x1=int(x1)
     y1=int(y1)
     z1 = int(z1)
-    dim = dimension[0]
+    dim = dimension
+    print((UUID, dim, x1, y1, z1))
     return (UUID, dim, x1, y1, z1)
 
 
@@ -99,7 +103,7 @@ class StatHandler(FileSystemEventHandler):
             with open(filename, "r") as statfile:
                 newjson = json.load(statfile)
                 pass 
-            listofstats = newjson.keys() 
+            listofstats = list(newjson.keys()) 
             removestats = ["achievement.exploreAllBiomes", "stat.timeSinceDeath", "stat.playOneMinute", "stat.walkOneCm", "stat.sprintOneCm"]
             for rstat in removestats:
                 if rstat in listofstats:
@@ -110,7 +114,7 @@ class StatHandler(FileSystemEventHandler):
                     diff.update({key: int(newjson[key]) - int(oldjson.get(key,"0"))})
 
             if diff:
-                print name, diff
+                print(name, diff)
                 conn = sqlite3.connect(dbfile, timeout=30)
                 cur = conn.cursor()
                 cur.execute("INSERT INTO stats (UUID, stats) VALUES (?,?)", (name, str(diff)))

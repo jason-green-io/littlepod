@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
+import io
 import sys
 import time
 sys.path.append('/minecraft')
-import rcon
 import json
 import yaml
-from slacker import Slacker
-import urllib
+import urllib.parse
 import oauth2 as oauth
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
@@ -23,9 +22,10 @@ AccessTokenSecret = config['AccessTokenSecret']
 config = '/minecraft/host/config'
 
 def send(command):
-    with open("/minecraft/vanillabean", "w", 0) as f:
-        print(">> " + repr(command))
-        f.write(command + "\n")
+    with io.open("/minecraft/vanillabean", "w", encoding='utf-8') as file:
+        print(command.encode('utf-8'))
+        final = command + u"\n"
+        file.write(final)
 
 def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=None ):
     consumer = oauth.Consumer( key=ConsumerKey , secret=ConsumerSecret )
@@ -36,20 +36,10 @@ def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=N
 
 
 def tweet( string ):
-    tweetmessage = urllib.urlencode({"status": string})
-    response = json.loads(oauth_req( "https://api.twitter.com/1.1/statuses/update.json?" + tweetmessage, AccessToken, AccessTokenSecret, http_method="POST"))
-    print response
+    tweetmessage = urllib.parse.urlencode({"status": string})
+    response = json.loads(oauth_req( "https://api.twitter.com/1.1/statuses/update.json?" + tweetmessage, AccessToken, AccessTokenSecret, http_method="POST").decode("utf-8") )
+    print( response)
 
-def oldsend(command):
-    host, port, password = ("127.0.0.1", 25575, "babybee")
-    print u"Server >> " + repr(command)
-    client = rcon.client(host, port, password)
-    response = client.send(command)
-
-    client.disconnect()
-
-    print u"Server << " +repr( response)
-    return repr(response)
 
 """
 def slack(string):

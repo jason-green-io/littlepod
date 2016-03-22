@@ -24,7 +24,7 @@ conn = sqlite3.connect(dbfile)
 cur = conn.cursor()
 
 if int(numplayers) > 0:
-    print "Players!"
+    print("Players!")
     for player in players:
         cur.execute('INSERT INTO activity (datetime, name) VALUES (?,?)', (datetime.datetime.now(), player.strip()))
 

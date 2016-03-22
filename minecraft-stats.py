@@ -19,10 +19,10 @@ def tps():
 
     result = vanillabean.send("/debug stop")
     result = result.split()
-    print result
+    print(result)
 
     tps = round(float(result[6].strip("("))/float(result[4]))
-    print tps
+    print(tps)
 
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()

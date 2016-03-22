@@ -10,7 +10,7 @@ import requests
 import sys
 sys.path.append('/minecraft/discord.py')
 import discord
-import vanillabeannew as vanillabean
+import vanillabean
 import showandtellrawnew as showandtellraw
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
