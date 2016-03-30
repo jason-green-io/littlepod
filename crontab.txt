@@ -23,13 +23,11 @@
 SHELL=/bin/bash
 LOGS=/minecraft/host/otherdata/logs
 
-*/15 * * * * /minecraft/minecraft-server.sh &>> $LOGS/minecraft-server.log
-
 0 12 * * * /minecraft/minecraft-ctl.sh restart &>> $LOGS/minecraft-restart.log
 
 0 0 * * * /minecraft/minecraft-whitelistupdate.py &>> $LOGS/minecraft-whitelistupdate.log
 
-*/1 * * * * /minecraft/minecraft-list.py &> $LOGS/minecraft-list.log
+*/1 * * * * echo "/list" > /minecraft/vanillabean
 
 5-59/20 * * * * /minecraft/minecraft-ctl.sh sync &> $LOGS/minecraft-sync.log
 
@@ -41,7 +39,7 @@ LOGS=/minecraft/host/otherdata/logs
 
 */5 * * * * /minecraft/minecraft-graphs.py &> $LOGS/minecraft-graphs.log
 
-*/1 * * * * /minecraft/minecraft-stats.py &> $LOGS/minecraft-stats.log
+*/1 * * * * echo "/save-all" > /minecraft/vanillabean
 
 */20 * * * * /minecraft/minecraft-overviewerpoiadmin.sh &> $LOGS/minecraft-overviewerpoiadmin.log
 
