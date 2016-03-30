@@ -77,13 +77,13 @@ def on_message(message):
         return
     channelobject = discord.Object(id=discordChannel)
     privchannelobject = discord.Object(id=discordPrivChannel)
-    if message.channel.id == channel:
+    print(message.channel.id)
+    if message.channel.id == discordChannel:
         links = re.findall('(https?://\S+)', message.content)
         coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
         discordtext =  u'{"text" : "\u2689 ", "color" : "aqua" }'
         finalline = '/tellraw @a {"text" : "", "extra" : [' + discordtext + ',' + '{"color" : "gold", "text" : "' + str(message.author) + ' "}, ' + '{ "text" : "' + message.content + '"}]}'
         vanillabean.send(finalline)
-        print(message.channel.id)
 
         if coordscomma:
             
@@ -93,9 +93,9 @@ def on_message(message):
         if links:
            telllinks( links )
 
-    if message.channel.id == privchannel:
+    if message.channel.id == discordPrivChannel:
         yield from client.send_message(privchannelobject, vanillabean.send(message.content))
-
+        
 
 @client.async_event
 def on_ready():
