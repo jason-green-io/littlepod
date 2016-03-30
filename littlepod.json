@@ -7,7 +7,7 @@
     "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
     "env": {
-      "UNBUFFEREDPYTHON": "yes",
+      "PYTHONUNBUFFERED": "yes",
     },
   },{
     // Application #2
@@ -20,7 +20,7 @@
     "script"     : "minecraft-twistd.sh",
     "cwd"         : "/minecraft",
     "env": {
-      "UNBUFFEREDPYTHON": "yes",
+      "PYTHONUNBUFFERED": "yes",
     }
   },{
     // Application #4
@@ -29,7 +29,7 @@
     "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
     "env": {
-      "UNBUFFEREDPYTHON": "yes",
+      "PYTHONUNBUFFERED": "yes",
     }
   },{
     // Application #5
@@ -38,7 +38,7 @@
     "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
     "env": {
-      "UNBUFFEREDPYTHON": "yes",
+      "PYTHONUNBUFFERED": "yes",
     }
   }]
 }
