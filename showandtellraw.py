@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import re
 import json
@@ -32,17 +32,17 @@ def tohtml( string ):
         style = []
         text = each.get("text")
 #        print each
-        if each.has_key("color"):
+        if "color" in each:
             style.append( "color: " + colorlist.get(each.get("color")) +";")
-        if each.has_key("bold"):
+        if "bold" in each:
             style.append( "font-weight: bold;")
-        if each.has_key("underlined"):
+        if "underlined" in each:
             style.append( "text-decoration: underline;" )
-        if each.has_key( "strikethrough" ):
+        if "strikethrough" in each:
             style.append( "text-decoration: line-through;" )
-        if each.has_key( "italic" ):
+        if "italic" in each:
             style.append( "font-style: italic;" )
-        if each.has_key("clickEvent"):
+        if "clickEvent" in each:
             text = '<a target="_blank" href="' + each.get("clickEvent").get("value") + '">' + text + '</a>'
 
         html.append( '<span style="' + "".join(style) + '">' + text + '</span>' )
@@ -228,6 +228,6 @@ def parse( string ):
 
 if __name__ == "__main__":
 
-    print (string)
-    print (tojson(string))
-    print (tohtml( string ))
+    print(string)
+    print(tojson(string))
+    print(tohtml( string ))

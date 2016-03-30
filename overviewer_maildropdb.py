@@ -2,7 +2,7 @@
 import sqlite3
 import sys
 sys.path.append('/minecraft')
-import vanillabean
+import vanillabean2
 import yaml
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:

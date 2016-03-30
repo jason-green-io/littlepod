@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import yaml
@@ -31,14 +31,23 @@ def gengroups(players):
     fontstyle = ""
     for player in players:
         # print player
-        playername, UUID, lastlogin, status, twitter, twitch, youtube, reddit, maildrop = player
+        playername, UUID, lastlogin, status, twitter, twitch, youtube, reddit = player
 
         timediff = datetime.datetime.now() - lastlogin
         s = timediff.seconds
         hours, remainder = divmod(s, 3600)
         minutes, seconds = divmod(remainder, 60)
-        last = '%s %02d:%02d' % (timediff.days, hours, minutes)
-
+        if timediff.days >= 14:
+            last = '%s days' % (timediff.days)
+            
+        elif timediff.days == 1:
+        
+            last = '%s day %02d:%02d' % (timediff.days, hours, minutes)
+        elif timediff.days > 0:
+        
+            last = '%s days %02d:%02d' % (timediff.days, hours, minutes)
+        else:
+            last = '%02d:%02d' % (hours, minutes)
 
         social = ""
 
@@ -52,21 +61,13 @@ def gengroups(players):
             social += '[![twitch](twitch.png)](http://twitch.tv/' + twitch + ')'
 
 
-        # print bool(maildrop)
         playerstatus = maildropstatus = statusstatus = ''
-        # print maildropstatus
-        if bool(maildrop) or status:
-            if bool(maildrop):
-                maildropstatus = showandtellraw.tohtml( '<green^Maildrop> for you' )
+        if status:
+            playerstatus =  str(status)
+        else:
+            playerstatus = ""
 
-            if status:
-                statusstatus = status
-                if bool(maildrop):
-                    statusstatus += "</br>"
-
-            playerstatus =  unicode(statusstatus)
-
-        groupsfinal += "|![](https://minotar.net/avatar/" + playername + "/32)|"  + playername  + '|' + social + "|" + playerstatus + "|" + last + "|\n"
+        groupsfinal += "|![](https://minotar.net/avatar/" + playername + "/32)|`"  + playername  + '`|' + social + "|" + playerstatus + "|" + last + "|\n"
 
 
     return groupsfinal
@@ -107,6 +108,10 @@ cur = conn.cursor()
 cur.execute("SELECT * FROM groups")
 players = cur.fetchall()
 
+
+cur.execute('select name, UUID, date as "ts [timestamp]", status, twitter, twitch, youtube, reddit from (select * from (select * from joins order by date asc) group by UUID) natural join whitelist natural join playerUUID natural left join status where date <= datetime("now", "-14 days") group by name order by date desc')
+oldplayers = cur.fetchall()
+
 cur.execute("SELECT * FROM shame")
 shame = cur.fetchall()
 
@@ -115,28 +120,41 @@ quickie = cur.fetchall()
 
 cur.execute('select name, group_concat(coords,"|") from maildrop where hidden != 1 and ts > datetime("now", "-30 minutes") group by name')
 builds = cur.fetchall()
-
+print(builds)
 cur.execute('select count(name) from whitelist')
 numwhitelist = cur.fetchall()[0][0]
 
 conn.close
 
-statstop = """# Status
+space =20 * "="
+space2 = 7 * "="
 
-## Last 2 weeks
+statsplayers = """# Status
 
-list of players that have been online in the lest 2 weeks sorted by playtime
+## List of fame
 
-|head|player|social|status|last seen (days hh:mm)|
+list of players that have been online in the last 2 weeks sorted by playtime
+
+|=head=|""" + space2 + "player" + space2 + """|""" + space2 + "social" + space2 + """|""" + space + "status" + space + """|====last====|
+|:-:|:--:|:-:|--|--:|
+"""
+
+statsoldplayers = """## List of shame
+
+list of players that haven't been online for greater than 2 weeks
+
+|=head=|""" + space2 + "player" + space2 + """|""" + space2 + "social" + space2 + """|""" + space + "status" + space + """|====last====|
 |:-:|:--:|:-:|--|--:|
 """
 
 
-statsmid = """## Last 24 hours activity
+
+statsgraph = """## Last 24 hours activity
 
 ![lag](http://""" + URL + """/stats.png)
+"""
 
-## List of shame
+statsshame = """## List of shame
 
 list of players that haven't played on the server in over 2 weeks! Shaaaaaame!
 
@@ -144,7 +162,7 @@ list of players that haven't played on the server in over 2 weeks! Shaaaaaame!
 |-|-:|
 """
 
-stats = statstop + gengroups(players) + statsmid + genshame(shame)
+stats = statsplayers + gengroups(players) + statsoldplayers + gengroups(oldplayers) + statsgraph
 
 totalminutes = 0
 for each in quickie:
@@ -163,7 +181,7 @@ with open(otherdata + "/quickie.txt", "w") as outfile:
             "><gold^ hours. Average: ><dark_purple^" +
             "%.1F" % (totalminutes / 60.0 / totalplayer) +
             "><gold^ hours per player>")
-    print line
+    print(line)
     outfile.write(line)
 
 filenames = [config + '/topmotd.txt', otherdata + '/quickie.txt']

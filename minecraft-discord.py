@@ -20,8 +20,14 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
 dbfile = config['dbfile']
 mcfolder = config['mcdata']
 URL = config['URL']
-slackchan = config['slackchan']
 servername = config['name']
+
+discordChannel = config["discordChannel"]
+discordPrivChannel = config["discordPrivChannel"]
+discordUser = config["discordUser"]
+discordPass = config["discordPass"]
+
+
 
 serverrestart = False
 
@@ -69,10 +75,8 @@ def on_message(message):
     # we do not want the bot to reply to itself
     if message.author == client.user:
         return
-    channel = "143000115144032265"
-    privchannel = "142731669076574208"
-    channelobject = discord.Object(id=channel)
-    privchannelobject = discord.Object(id="142731669076574208")
+    channelobject = discord.Object(id=discordChannel)
+    privchannelobject = discord.Object(id=discordPrivChannel)
     if message.channel.id == channel:
         links = re.findall('(https?://\S+)', message.content)
         coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
@@ -99,7 +103,7 @@ def on_ready():
     print((client.user.name))
     print((client.user.id))
     print('------')
-    yield from client.send_message(discord.Object(id="143000115144032265"),"I crashed, but I'm back now.") 
+    yield from client.send_message(discord.Object(id=discordChannel),"I crashed, but I'm back now.") 
 
 def getgeo(ip):
     FREEGEOPIP_URL = 'http://ip-api.com/json/'
@@ -114,143 +118,144 @@ def getgeo(ip):
 @asyncio.coroutine 
 def my_background_task():
     yield from client.wait_until_ready()
-    channel = discord.Object(id="143000115144032265")
-    privchannel = discord.Object(id="142731669076574208")
+    channel = discord.Object(id=discordChannel)
+    privchannel = discord.Object(id=discordPrivChannel)
 
 
+    serverrestart = False
+    lastplayer = "Dinnerbone"
+    logfile = os.path.abspath(mcfolder + "/logs/latest.log")
+    f = codecs.open(logfile,"r", "utf-8")
+    file_len = os.stat(logfile)[stat.ST_SIZE]
+    f.seek(file_len)
+    pos = f.tell()
 
-
+    getnextline = False
     while not client.is_closed:
-
-        serverrestart = False
-        lastplayer = "Dinnerbone"
-        logfile = os.path.abspath(mcfolder + "/logs/latest.log")
-        f = codecs.open(logfile,"r", "utf-8")
-        file_len = os.stat(logfile)[stat.ST_SIZE]
-        f.seek(file_len)
         pos = f.tell()
-
-        getnextline = False
-        while True:
-            pos = f.tell()
-            line = f.readline().strip()
-            if not line:
-                if os.stat(logfile)[stat.ST_SIZE] < pos:
-                    f.close()
-                    yield from asyncio.sleep(5) # task runs every 60 seconds
-                    time.sleep( 5 )
-                    f = codecs.open(logfile, "r","utf-8")
-                    pos = f.tell()
-                else:
-                    
-                    yield from asyncio.sleep(1) # task runs every 60 seconds
-                    f.seek(pos)
+        line = f.readline().strip()
+        if not line:
+            if os.stat(logfile)[stat.ST_SIZE] < pos:
+                f.close()
+                yield from asyncio.sleep(5) # task runs every 60 seconds
+                time.sleep( 5 )
+                f = codecs.open(logfile, "r","utf-8")
+                pos = f.tell()
             else:
-                chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(\w*)\> (.*)", line )
-                joinparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$", line )
-                infoparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: ([\w]*) (.*)$", line )
-                playerlistparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$", line )
-                statusparsematch = re.match( "^\[(.*)\] \[Server thread/INFO\]: <(\w*)> \*\*\*(.*)$", line )
-                ipparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$", line )
+                
+                yield from asyncio.sleep(1) # task runs every 60 seconds
+                f.seek(pos)
+        else:
+            chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(\w*)\> (.*)", line )
+            joinparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$", line )
+            infoparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: ([\w]*) (.*)$", line )
+            playerlistparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$", line )
+            statusparsematch = re.match( "^\[(.*)\] \[Server thread/INFO\]: <(\w*)> \*\*\*(.*)$", line )
+            ipparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$", line )
 
-                if chatlisten:
-                    coordscomma =  re.findall( "^([EONeon]) (-?\d+), (-?\d+)", chatlisten.groups()[1])
-                    links = re.findall('<(https?://\S+)>', chatlisten.groups()[1])
+            if chatlisten:
+                coordscomma =  re.findall( "^([EONeon]) (-?\d+), (-?\d+)", chatlisten.groups()[1])
+                links = re.findall('<(https?://\S+)>', chatlisten.groups()[1])
 
-                    player = str(chatlisten.groups()[0])
-                    player = player.replace("\u00a75","").replace("\u00a7r","")
-                    message = str(chatlisten.groups()[1])
+                player = str(chatlisten.groups()[0])
+                player = player.replace("\u00a75","").replace("\u00a7r","")
+                message = str(chatlisten.groups()[1])
 
-                    for each in re.findall("@\S+", message):
-                        memberfrommc = each.lstrip("@")
-                        print(memberfrommc)
-                        member = discord.utils.find(lambda m: m.name == memberfrommc, client.get_all_members())
-                        if member:
-                            membermention = member.mention
-                            message = message.replace( each, membermention)
-                        print(message)
-                ##    if player == lastplayer and not time.time() >= lasttime + 60:
-               #         finalmessage = message
-                  #  else:
-                    
-                    finalmessage = "`<" + player +">` " + message
-                    
-                    if links:
-                        telllinks( links )
-
-
-                    print(repr(finalmessage))
-                    yield from client.send_message(channel, finalmessage)
-
-                    if coordscomma:
-    #                    print chatlisten.groups()[1]
-    #                    print coordscomma
-    #
-                        yield from client.send_message(channel, coordsmessage( coordscomma ))
-                        tellcoords(coordscomma)
-
-                if infoparsematch:
-                    deathwords = ["blew", "burned", "drowned", "experienced", "fell", "got", "hit", "starved", "suffocated", "tried", "walked", "was", "went", "withered"]
-                    player = infoparsematch.groups()[0]
-                    keyword = infoparsematch.groups()[1].split()[0]
-                    message = infoparsematch.groups()[1]
-                    if keyword == "left":
-                        yield from client.send_message(channel, "`" + player + "` left the server")
-                    elif keyword == "joined":
-                        pass
-                    elif keyword == "lost":
-                        pass
-                    elif keyword in deathwords:
-                        yield from client.send_message(channel, "`" + player + "` " + message)
-
-                if ipparsematch:
-                    parsed = ipparsematch.groups()
-                    # print ipparsematch.groups()
-                    name = parsed[0]
-                    ip = parsed[1].split(':')[0]
-                    try:
-                        hostaddr = socket.gethostbyaddr( ip )[0]
-                    except:
-                        hostaddr = "none"
-
-                    ipinfo = getgeo( ip )
-                    ipstat= " ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
-                    yield from client.send_message(privchannel, "`" + name + "` !!!DENIED!!! " + ipstat)
-    #                print ipstat
-    #                headers = {"user_credentials" : boxcarkey,
-    #                "notification[title]": name + " " + "!!DENIED!!!" + " " + ipstat,
-    #                "notification[source_name]" : "Barlynaland" }
-    #                url= "https://new.boxcar.io/api/notifications"
-    #
-    #                r = requests.post(url, params=headers)
-    #
-                if joinparsematch:
-    #
-                    parsed = joinparsematch.groups()
-    #                print line
-    #                print joinparsematch.groups()
-                    player = parsed[0]
-                    yield from client.send_message(channel, "`" + player + "`  joined the server")
-
-                    ip = parsed[1].split(':')[0]
-                    message = "joined"
-                    try:
-                        hostaddr = socket.gethostbyaddr( ip )[0]
-                    except:
-                        hostaddr = "none"
-                    ipinfo = getgeo( ip )
-                    ipstat= u" ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
-                    # print(repr(ipstat))
-                    yield from client.send_message(privchannel, "`" + player + "` " + ipstat)
+                for each in re.findall("@\S+", message):
+                    memberfrommc = each.lstrip("@")
+                    print(memberfrommc)
+                    member = discord.utils.find(lambda m: m.name == memberfrommc, client.get_all_members())
+                    if member:
+                        membermention = member.mention
+                        message = message.replace( each, membermention)
+                    print(message)
+            ##    if player == lastplayer and not time.time() >= lasttime + 60:
+           #         finalmessage = message
+              #  else:
+                
+                finalmessage = "`<" + player +">` " + message
+                
+                if links:
+                    telllinks( links )
 
 
+                print(repr(finalmessage))
+                yield from client.send_message(channel, finalmessage)
+
+                if coordscomma:
+#                    print chatlisten.groups()[1]
+#                    print coordscomma
+#
+                    yield from client.send_message(channel, coordsmessage( coordscomma ))
+                    tellcoords(coordscomma)
+
+            if infoparsematch:
+                deathwords = ["blew", "burned", "drowned", "experienced", "fell", "got", "hit", "starved", "suffocated", "tried", "walked", "was", "went", "withered"]
+                player = infoparsematch.groups()[0]
+                keyword = infoparsematch.groups()[1].split()[0]
+                message = infoparsematch.groups()[1]
+                if keyword == "left":
+                    yield from client.send_message(channel, "`" + player + "` left the server")
+                elif keyword == "joined":
+                    pass
+                elif keyword == "lost":
+                    pass
+                elif keyword in deathwords:
+                    yield from client.send_message(channel, "`" + player + "` " + message)
+
+            if ipparsematch:
+                parsed = ipparsematch.groups()
+                # print ipparsematch.groups()
+                name = parsed[0]
+                ip = parsed[1].split(':')[0]
+                try:
+                    hostaddr = socket.gethostbyaddr( ip )[0]
+                except:
+                    hostaddr = "none"
+
+                ipinfo = getgeo( ip )
+                ipstat= " ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+                yield from client.send_message(privchannel, "`" + name + "` !!!DENIED!!! " + ipstat)
+#                print ipstat
+#                headers = {"user_credentials" : boxcarkey,
+#                "notification[title]": name + " " + "!!DENIED!!!" + " " + ipstat,
+#                "notification[source_name]" : "Barlynaland" }
+#                url= "https://new.boxcar.io/api/notifications"
+#
+#                r = requests.post(url, params=headers)
+#
+            if joinparsematch:
+#
+                parsed = joinparsematch.groups()
+#                print line
+#                print joinparsematch.groups()
+                player = parsed[0]
+                yield from client.send_message(channel, "`" + player + "`  joined the server")
+
+                ip = parsed[1].split(':')[0]
+                message = "joined"
+                try:
+                    hostaddr = socket.gethostbyaddr( ip )[0]
+                except:
+                    hostaddr = "none"
+                ipinfo = getgeo( ip )
+                ipstat= u" ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+                # print(repr(ipstat))
+                yield from client.send_message(privchannel, "`" + player + "` " + ipstat)
+
+@asyncio.coroutine
+def handle_exception():
+    try:
+        yield from my_background_task()
+    except Exception:
+        print("Uhoh!")
+        sys.exit(1)
 
 loop = asyncio.get_event_loop()
 
 try:
-    asyncio.async(my_background_task())
-    # loop.run_until_complete(client.login('barlynaland@greener.ca', 'FoAiNcGnZJK7LXnfQsZC2vkVgYYnexT'))
-    loop.run_until_complete(client.run('barlynaland@greener.ca', 'FoAiNcGnZJK7LXnfQsZC2vkVgYYnexT'))
+    asyncio.async(handle_exception())
+    loop.run_until_complete(client.run(discordUser, discordPass))
 except Exception:
     loop.run_until_complete(client.close())
 finally:
