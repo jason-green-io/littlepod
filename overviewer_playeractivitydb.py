@@ -6,7 +6,6 @@ import json
 import glob
 import sys
 import os
-import nbt2yaml
 import yaml
 import sqlite3
 
@@ -26,6 +25,7 @@ def genfilter(name):
 
 
 def genpoimarkers( start, end, dim ):
+    print(start, end, dim)
     dimdict = { "o" : "0", "n": "-1", "e": "1"}
     conn = sqlite3.connect(dbfile, timeout=20)
     cur = conn.cursor()

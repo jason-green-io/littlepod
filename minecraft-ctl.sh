@@ -1,6 +1,9 @@
 #!/bin/bash
-
-CLIENTVERSION=1.9
+set -m
+. /minecraft/parse_yaml.sh
+eval $(parse_yaml /minecraft/host/config/server.yaml "config_")
+CLIENTVERSION=$config_mcversion
+VERSION=$config_mcversion
 tobackup ()
 {
     echo "Sending to backup"
@@ -13,10 +16,18 @@ fromram ()
     rsync -av /dev/shm/world /minecraft/host/mcdata    
 }
 
+function pipestart ()
+{
+    if [[ ! -p /minecraft/vanillabean ]]; then
+
+        mkfifo /minecraft/vanillabean
+    fi
+    cat > /minecraft/vanillabean
+}
+
 mcstart ()
 {
-
-    VERSION=$(cat /minecraft/host/config/mcversion)
+    trap mcstop INT
 
     cd /minecraft/host/mcdata
 
@@ -29,27 +40,25 @@ mcstart ()
     if [[ ! -f $CLIENTVERSION.jar ]]; then
         wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENTVERSION/$CLIENTVERSION.jar
     fi
-    /usr/bin/tmux neww -t minecraft:7 "/usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean"
+    echo "Starting named pipe"
+   ( pipestart ) &
+    echo "Starting server"
+   ( /usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean ) &
+   PID=$!
+
+
+    wait $PID
+    echo "Server stopped"
+    tobackup
 }
 
 mcstop ()
 {
-
-    /minecraft/vanillabean.py "/stop"
-    sleep 5
-    tobackup
-}
-
-mcrestart ()
-{
-
-    /minecraft/vanillabean.py "/say server restarting in 30 seconds"
-    sleep 30
-    #/minecraft/minecraft-sync.sh &>> /minecraft/minecraft-sync.log
-    mcstop
+    /minecraft/vanillabean.py "/say server restarting in 10 seconds"
     sleep 10
-    mcstart
+    echo "/stop" > /minecraft/vanillabean
 }
+
 
 
 sync ()
@@ -76,9 +85,6 @@ sync ()
 case $1 in
 start)
 mcstart
-;;
-restart)
-mcrestart
 ;;
 stop)
 mcstop
