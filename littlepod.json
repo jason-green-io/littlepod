@@ -1,5 +1,13 @@
 {
   "apps" : [{
+    // minecraft
+    "name"        : "minecraft",
+    "script"      : "minecraft-ctl.sh",
+    "args"        : "start",
+    "cron_restart": "0 12 * * *",
+    "kill_timeout": "60000",
+    "cwd"         : "/minecraft",
+  },{
     // Application #1
     "name"        : "minecraft-discord",
     "script"      : "minecraft-discord.py",
@@ -9,11 +17,6 @@
     "env": {
       "PYTHONUNBUFFERED": "yes",
     },
-  },{
-    // Application #2
-    "name"       : "minecraft-vanillabean",
-    "script"     : "minecraft-vanillabean.sh",
-    "cwd"         : "/minecraft",
   },{
     // Application #3
     "name"       : "minecraft-twistd",
@@ -39,6 +42,7 @@
     "cwd"         : "/minecraft",
     "env": {
       "PYTHONUNBUFFERED": "yes",
-    }
+   }
+    
   }]
 }
