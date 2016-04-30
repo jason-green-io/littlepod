@@ -26,12 +26,12 @@ LOGS=/minecraft/host/otherdata/logs
 
 
 0 0 * * * /minecraft/minecraft-whitelistupdate.py &>> $LOGS/minecraft-whitelistupdate.log
-
+0 12 * * * /minecraft/minecraft-ctl.sh stop
 */1 * * * * echo "/list" > /minecraft/vanillabean
 
-5-59/20 * * * * /minecraft/minecraft-ctl.sh sync &> $LOGS/minecraft-sync.log
+#5-59/20 * * * * /minecraft/minecraft-ctl.sh sync &> $LOGS/minecraft-sync.log
 
-15 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> $LOGS/minecraft-overviewer.log
+10 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> $LOGS/minecraft-overviewer.log
 
 15-59/20 * * * * /minecraft/minecraft-overviewerpoi.sh &> $LOGS/minecraft-overviewerpoi.log
 
@@ -41,6 +41,6 @@ LOGS=/minecraft/host/otherdata/logs
 
 */1 * * * * echo "/save-all" > /minecraft/vanillabean
 
-45/20 * * * * /minecraft/minecraft-overviewerpoiadmin.sh &> $LOGS/minecraft-overviewerpoiadmin.log
+#45/20 * * * * /minecraft/minecraft-overviewerpoiadmin.sh &> $LOGS/minecraft-overviewerpoiadmin.log
 
 50 0 */1 * * /minecraft/minecraft-overviewerpoiadmin.sh yesterday &> $LOGS/minecraft-overviewerpoiadmin.log
