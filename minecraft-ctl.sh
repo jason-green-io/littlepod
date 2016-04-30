@@ -43,6 +43,8 @@ mcstart ()
     echo "Starting named pipe"
    ( pipestart ) &
     echo "Starting server"
+
+    cp /minecraft/host/mcdata/world/data/villages.dat.bak /minecraft/host/mcdata/world/data/villages.dat
    ( /usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean ) &
    PID=$!
 

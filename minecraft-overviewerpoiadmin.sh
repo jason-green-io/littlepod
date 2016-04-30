@@ -2,7 +2,7 @@
 . /minecraft/parse_yaml.sh
 
 eval $(parse_yaml /minecraft/host/config/server.yaml "config_")
-parse_yaml /minecraft/host/config/server.yaml config_
+# parse_yaml /minecraft/host/config/server.yaml config_
 
 if [[ $1 == "yesterday" ]]; then
     yesterday=$(date -d @$(($(date +%s) - 24 * 3600)) +%Y%m%d)

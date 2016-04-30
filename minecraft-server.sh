@@ -6,9 +6,6 @@ tmux new -s minecraft -d
 echo "Starting processes"
 pm2 start /minecraft/littlepod.json
 
-echo "Starting minecraft server"
-/minecraft/minecraft-ctl.sh start
-
 
 
 #echo "Starting web sever"

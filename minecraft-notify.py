@@ -149,7 +149,7 @@ def joins(match):
         maildrop = cur.fetchall()
 
         for mail in maildrop:
-            coords, name, notify, slots, hidden, ts = mail
+            coords, name, slots, hidden = mail
             dim, x, y, z = coords.split(",")
 
             if dim == "e":

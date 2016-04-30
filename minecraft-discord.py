@@ -26,6 +26,7 @@ discordChannel = config["discordChannel"]
 discordPrivChannel = config["discordPrivChannel"]
 discordUser = config["discordUser"]
 discordPass = config["discordPass"]
+discordToken = config["discordToken"]
 
 
 
@@ -81,7 +82,7 @@ def on_message(message):
     if message.channel.id == discordChannel:
         links = re.findall('(https?://\S+)', message.content)
         coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
-        discordtext =  u'{"text" : "\u2689 ", "color" : "aqua" }'
+        discordtext =  u'{"text" : "\\u2689 ", "color" : "aqua" }'
         finalline = '/tellraw @a {"text" : "", "extra" : [' + discordtext + ',' + '{"color" : "gold", "text" : "' + str(message.author) + ' "}, ' + '{ "text" : "' + message.content + '"}]}'
         vanillabean.send(finalline)
 
@@ -93,7 +94,7 @@ def on_message(message):
         if links:
            telllinks( links )
 
-    if message.channel.id == discordPrivChannel:
+    if message.channel.id == discordPrivChannel and not message.author.bot:
         yield from client.send_message(privchannelobject, vanillabean.send(message.content))
         
 
@@ -255,7 +256,7 @@ loop = asyncio.get_event_loop()
 
 try:
     asyncio.async(handle_exception())
-    loop.run_until_complete(client.run(discordUser, discordPass))
+    loop.run_until_complete(client.run(discordToken))
 except Exception:
     loop.run_until_complete(client.close())
 finally:
