@@ -3,8 +3,7 @@
 import re
 import json
 
-string = "<green^Mention '\@greener\_ca' in chat to get a hold of him.>"
-
+string ="<green^Welcome to> [_<green^Barlynaland>_|http://barlynaland.greener.ca]<green^!> | {[_<aqua^Discord>_|https://discord.gg/0mYDl0E2UE5Z4xuv]~Slack replacement I think} | {[_<blue^FAQ>_|http://barlynaland.greener.ca/#!new.md]~new player FAQ} | {[<dark_aqua^_contribute_>|http://PayPal.me/greener]~I pay for the server out of pocket.} | [_<yellow^map>_|http://barlynaland.greener.ca/map]"
 #print string
 
 def tohtml( string ):
@@ -31,7 +30,7 @@ def tohtml( string ):
     for each in parse( string ):
         style = []
         text = each.get("text")
-#        print each
+        print(each)
         if "color" in each:
             style.append( "color: " + colorlist.get(each.get("color")) +";")
         if "bold" in each:
@@ -43,7 +42,7 @@ def tohtml( string ):
         if "italic" in each:
             style.append( "font-style: italic;" )
         if "clickEvent" in each:
-            text = '<a target="_blank" href="' + each.get("clickEvent").get("value") + '">' + text + '</a>'
+            text = '<a style="color: inherit;" target="_blank" href="' + each.get("clickEvent").get("value") + '">' + text + '</a>'
 
         html.append( '<span style="' + "".join(style) + '">' + text + '</span>' )
 #    print html

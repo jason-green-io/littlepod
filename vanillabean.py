@@ -22,8 +22,8 @@ AccessTokenSecret = config['AccessTokenSecret']
 config = '/minecraft/host/config'
 
 def send(command):
-    with io.open("/minecraft/vanillabean", "w", encoding='utf-8') as file:
-        print(command.encode('utf-8'))
+    with open("/minecraft/vanillabean", "w", encoding='utf-8') as file:
+        # print(command)
         final = command + u"\n"
         file.write(final)
 

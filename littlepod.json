@@ -16,7 +16,7 @@
     "cwd"         : "/minecraft",
     "env": {
       "PYTHONUNBUFFERED": "yes",
-    },
+   } 
   },{
     // Application #3
     "name"       : "minecraft-twistd",
@@ -35,14 +35,19 @@
       "PYTHONUNBUFFERED": "yes",
     }
   },{
-    // Application #5
+ // Application #5
     "name"       : "minecraft-playeractivity",
     "script"     : "minecraft-playeractivity.py",
     "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
     "env": {
       "PYTHONUNBUFFERED": "yes",
-   }
+}
+  },{
+    // Application #5
+    "name"       : "minecraft-teflon",
+    "script"     : "minecraft-teflon.sh",
+    "cwd"         : "/minecraft",
     
   }]
 }

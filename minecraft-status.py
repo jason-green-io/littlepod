@@ -83,16 +83,18 @@ def genshame(shame):
     return shamefinal
 
 
-def genbuilds(builds):
+def genbuilds(builds, players):
     buildfinal =[] 
+    players =  [player[0].lower() for player in players]
     for each in builds:
         name = each[0]
-        coords = each[1].split("|")
-        buildfinal.append( "##" + name)
-        for coord in coords:
-            link = coordstolink(coord)
-            subprocess.call("/usr/bin/phantomjs --debug=true /minecraft/makethumbnails.js " + link + " /minecraft/host/webdata/thumbs/" + coord + ".png", shell=True)
-            buildfinal.append( "[!["+ coord + "](thumbs/" + coord +  ".png)](" + link + ")")
+        if name.lower() in players:
+            coords = each[1].split("|")
+            buildfinal.append( "##" + name)
+            for coord in coords:
+                link = coordstolink(coord)
+                subprocess.call("/usr/bin/phantomjs --debug=true /minecraft/makethumbnails.js " + link + " /minecraft/host/webdata/thumbs/" + coord + ".png", shell=True)
+                buildfinal.append( "[!["+ coord + "](thumbs/" + coord +  ".png)](" + link + ")")
     return "\n".join(buildfinal)
          
         
@@ -118,7 +120,7 @@ shame = cur.fetchall()
 cur.execute("SELECT * FROM quickie")
 quickie = cur.fetchall()
 
-cur.execute('select name, group_concat(coords,"|") from maildrop where hidden != 1 and ts > datetime("now", "-30 minutes") group by name')
+cur.execute('select name, group_concat(coords,"|") from maildrop where hidden != 1 group by name')
 builds = cur.fetchall()
 print(builds)
 cur.execute('select count(name) from whitelist')
@@ -172,13 +174,13 @@ totalplayer = len(quickie)
 
 
 with open(otherdata + "/quickie.txt", "w") as outfile:
-    line = ("<gold^During the last week ><dark_purple^" +
+    line = ("[<gold^_Activity_>|http://barlynaland.greener.ca/#!status.md] <gold^last 7 days ><dark_purple^" +
             str(totalplayer) +
-            "><gold^ players out of >" +
+            "><gold^\\\\>" +
             "<dark_purple^" + str(numwhitelist) + " >" +
-            "<gold^played ><dark_purple^" +
+            "<gold^players seen, ><dark_purple^" +
             "%.1F" % (totalminutes / 60.0) +
-            "><gold^ hours. Average: ><dark_purple^" +
+            "><gold^ hours, average ><dark_purple^" +
             "%.1F" % (totalminutes / 60.0 / totalplayer) +
             "><gold^ hours per player>")
     print(line)
@@ -197,7 +199,7 @@ a:link { color:white; }
 a:visited { color:white; }
 </style>
 <link rel="stylesheet" href="../font.css">
-    <div class="status" style="padding: 5px;color: white;background:rgba(0,0,0,0.75); font-size: 75%;font-family: minecraftfont;">
+    <div class="status" style="padding: 5px;color: white;background:rgba(0,0,0,0.75); font-size: 50%;font-family: minecraftfont;">
                   """)
     for line in open(otherdata + "/motd.txt", "r").readlines():
         outfile.write(showandtellraw.tohtml(line) + "</br>")
@@ -208,6 +210,6 @@ a:visited { color:white; }
 with open(webdata + "/status.md", "w") as outfile:
     outfile.write(stats)
 
-buildfinal = genbuilds(builds)
+buildfinal = genbuilds(builds, players + oldplayers)
 with open(webdata + "/builds.md", "w") as outfile:
     outfile.write(buildfinal)
