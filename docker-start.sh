@@ -1,12 +1,6 @@
 #!/bin/bash
 
 
-if [[ ! -h /minecraft/python-rtmbot/rtmbot.conf ]]; then
-    echo "Creating link to rtmbot.conf"
-    ln -s /minecraft/host/config/rtmbot.conf /minecraft/python-rtmbot/
-    cp /minecraft/rtmbot-plugin* /minecraft/python-rtmbot/plugins
-fi
-
 sudo cron
 
 cd /minecraft
