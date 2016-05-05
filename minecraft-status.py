@@ -60,14 +60,15 @@ def gengroups(players):
         if twitch:
             social += '[![twitch](twitch.png)](http://twitch.tv/' + twitch + ')'
 
-
+        if social:
+            social += '</br>'
         playerstatus = maildropstatus = statusstatus = ''
         if status:
-            playerstatus =  str(status)
+            playerstatus =  str(status) + "</br>"
         else:
             playerstatus = ""
 
-        groupsfinal += "|![](https://minotar.net/avatar/" + playername + "/32)|`"  + playername  + '`|' + social + "|" + playerstatus + "|" + last + "|\n"
+        groupsfinal += "|![](https://minotar.net/avatar/" + playername + "/32)`"  + playername  + '`</br>' + social + playerstatus + last + "|\n"
 
 
     return groupsfinal
@@ -137,21 +138,23 @@ statsplayers = """# Status
 
 list of players that have been online in the last 2 weeks sorted by playtime
 
-|=head=|""" + space2 + "player" + space2 + """|""" + space2 + "social" + space2 + """|""" + space + "status" + space + """|====last====|
-|:-:|:--:|:-:|--|--:|
+shows: player head, name, social media links, status message and last seen
+
+|player|
+|---|
 """
 
 statsoldplayers = """## List of shame
 
 list of players that haven't been online for greater than 2 weeks
 
-|=head=|""" + space2 + "player" + space2 + """|""" + space2 + "social" + space2 + """|""" + space + "status" + space + """|====last====|
-|:-:|:--:|:-:|--|--:|
+|player|
+|---|
 """
 
 
 
-statsgraph = """## Last 24 hours activity
+statsgraph = """## Last 14 days activity
 
 ![lag](http://""" + URL + """/stats.png)
 """

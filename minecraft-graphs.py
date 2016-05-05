@@ -18,18 +18,18 @@ dbfile = config['dbfile']
 webdata = config['webdata']
 
 lag = [("2015-01-01 00:00:00",0)]
-
+timeframe = "-14 days"
 
 conn = sqlite3.connect(dbfile)
 
 cur = conn.cursor()
 
-cur.execute('select datetime(ts), ticks from loglag where ts > datetime("now", "-1 day")')
+cur.execute('select datetime(ts), ticks from loglag where ts > datetime("now", "{}")'.format(timeframe))
 lag += cur.fetchall()
 
-cur.execute('select * from activity where datetime > datetime("now", "-1 day")')
+cur.execute('select * from activity where datetime > datetime("now", "{}")'.format(timeframe))
 activity = cur.fetchall()
-cur.execute('SELECT process, ts, end  FROM process WHERE ts > datetime("now", "-1 day")')
+cur.execute('SELECT process, ts, end  FROM process WHERE ts > datetime("now", "{}")'.format(timeframe))
 process = cur.fetchall()
 
 conn.commit()
@@ -37,9 +37,9 @@ conn.close()
 
 #hours = mdates.MinuteLocator(byminute=[0,30])
 
-timespan = [datetime.datetime.now() - datetime.timedelta(days=1), datetime.datetime.now()]
-hours = mdates.HourLocator()
-hoursFmt = mdates.DateFormatter('%H')
+timespan = [datetime.datetime.now() - datetime.timedelta(days=14), datetime.datetime.now()]
+hours = mdates.DayLocator()
+hoursFmt = mdates.DateFormatter('%D')
 
 if activity == []:
     activity = [("2015-01-01 00:00:00.0", "No players active")]

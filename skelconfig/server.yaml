@@ -2,17 +2,32 @@
 
 URL: "web-hostname"
 name: "name of your server"
-slackadminchan: "ID"
-slackadminusers: 
-    - "me"
+mcversion: "1.9.2"
 
-slackchan: ""
+discordChannel: "143000115144032265"
+discordPrivChannel: "168043067285307392"
+discordToken: ""
 
-# secret string to access the admin map at /map/secret
-mapadminsecret: ""
-
-# These should stay unless you know what you're doing
 mcdata: "/minecraft/host/mcdata"
 webdata: "/minecraft/host/webdata"
 dbfile: "/minecraft/host/otherdata/littlepod.db"
 otherdata: "/minecraft/host/otherdata"
+
+twitchname:  "putsomethinghere"
+
+minecraftname: "putsomethinghere"
+
+twitter: "putsomethinghere"
+
+twitchircpass: ""
+
+ConsumerKey: ""
+ConsumerSecret: ""
+
+AccessToken: ""
+AccessTokenSecret: ""
+
+
+# secret string to access the admin map at /map/secret
+mapadminsecret: "secret"
+
