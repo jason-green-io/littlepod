@@ -24,8 +24,6 @@ servername = config['name']
 
 discordChannel = config["discordChannel"]
 discordPrivChannel = config["discordPrivChannel"]
-discordUser = config["discordUser"]
-discordPass = config["discordPass"]
 discordToken = config["discordToken"]
 
 
