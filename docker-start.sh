@@ -3,6 +3,9 @@
 
 sudo cron
 
+
+
+
 cd /minecraft
 
 if [[ ! -d /minecraft/host/otherdata/logs ]]; then
@@ -51,6 +54,13 @@ if [[ ! -d /minecraft/host/mcdata ]]; then
     fi
 else
     echo "Found Minecraft world folder"
+fi
+
+if [[ -f /minecraft/host/config/crontab.txt ]]; then
+    echo "Enabling the crontab"
+    crontab /minecraft/host/config/crontab.txt
+else
+    echo "Your config/crontab.txt is missing"
 fi
 
 
