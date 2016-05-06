@@ -7,8 +7,8 @@
     "cron_restart": "0 12 * * *",
     "kill_timeout": "60000",
     "cwd"         : "/minecraft",
-    "error_file"  : "/minecraft/host/otherdata/logs/err.log",
-    "out_file"    : "/minecraft/host/otherdata/logs/out.log"
+    "error_file"  : "/minecraft/host/otherdata/logs/minecraft-ctl--err.log",
+    "out_file"    : "/minecraft/host/otherdata/logs/minecraft-ctl-out.log"
   },{
     // discord
     "name"        : "minecraft-discord",
@@ -16,8 +16,8 @@
     "args"        : "",
     "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
-    "error_file"  : "/minecraft/host/otherdata/logs/err.log",
-    "out_file"    : "/minecraft/host/otherdata/logs/out.log",
+    "error_file"  : "/minecraft/host/otherdata/logs/minecraft-discord-err.log",
+    "out_file"    : "/minecraft/host/otherdata/logs/minecraft-discord-out.log",
     "env": {
       "PYTHONUNBUFFERED": "yes",
    } 
@@ -26,8 +26,8 @@
     "name"       : "minecraft-twistd",
     "script"     : "minecraft-twistd.sh",
     "cwd"         : "/minecraft",
-    "error_file"  : "/minecraft/host/otherdata/logs/err.log",
-    "out_file"    : "/minecraft/host/otherdata/logs/out.log",
+    "error_file"  : "/minecraft/host/otherdata/logs/minecraft-web-err.log",
+    "out_file"    : "/minecraft/host/otherdata/logs/minecraft-web-out.log",
     "env": {
       "PYTHONUNBUFFERED": "yes",
     }
@@ -37,8 +37,8 @@
     "script"     : "minecraft-notify.py",
     "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
-    "error_file"  : "/minecraft/host/otherdata/logs/err.log",
-    "out_file"    : "/minecraft/host/otherdata/logs/out.log",
+    "error_file"  : "/minecraft/host/otherdata/logs/minecraft-notify-err.log",
+    "out_file"    : "/minecraft/host/otherdata/logs/minecraft-notify-out.log",
     "env": {
       "PYTHONUNBUFFERED": "yes",
     }
@@ -48,8 +48,8 @@
     "script"     : "minecraft-playeractivity.py",
     "exec_interpreter" : "python3",
     "cwd"         : "/minecraft",
-    "error_file"  : "/minecraft/host/otherdata/logs/err.log",
-    "out_file"    : "/minecraft/host/otherdata/logs/out.log",
+    "error_file"  : "/minecraft/host/otherdata/logs/iminecraft-playeractifity-err.log",
+    "out_file"    : "/minecraft/host/otherdata/logs/minecraft-playeractivity-out.log",
     "env": {
       "PYTHONUNBUFFERED": "yes",
 }
