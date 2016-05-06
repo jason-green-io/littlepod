@@ -102,7 +102,7 @@ def on_ready():
     print((client.user.name))
     print((client.user.id))
     print('------')
-    yield from client.send_message(discord.Object(id=discordChannel),"I crashed, but I'm back now.") 
+    yield from client.send_message(discord.Object(id=discordPrivChannel),"I crashed, but I'm back now.") 
 
 def getgeo(ip):
     FREEGEOPIP_URL = 'http://ip-api.com/json/'
