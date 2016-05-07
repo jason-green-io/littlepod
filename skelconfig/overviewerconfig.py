@@ -138,7 +138,7 @@ processes = 1
 outputdir = "/minecraft/host/webdata/map"
 customwebassets = "/minecraft/host/webdata/map/template"
 
-worlds["Barlynaland"] = '/minecraft/host/otherdata/mcbackup/world'
+worlds[name] = '/minecraft/host/otherdata/mcbackup/world'
 renders["north"] = {
     "world": name,
     "title": "North",
