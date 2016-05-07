@@ -8,17 +8,18 @@ sudo cron
 
 cd /minecraft
 
-if [[ ! -d /minecraft/host/otherdata/logs ]]; then
+if [[ ! -d /minecraft/host/otherdata ]]; then
     echo "Creating folders for other data"
-    mkdir -p /minecraft/host/otherdata/logs
+    mkdir -p /minecraft/host/otherdata
 else
-    echo "Found otherdata and logs folder"
-    if [[ ! -f /minecraft/host/otherdata/littlepod.db ]]; then
-        echo "Database not found, creating"
-        sqlite3 /minecraft/host/otherdata/littlepod.db < /minecraft/create-database.sql
-    else
-        echo "Found database"
-    fi
+    echo "Found otherdata folder"
+fi
+
+if [[ ! -f /minecraft/host/otherdata/littlepod.db ]]; then
+    echo "Database not found, creating"
+    sqlite3 /minecraft/host/otherdata/littlepod.db < /minecraft/create-database.sql
+else
+    echo "Found database"
 fi
 
 if [[ ! -d /minecraft/host/webdata ]]; then
