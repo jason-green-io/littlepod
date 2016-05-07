@@ -3,51 +3,37 @@ import json
 import sys
 import pprint
 import time
-sys.path.append('/minecraft')
-
-import overviewer_chestactivity
-import overviewer_maildropdb
+import sqlite3
+import yaml
 # import overviewer_playeractivity
 
-def poi2text(poi, json=json):
-    return u"\n".join([poi["Text1"], poi["Text2"], poi["Text3"], poi["Text4"]])
+with open('/minecraft/host/config/server.yaml', 'r') as configfile:
+    config = yaml.load(configfile)
 
+
+mcversion = config['mcversion']    
+dbfile = config['dbfile']
+name = config['name']
 
 def spawnfilter(poi):
     if poi["id"] == "spawn":
         print poi
         return poi
 
+
+def poi2text(poi, json=json):
+    return u"\n".join([poi["Text1"], poi["Text2"], poi["Text3"], poi["Text4"]])
+
+
+
 def signFilterLocations(poi, poi2text=poi2text):
     if poi['id'] == 'Sign' and "*map*" in poi['Text1']:
      #   print poi2text(poi)
         return poi2text(poi)
 
-def signFilterredline(poi, poi2text=poi2text):
-    if poi['id'] == 'Sign' and "*redline*" in poi['Text1']:
-    #    print poi2text(poi)
-        return poi2text(poi)
 
-def signFilterpurpleline(poi, poi2text=poi2text):
-    if poi['id'] == 'Sign' and "*purpleline*" in poi['Text1']:
-    #    print poi2text(poi)
-        return poi2text(poi)
 
-def signFilterblueline(poi, poi2text=poi2text):
-    if poi['id'] == 'Sign' and "*blueline*" in poi['Text1']:
-   #     print poi2text(poi)
-        return poi2text(poi)
-
-def signFiltergreenline(poi, poi2text=poi2text):
-    if poi['id'] == 'Sign' and "*greenline*" in poi['Text1']:
-  #      print poi2text(poi)
-        return poi2text(poi)
-def signFilteryellowline(poi, poi2text=poi2text):
-    if poi['id'] == 'Sign' and "*yellowline*" in poi['Text1']:
- #       print poi2text(poi)
-        return poi2text(poi)
-
-def signFilterHome(poi, poi2text=poi2text):
+def signFilterInactiveBuild(poi, poi2text=poi2text):
     if poi['id'] == 'Sign' and "*home*" in poi['Text1']:
 #        print poi2text(poi)
         return poi2text(poi)
@@ -59,75 +45,124 @@ def signFilterGrinder(poi, poi2text=poi2text):
 
 
 Locations = [ dict(name="Locations", icon="icons/black/star-3.png", filterFunction=signFilterLocations, createInfoWindow=True, checked=True) ]
-NetherTrans = [ dict(name="NetherTrans purple", icon="icons/purple/highway.png", filterFunction=signFilterpurpleline, createInfoWindow=True, checked=True),
- dict(name="NetherTrans red", icon="icons/red/highway.png", filterFunction=signFilterredline, createInfoWindow=True, checked=True),
- dict(name="NetherTrans blue", icon="icons/blue/highway.png", filterFunction=signFilterblueline, createInfoWindow=True, checked=True),
- dict(name="NetherTrans green", icon="icons/green/highway.png", filterFunction=signFiltergreenline, createInfoWindow=True, checked=True),
- dict(name="NetherTrans yellow", icon="icons/yellow/highway.png", filterFunction=signFilteryellowline, createInfoWindow=True, checked=True) ]
 
 
-Home =  [ dict(name="Homes", icon="icons/orange/house.png", filterFunction=signFilterHome, createInfoWindow=True, checked=True) ]
+InactiveBuilds =  [ dict(name="Inactive Builds", icon="icons/grey/house.png", filterFunction=signFilterInactiveBuild, createInfoWindow=True, checked=True) ]
 Grinder =  [ dict(name="Grinders", icon="icons/black/supermarket.png", filterFunction=signFilterGrinder, createInfoWindow=True, checked=True) ]
-spawn =  [ dict(name="Spawn Chunks", icon="", filterFunction=spawnfilter, createInfoWindow=True, checked=True) ]
+spawn =  [ dict(name="Spawn Chunks", icon="", filterFunction=spawnfilter, createInfoWindow=True, checked=False) ]
 
 
-markers = spawn + Locations + NetherTrans + Home + Grinder
+basic = Locations + InactiveBuilds + Grinder
 
-#markers += overviewer_playeractivity.markers
-#markers += overviewer_chestactivity.markerdiff
+markersOverworld = [] 
+markersEnd = []
+markersNether = []
 
-print overviewer_maildropdb.markersover
 
-markersOverworld = markers + overviewer_maildropdb.markersover + overviewer_chestactivity.overmarker
-markersEnd = markers + overviewer_maildropdb.markersend + overviewer_chestactivity.endmarker
-markersNether = markers + overviewer_maildropdb.markersnether + overviewer_chestactivity.nethermarker
 
-spawnpoi = []
+markersEnd += basic
+markersNether += basic
+markersOverworld += spawn + basic
 
-manualpois = spawnpoi
+spawnpoi = [ dict(id="spawn",
+                 text="",
+                 color="yellow",
+                 x=20000,
+                 y=64,
+                 z=20000,
+                 polyline=(dict(x=-320, y=64, z=144),
+                           dict(x=-64, y=64, z=144),
+                           dict(x=-64,y=64,z=400),
+                           dict(x=-320,y=64, z=400),
+                           dict(x=-320, y=64, z=144))),
+            dict(id="spawn",
+                 text="",
+                 color="orange",
+                 x=20000,
+                 y=64,
+                 z=20000,
+                 polyline=(dict(x=-288, y=64, z=176),
+                           dict(x=-96, y=64, z=176),
+                           dict(x=-96,y=64,z=368),
+                           dict(x=-288,y=64, z=368),
+                           dict(x=-288, y=64, z=176)))
+
+]
+
+manualpoisover = []
+manualpoisend = []
+manualpoisnether = []
+
+manualpoisover += spawnpoi 
+
+
+if "genPOI" in sys.argv[0]:
+    print("Running in genPOI mode, lets load all the things")
+    sys.path.append('/minecraft')
+
+    import overviewer_chestactivity
+    import overviewer_maildropdb
+    import overviewer_transpo
+    
+    markersOverworld += overviewer_maildropdb.markersover + overviewer_chestactivity.overmarker+ overviewer_transpo.overmarker
+    markersEnd += overviewer_maildropdb.markersend + overviewer_chestactivity.endmarker+ overviewer_transpo.endmarker
+    markersNether +=  overviewer_maildropdb.markersnether + overviewer_chestactivity.nethermarker+ overviewer_transpo.nethermarker
+
+
+
+
+    polylines = overviewer_transpo.polys()    
+
+    manualpoisover += polylines
+    manualpoisend += polylines
+    manualpoisnether += polylines
+
+
+print markersOverworld
+print markersEnd
+print markersNether
+
 end_smooth_lighting = [Base(), EdgeLines(), SmoothLighting(strength=0.5)]
 
-#manualchest = overviewer_chestactivity.diff( "1432992000", "1432993800"  )
-#manualchest = overviewer_chestactivity.diff( "", ""  )
 
 defaultzoom = 9
+showlocationmarker = False
 
-mcversion = "1.8.9"
 
 #with open('/minecraft/host/config/mcversion') as versionfile:
 #    mcversion = versionfile.readline().strip()
 
-texturepath = "/minecraft/host/mcdata/" + mcversion + ".jar"
+texturepath = "/minecraft/host/mcdata/"+mcversion+".jar"
 print texturepath
 processes = 1
 outputdir = "/minecraft/host/webdata/map"
 customwebassets = "/minecraft/host/webdata/map/template"
 
-worlds["littlepod"] = '/minecraft/host/otherdata/mcbackup/world'
+worlds["Barlynaland"] = '/minecraft/host/otherdata/mcbackup/world'
 renders["north"] = {
-    "world": "littlepod",
+    "world": name,
     "title": "North",
     "rendermode" : smooth_lighting,
     'dimension' : 'overworld',
     "northdirection" : "upper-left",
     'markers': markersOverworld,
-    'manualpois' : manualpois
+    'manualpois' : manualpoisover
 }
 renders["end"] = {
-    "world": "littlepod",
+    "world": name,
     "title": "North",
     "northdirection" : "upper-left",
     'markers': markersEnd ,
     'rendermode' : end_smooth_lighting,
     'dimension' : 'end',
-    'manualpois' : ''
+    'manualpois' : manualpoisend
 }
 renders["nether"] = {
-    "world": "littlepod",
+    "world": name,
     "title": "North",
     "northdirection" : "upper-left",
     'markers': markersNether ,
     'rendermode' : nether,
     'dimension' : 'nether',
-    'manualpois' : ''
+    'manualpois' : manualpoisnether
 }
