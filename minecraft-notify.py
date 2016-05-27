@@ -40,7 +40,7 @@ def daily():
     
     conn.commit()
     conn.close()  
-    vanillabean.tweet("Congrats to " + top[1] + " for playing " + str(top[0]) + " minutes this week!")
+    vanillabean.tweet("Congrats to {} for playing {} minutes this week!".format(top[1], str(top[0])))
 
 def weekly():
     pass
@@ -78,48 +78,61 @@ def tellcoords( coords ):
     for each in coords:
         print(each, each[0], each[1], each[2])
 
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [Map: _" + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] +  "_|http://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0]"))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^{}> [Map: _ {}  {} _|http://{}/map/#/{}/64/{}/-3/{}/0]".format(servername, worlddict[ each[0].lower() ][0], ",".join([each[1], each[2]]), URL, each[1], each[2], worlddict[ each[0].lower() ][1])))
 
 
 def telllinks( links ):
     for each in links:
         print(each)
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [_Link_|" + each + "]"))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^{}> [_Link_|{}]".format(servername, each)))
 
 
-
-
-def status( match ):
-
-    name = match.groups()[1]
-    message = match.groups()[2]
-    print(name, message)
+def command(match):
+    print(match.groups())
+    time, name, message = match.groups()
+    command, args = message.split(" ",1)
+    name = name.replace("?7","").replace("?r","")
+    if command == "mute":
+        if args == "on":
+            vanillabean.send("/scoreboard teams join mute {}".format(name))
+            vanillabean.send("/tell {} Muting Discord".format(name))
+        elif args == "off":
+            vanillabean.send("/scoreboard teams leave mute {}".format(name))
+            vanillabean.send("/tell {} Un-Muting Discord".format(name))
+    
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
+    
+    if command == "social":    
 
-    if message.startswith("!"):
-        data = message.split(' ')[1]
 
-        if "twitch" in message:
-            cur.execute('INSERT OR IGNORE INTO status (twitch, name) VALUES(?, ?)', (data, name))
-            cur.execute('UPDATE status SET twitch = ? WHERE name = ?', (data, name))
-        if "youtube" in message:
-            cur.execute('INSERT OR IGNORE INTO status (youtube, name) VALUES(?, ?)', (data, name))
-            cur.execute('UPDATE status SET youtube = ? WHERE name = ?', (data, name))
-        if "twitter" in message:
-            cur.execute('INSERT OR IGNORE INTO status (twitter, name) VALUES(?, ?)', (data, name))
-            cur.execute('UPDATE status SET twitter = ? WHERE name = ?', (data, name))
-        if "reddit" in message:
-            cur.execute('INSERT OR IGNORE INTO status (reddit, name) VALUES(?, ?)', (data, name))
-            cur.execute('UPDATE status SET reddit = ? WHERE name = ?', (data, name))
-        if "clear" in message:
+        network, user = args.split(" ",1)       
+        print(network, user)
+
+        if network == "twitch":
+            cur.execute('INSERT OR IGNORE INTO status (twitch, name) VALUES(?, ?)', (user, name))
+            cur.execute('UPDATE status SET twitch = ? WHERE name = ?', (user, name))
+        if network == "youtube":
+            cur.execute('INSERT OR IGNORE INTO status (youtube, name) VALUES(?, ?)', (user, name))
+            cur.execute('UPDATE status SET youtube = ? WHERE name = ?', (user, name))
+        if network == "twitter":
+            cur.execute('INSERT OR IGNORE INTO status (twitter, name) VALUES(?, ?)', (user, name))
+            cur.execute('UPDATE status SET twitter = ? WHERE name = ?', (user, name))
+        if network == "reddit":
+            cur.execute('INSERT OR IGNORE INTO status (reddit, name) VALUES(?, ?)', (user, name))
+            cur.execute('UPDATE status SET reddit = ? WHERE name = ?', (user, name))
+        if network == "clear":
             pass
-    else:
-        cur.execute('INSERT OR IGNORE INTO status (status, name) VALUES(?, ?)', (message, name))
-        cur.execute('UPDATE status SET status = ? WHERE name = ?', (message, name))
+
+    if command == "status":
+        cur.execute('INSERT OR IGNORE INTO status (status, name) VALUES(?, ?)', (args, name))
+        cur.execute('UPDATE status SET status = ? WHERE name = ?', (args, name))
 
     conn.commit()
     conn.close()
+
+
+
 
 
 def joins(match):
@@ -149,8 +162,8 @@ def joins(match):
         maildrop = cur.fetchall()
 
         for mail in maildrop:
-            coords, name, slots, hidden = mail
-            dim, x, y, z = coords.split(",")
+            dimcoords, name, slots, hidden = mail
+            dim, coords = dimcoords.split(",",1)
 
             if dim == "e":
                 worldnum = "1"
@@ -158,8 +171,10 @@ def joins(match):
                 worldnum = "2"
             elif dim == "o":
                 worldnum = "0"
-
-            toserver = '/tellraw ' + name + ' ' + showandtellraw.tojson('<green^Maildrop> for you at ' + dim + ' [_' + x + ', ' + y + ', ' + z + '_|http://' + URL + '/map/#/' + x + '/' + y + '/' + z + '/-1/' + worldnum + '/0]' )
+            
+            URLcoords = coords.replace(",", "/")           
+ 
+            toserver = '/tellraw ' + name + ' ' + showandtellraw.tojson('<green^Maildrop> for you at {} [_{}_|http://{}/map/#/{}/-1/{}/0]'.format(dim, coords, URL, URLcoords, worldnum) )
             vanillabean.send( toserver )
 
         cur.execute('insert into joins values (?,?,?,?)', (datetime.datetime.now(), name, UUID.get(name, "Unknown"), ip))
@@ -245,14 +260,13 @@ def playerlist(numplayers, listofplayers):
 
 def acheivements(match):
 
-    name = match.groups()[1]
-    ach = match.groups()[2]
+    time, name, ach = match.groups()
 
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
     cur.execute("INSERT INTO achievements VALUES (?,?,?)", (datetime.datetime.now(), name, ach))
-
+    vanillabean.tweet('{} just got "{}"'.format(name, ach))
     conn.commit()
     conn.close()
     
@@ -287,7 +301,7 @@ def minecraftlistener():
             leaveparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: ([\w ]*) left the game$", line )
             chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(.*)\> (.*)", line )
             playerlistparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$", line )
-            statusparsematch = re.match( "^\[(.*)\] \[Server thread/INFO\]: <(\w*)> \*\*\*(.*)$", line )
+            commandparsematch = re.match( "^\[(.*)\] \[Server thread/INFO\]: <(.*)> !(.*)$", line )
             ipparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$", line )
             achievementmatch = re.match("^\[(.*)\] \[Server thread/INFO\]: " + "(\w*) has just earned the achievement \[(.*)\]$", line)
             lagmatch = re.match( "^\[(.*)\] \[Server thread/WARN\]: Can't keep up! Did the system time change, or is the server overloaded\? Running (\d*)ms behind, skipping (\d*) tick\(s\)$", line )
@@ -305,8 +319,8 @@ def minecraftlistener():
             if achievementmatch:
                 acheivements(achievementmatch)
 
-            if statusparsematch:
-                status(statusparsematch)
+            if commandparsematch:
+                command(commandparsematch)
 
             if UUIDparsematch:
                 setUUID(UUIDparsematch)

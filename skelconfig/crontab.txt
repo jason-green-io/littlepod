@@ -30,6 +30,7 @@ LOGS=/minecraft/host/otherdata/logs
 0 12 * * * /minecraft/minecraft-ctl.sh stop
 
 */1 * * * * echo "/list" > /minecraft/vanillabean
+*/1 * * * * echo "/scoreboard teams list mute" > /minecraft/vanillabean
 
 10 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> $LOGS/minecraft-overviewer.log
 

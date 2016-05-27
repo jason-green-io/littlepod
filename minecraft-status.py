@@ -91,7 +91,7 @@ def genbuilds(builds, players):
         name = each[0]
         if name.lower() in players:
             coords = each[1].split("|")
-            buildfinal.append( "##" + name)
+            buildfinal.append( "## `{}`".format(name))
             for coord in coords:
                 link = coordstolink(coord)
                 subprocess.call("/usr/bin/phantomjs --debug=true /minecraft/makethumbnails.js " + link + " /minecraft/host/webdata/thumbs/" + coord + ".png", shell=True)

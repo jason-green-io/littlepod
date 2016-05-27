@@ -81,7 +81,7 @@ def on_message(message):
         links = re.findall('(https?://\S+)', message.content)
         coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
         discordtext =  u'{"text" : "\\u2689 ", "color" : "aqua" }'
-        finalline = '/tellraw @a {"text" : "", "extra" : [' + discordtext + ',' + '{"color" : "gold", "text" : "' + str(message.author) + ' "}, ' + '{ "text" : "' + message.content + '"}]}'
+        finalline = '/tellraw @a[team=!mute] {"text" : "", "extra" : [' + discordtext + ',' + '{"color" : "gold", "text" : "' + str(message.author) + ' "}, ' + '{ "text" : "' + message.content + '"}]}'
         vanillabean.send(finalline)
 
         if coordscomma:
@@ -129,7 +129,11 @@ def my_background_task():
     f.seek(file_len)
     pos = f.tell()
 
-    getnextline = False
+    nextlineformute = False
+    mutedlist = []
+    nextlineforlist = False
+    numplayers = 0
+
     while not client.is_closed:
         pos = f.tell()
         line = f.readline().strip()
@@ -145,19 +149,40 @@ def my_background_task():
                 yield from asyncio.sleep(1) # task runs every 60 seconds
                 f.seek(pos)
         else:
-            chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(\w*)\> (.*)", line )
+            chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(.*)\> (.*)", line )
+            playerlistparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$", line )
             joinparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$", line )
             infoparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: ([\w]*) (.*)$", line )
             playerlistparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$", line )
+            muteteamparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: Showing (.*) player\(s\) in team mute:$", line )
             statusparsematch = re.match( "^\[(.*)\] \[Server thread/INFO\]: <(\w*)> \*\*\*(.*)$", line )
             ipparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$", line )
-
+            if nextlineformute:
+                nextlineformute = False
+                mutedlist = [a.strip(",") for a in line.split(":")[3].split(" ")]
+                mutedlist.remove('')
+            if nextlineforlist:
+               
+                nextlineforlist = False    
+                players = [a.strip() for a in line.split(":")[3].split(",")]
+                formattedplayers = ["~{}".format(a) if a in mutedlist else a for a in players]
+                print(formattedplayers, mutedlist, players)
+                yield from client.edit_channel(client.get_channel(discordChannel), position=1, name="server-chat", topic="Players on the server {}/20\n`({})`\nMuted players start with `~`".format(numplayers, " ".join(formattedplayers)))
+           
+            if muteteamparsematch:
+                nummuteplayers = muteteamparsematch.groups()[1]
+                nextlineformute = True 
+            if playerlistparsematch:
+                numplayers = playerlistparsematch.groups()[1]
+                nextlineforlist = True
+            
             if chatlisten:
                 coordscomma =  re.findall( "^([EONeon]) (-?\d+), (-?\d+)", chatlisten.groups()[1])
                 links = re.findall('<(https?://\S+)>', chatlisten.groups()[1])
 
                 player = str(chatlisten.groups()[0])
                 player = player.replace("\u00a75","").replace("\u00a7r","")
+                player = player.replace("?r","")
                 message = str(chatlisten.groups()[1])
 
                 for each in re.findall("@\S+", message):
@@ -172,14 +197,15 @@ def my_background_task():
            #         finalmessage = message
               #  else:
                 
-                finalmessage = "`<" + player +">` " + message
                 
                 if links:
                     telllinks( links )
 
-
-                print(repr(finalmessage))
-                yield from client.send_message(channel, finalmessage)
+                if not player.startswith("?7"):
+                    player = player.replace("?7", "")
+                    finalmessage = "`<" + player +">` " + message
+                    print(repr(finalmessage))
+                    yield from client.send_message(channel, finalmessage)
 
                 if coordscomma:
 #                    print chatlisten.groups()[1]
