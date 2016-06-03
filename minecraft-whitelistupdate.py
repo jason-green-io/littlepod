@@ -4,6 +4,7 @@ import yaml
 import json
 import sqlite3
 import vanillabean
+import sys
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -39,9 +40,16 @@ expired = [each[1] for each in list(whitelist.items()) if each[0] in old or each
 
 print(expired)
 
+delete = False
+
+if len(sys.argv) > 1:
+    delete = True if sys.argv[1] == "delete" else False
+
 for name in expired:
-    # vanillabean.send("/whitelist remove " + name)
-    print(name)
+    if delete:
+        vanillabean.send("/whitelist remove " + name)
+    else:
+        print(name)
 
 
 cur.execute("DELETE FROM whitelist")

@@ -59,10 +59,8 @@ def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=N
     (resp,content) = client.request( url, method=http_method, body=post_body, headers=http_headers )
     return content
 
-def lag(match):
-    ts = match.groups()[0]
-    ms = match.groups()[1]
-    tick = match.groups()[2]
+def eventLag(data):
+    ts, ms, tick = data
 
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
@@ -87,9 +85,8 @@ def telllinks( links ):
         vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^{}> [_Link_|{}]".format(servername, each)))
 
 
-def command(match):
-    print(match.groups())
-    time, name, message = match.groups()
+def eventCommand(data):
+    time, name, message = data
     command, args = message.split(" ",1)
     name = name.replace("?7","").replace("?r","")
     if command == "mute":
@@ -135,107 +132,75 @@ def command(match):
 
 
 
-def joins(match):
-    parsed = match.groups()
-    # print match.groups()
-    name = parsed[0]
+def eventLogged(data):
+    print(data)
+    name = data[1]
     # print name
-    ip = parsed[1].split(':')[0]
-    message = "joined"
+    ip = data[2].split(':')[0]
     
     #tweetmessage = urllib.urlencode({"status": name + " " + message})
     #response = json.loads(oauth_req( "https://api.twitter.com/1.1/statuses/update.json?" + tweetmessage, AccessToken, AccessTokenSecret, http_method="POST"))
     #print response
     
-    if message == "joined":
-        conn = sqlite3.connect(dbfile)
-        cur = conn.cursor()
-        try:
-            for each in open( otherdata + "/motd.txt", "r" ).readlines():
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
 
-                time.sleep(1)
-                message = "/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
-                vanillabean.send( message )
-        except:
-            pass
-        cur.execute("SELECT * FROM maildrop WHERE slots > 0 and name = ? COLLATE NOCASE", (name,))
-        maildrop = cur.fetchall()
+    try:
+        for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
-        for mail in maildrop:
-            dimcoords, name, slots, hidden = mail
-            dim, coords = dimcoords.split(",",1)
+            time.sleep(1)
+            message = "/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
+            vanillabean.send( message )
+    except:
+        pass
 
-            if dim == "e":
-                worldnum = "1"
-            elif dim == "n":
-                worldnum = "2"
-            elif dim == "o":
-                worldnum = "0"
-            
-            URLcoords = coords.replace(",", "/")           
- 
-            toserver = '/tellraw ' + name + ' ' + showandtellraw.tojson('<green^Maildrop> for you at {} [_{}_|http://{}/map/#/{}/-1/{}/0]'.format(dim, coords, URL, URLcoords, worldnum) )
-            vanillabean.send( toserver )
+    cur.execute("SELECT * FROM maildrop WHERE slots > 0 and name = ? COLLATE NOCASE", (name,))
+    maildrop = cur.fetchall()
 
-        cur.execute('insert into joins values (?,?,?,?)', (datetime.datetime.now(), name, UUID.get(name, "Unknown"), ip))
-        conn.commit()
-        conn.close()
+    for mail in maildrop:
+        dimcoords, boxname, slots, hidden = mail
+        dim, coords = dimcoords.split(",",1)
+
+        if dim == "e":
+            worldnum = "1"
+        elif dim == "n":
+            worldnum = "2"
+        elif dim == "o":
+            worldnum = "0"
+        
+        URLcoords = coords.replace(",", "/")           
+
+        toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson('<green^Maildrop> for you at {} [_{}_|http://{}/map/#/{}/-1/{}/0]'.format(dim, coords, URL, URLcoords, worldnum) )
+        vanillabean.send( toserver )
+
+    cur.execute('insert into joins values (?,?,?,?)', (datetime.datetime.now(), name, UUID.get(name, "Unknown"), ip))
+    
+
+    conn.commit()
+    conn.close()
 
 
-def chat(match):
-    coordscomma = re.findall("^([OENoen]) (-?\d+), (-?\d+)", match.groups()[1])
-    links = re.findall(r'https?://\S+', match.groups()[1])
+def eventChat(data):
+    coordscomma = re.findall("^([OENoen]) (-?\d+), (-?\d+)", data[1])
+    links = re.findall(r'https?://\S+', data[1])
     if coordscomma:
-        print(match.groups()[1])
         print(coordscomma)
-
         tellcoords( coordscomma )
+    
     if links:
         print(links)
         telllinks( links )
 
 
-def setUUID(match):
+def eventUUID(data):
     global UUID
-    UUID = {match.groups()[0]: match.groups()[1]}
+    UUID = {data[1]: data[2]}
     print(UUID)
 
 
-def leaves(match):
-    name = match.groups()[0]
-    headers = {"user_credentials" : boxcarkey,
-    "notification[title]": name + " " + "left",
-    "notification[source_name]" : "Barlynaland" }
-    url= "https://new.boxcar.io/api/notifications"
+def playerlist(numplayers, line):
 
-    r = requests.post(url, params=headers)
-
-
-def ip(match):
-    parsed = ematch.groups()
-    print(line)
-    print(match.groups())
-    name = parsed[0]
-    ip = parsed[1].split(':')[0]
-    try:
-        hostaddr = socket.gethostbyaddr( ip )[0]
-    except:
-        hostaddr = "none"
-
-    ipinfo = getgeo( ip )
-    ipstat= " ".join( [ip, hostaddr, ipinfo["countryCode"], ipinfo["regionName"], ipinfo["city"], ipinfo["as"] ] )
-    print(ipstat)
-    headers = {"user_credentials" : boxcarkey,
-    "notification[title]": name + " " + "!!DENIED!!!" + " " + ipstat,
-    "notification[source_name]" : "Barlynaland" }
-    url= "https://new.boxcar.io/api/notifications"
-
-    r = requests.post(url, params=headers)
-
-
-def playerlist(numplayers, listofplayers):
-
-    players = listofplayers.split(":")[3].split(",")
+    players = line.split(":")[3].split(",")
     
     print(numplayers, players)
 
@@ -258,9 +223,9 @@ def playerlist(numplayers, listofplayers):
     conn.close()
 
 
-def acheivements(match):
+def eventAchievement(data):
 
-    time, name, ach = match.groups()
+    time, name, ach = data
 
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
@@ -276,7 +241,7 @@ def minecraftlistener():
     nextlineforlist = False
     numplayers = 0
     logfile = os.path.abspath(mcfolder + "/logs/latest.log")
-    f = open(logfile, "r")
+    f = open(logfile, "r", encoding="utf-8")
     file_len = os.stat(logfile)[stat.ST_SIZE]
     f.seek(file_len)
     pos = f.tell()
@@ -296,47 +261,42 @@ def minecraftlistener():
                 time.sleep( 1 )
                 f.seek(pos)
         else:
-            UUIDparsematch = re.match("^\[.*\] \[User Authenticator #.*/INFO\]: UUID of player (.*) is (.*)$", line)
-            joinparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$", line )
-            leaveparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: ([\w ]*) left the game$", line )
-            chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(.*)\> (.*)", line )
-            playerlistparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$", line )
-            commandparsematch = re.match( "^\[(.*)\] \[Server thread/INFO\]: <(.*)> !(.*)$", line )
-            ipparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$", line )
-            achievementmatch = re.match("^\[(.*)\] \[Server thread/INFO\]: " + "(\w*) has just earned the achievement \[(.*)\]$", line)
-            lagmatch = re.match( "^\[(.*)\] \[Server thread/WARN\]: Can't keep up! Did the system time change, or is the server overloaded\? Running (\d*)ms behind, skipping (\d*) tick\(s\)$", line )
-
+            
+            eventData = vanillabean.genEvent(line)
+            event = ""
+            data = ()
+            
+            if eventData:
+                # print(eventData)
+                event, data = eventData
+                print(event, data)
             
             if nextlineforlist:
                
                 nextlineforlist = False    
                 playerlist(numplayers, line)
 
-            if playerlistparsematch:
-                numplayers = playerlistparsematch.groups()[1]
+            if event == "playerList":
+                numplayers = data[1]
                 nextlineforlist = True
 
-            if achievementmatch:
-                acheivements(achievementmatch)
+            if event == "achievement":
+                eventAchievement(data)
 
-            if commandparsematch:
-                command(commandparsematch)
+            if event == "command":
+                eventCommand(data)
 
-            if UUIDparsematch:
-                setUUID(UUIDparsematch)
+            if event == "UUID":
+                eventUUID(data)
 
-            if chatlisten:
-                chat(chatlisten)
+            if event == "chat":
+                eventChat(data)
 
-#           if leaveparsematch:
+            if event == "logged":
+                eventLogged(data)
 
-#            if ipparsematch:
-
-            if joinparsematch:
-                joins( joinparsematch )
-
-            if lagmatch:
-                lag(lagmatch)
+            if event == "lag":
+                eventLag(data)
 
 
 

@@ -27,6 +27,8 @@ discordPrivChannel = config["discordPrivChannel"]
 discordToken = config["discordToken"]
 
 
+channelobject = discord.Object(id=discordChannel)
+privchannelobject = discord.Object(id=discordPrivChannel)
 
 serverrestart = False
 
@@ -37,7 +39,7 @@ client = discord.Client()
 def telllinks( links ):
     for each in links:
         print( each)
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [_Link_|" + each + "]"))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^{}> [_Link_|{}]".format(servername, each)))
 
 
 def coordsmessage( coords ):
@@ -74,14 +76,18 @@ def on_message(message):
     # we do not want the bot to reply to itself
     if message.author == client.user:
         return
-    channelobject = discord.Object(id=discordChannel)
-    privchannelobject = discord.Object(id=discordPrivChannel)
-    print(message.channel.id)
+    print(message.author.display_name, message.clean_content.encode("utf-8"))
     if message.channel.id == discordChannel:
         links = re.findall('(https?://\S+)', message.content)
         coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
+
+        player = str(message.author.display_name)
+        messagetext = str(message.clean_content) 
+        messagetext = messagetext.replace('"', r"\"")
         discordtext =  u'{"text" : "\\u2689 ", "color" : "aqua" }'
-        finalline = '/tellraw @a[team=!mute] {"text" : "", "extra" : [' + discordtext + ',' + '{"color" : "gold", "text" : "' + str(message.author) + ' "}, ' + '{ "text" : "' + message.content + '"}]}'
+
+        finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, player, messagetext)
+
         vanillabean.send(finalline)
 
         if coordscomma:
@@ -113,16 +119,109 @@ def getgeo(ip):
     print( response)
     return response.json()
 
+@asyncio.coroutine 
+def eventIP(data):
+    name = data[1]
+    ip = data[2].split(':')[0]
+    try:
+        hostaddr = socket.gethostbyaddr( ip )[0]
+    except:
+        hostaddr = "none"
+
+    ipinfo = getgeo( ip )
+    ipstat = " ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+    yield from client.send_message(privchannelobject, "`{}` !!!DENIED!!! {}".format(name, ipstat))
+
+
+@asyncio.coroutine 
+def eventDeath1(data):
+    player = data[1]
+    player = player.replace("?7","")
+    message = data[2:]
+    yield from client.send_message(channelobject, "`{}` {}".format(player, "".join(message)))
+
+@asyncio.coroutine 
+def eventDeath2(data):
+    player = data[1]
+    player = player.replace("?7","").replace("?r","")
+    message = list(data[2:])
+    message[1] = "`{}`".format(message[1])
+    yield from client.send_message(channelobject, "`{}` {}".format(player, "".join(message)))
+
+
+@asyncio.coroutine 
+def eventDeath3(data):
+    player = data[1]
+    player = player.replace("?7","").replace("?r","")
+    message = list(data[2:])
+    message[1] = "`{}`".format(message[1])
+    message[3] = "`{}`".format(message[3])
+    yield from client.send_message(channelobject, "`{}` {}".format(player, "".join(message)))
+
+
+@asyncio.coroutine 
+def eventLogged(data):
+    player = data[1]
+    player = player.replace("?7","").replace("?r","")
+    yield from client.send_message(channelobject, "`{}`  joined the server".format(player))
+
+    ip = data[2].split(':')[0]
+    message = "joined"
+    try:
+        hostaddr = socket.gethostbyaddr( ip )[0]
+    except:
+        hostaddr = "none"
+    ipinfo = getgeo( ip )
+    ipstat= u" ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+    yield from client.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
+
+@asyncio.coroutine 
+def eventLeft(data):
+    player = data[1]
+    player = player.replace("?7","").replace("?r","")
+    yield from client.send_message(channelobject, "`{}` left the server".format(player))
+
+
+
+@asyncio.coroutine 
+def eventChat(data):
+    coordscomma =  re.findall( "^([EONeon]) (-?\d+), (-?\d+)", data[2])
+    links = re.findall('<(https?://\S+)>', data[2])
+
+    player = data[1]
+    player = player.replace("\u00a75","").replace("\u00a7r","")
+    player = player.replace("?r","")
+    message = data[2]
+
+    for each in re.findall("@\S+", message):
+        memberfrommc = each.lstrip("@")
+        print(memberfrommc)
+        member = discord.utils.find(lambda m: m.name == memberfrommc, client.get_all_members())
+        if member:
+            membermention = member.mention
+            message = message.replace( each, membermention)
+        print(message)
+    
+    
+    if links:
+        telllinks( links )
+
+    if not player.startswith("?7"):
+        player = player.replace("?7", "")
+        finalmessage = "`<{}>` {}".format(player, message)
+        print(repr(finalmessage))
+        yield from client.send_message(channelobject, finalmessage)
+
+    if coordscomma:
+        yield from client.send_message(channelobject, coordsmessage( coordscomma ))
+        tellcoords(coordscomma)
 
 @asyncio.coroutine 
 def my_background_task():
     yield from client.wait_until_ready()
-    channel = discord.Object(id=discordChannel)
-    privchannel = discord.Object(id=discordPrivChannel)
 
 
     serverrestart = False
-    lastplayer = "Dinnerbone"
     logfile = os.path.abspath(mcfolder + "/logs/latest.log")
     f = codecs.open(logfile,"r", "utf-8")
     file_len = os.stat(logfile)[stat.ST_SIZE]
@@ -140,133 +239,65 @@ def my_background_task():
         if not line:
             if os.stat(logfile)[stat.ST_SIZE] < pos:
                 f.close()
-                yield from asyncio.sleep(5) # task runs every 60 seconds
+                yield from asyncio.sleep(5)
                 time.sleep( 5 )
                 f = codecs.open(logfile, "r","utf-8")
                 pos = f.tell()
             else:
                 
-                yield from asyncio.sleep(1) # task runs every 60 seconds
+                yield from asyncio.sleep(1)
                 f.seek(pos)
         else:
-            chatlisten =  re.match("\[.*\] \[Server thread/INFO\]: \<(.*)\> (.*)", line )
-            playerlistparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$", line )
-            joinparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$", line )
-            infoparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: ([\w]*) (.*)$", line )
-            playerlistparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$", line )
-            muteteamparsematch = re.match( "^\[(.*)\] \[Server thread/INFO]: Showing (.*) player\(s\) in team mute:$", line )
-            statusparsematch = re.match( "^\[(.*)\] \[Server thread/INFO\]: <(\w*)> \*\*\*(.*)$", line )
-            ipparsematch = re.match( "^\[.*\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$", line )
+            eventData = vanillabean.genEvent(line)
+            event = ""
+            data = ()
+            
+            if eventData:
+                # print(eventData)
+                event, data = eventData
+                print(event, data)
+            
             if nextlineformute:
                 nextlineformute = False
                 mutedlist = [a.strip(",") for a in line.split(":")[3].split(" ")]
                 mutedlist.remove('')
+            
             if nextlineforlist:
-               
                 nextlineforlist = False    
                 players = [a.strip() for a in line.split(":")[3].split(",")]
                 formattedplayers = ["~{}".format(a) if a in mutedlist else a for a in players]
                 print(formattedplayers, mutedlist, players)
                 yield from client.edit_channel(client.get_channel(discordChannel), position=1, name="server-chat", topic="Players on the server {}/20\n`({})`\nMuted players start with `~`".format(numplayers, " ".join(formattedplayers)))
            
-            if muteteamparsematch:
-                nummuteplayers = muteteamparsematch.groups()[1]
+            if event == "muteTeam":
+                nummuteplayers = data[1]
                 nextlineformute = True 
-            if playerlistparsematch:
-                numplayers = playerlistparsematch.groups()[1]
+
+            if event == "playerList":
+                numplayers = data[1]
                 nextlineforlist = True
             
-            if chatlisten:
-                coordscomma =  re.findall( "^([EONeon]) (-?\d+), (-?\d+)", chatlisten.groups()[1])
-                links = re.findall('<(https?://\S+)>', chatlisten.groups()[1])
+            if event == "chat":
+                yield from eventChat(data)
 
-                player = str(chatlisten.groups()[0])
-                player = player.replace("\u00a75","").replace("\u00a7r","")
-                player = player.replace("?r","")
-                message = str(chatlisten.groups()[1])
+            if event == "logged":
+                yield from eventLogged(data)
 
-                for each in re.findall("@\S+", message):
-                    memberfrommc = each.lstrip("@")
-                    print(memberfrommc)
-                    member = discord.utils.find(lambda m: m.name == memberfrommc, client.get_all_members())
-                    if member:
-                        membermention = member.mention
-                        message = message.replace( each, membermention)
-                    print(message)
-            ##    if player == lastplayer and not time.time() >= lasttime + 60:
-           #         finalmessage = message
-              #  else:
+            if event == "ip":
+                yield from eventIp(data)
+
+            if event.startswith("deathWeapon"):
+                yield from eventDeath3(data)
+
+            elif event.startswith("deathEnemy"):
+                yield from eventDeath2(data)
+
+            elif event.startswith("death"):
+                yield from eventDeath1(data)
                 
-                
-                if links:
-                    telllinks( links )
+            if event == "left":
+                yield from eventLeft(data)
 
-                if not player.startswith("?7"):
-                    player = player.replace("?7", "")
-                    finalmessage = "`<" + player +">` " + message
-                    print(repr(finalmessage))
-                    yield from client.send_message(channel, finalmessage)
-
-                if coordscomma:
-#                    print chatlisten.groups()[1]
-#                    print coordscomma
-#
-                    yield from client.send_message(channel, coordsmessage( coordscomma ))
-                    tellcoords(coordscomma)
-
-            if infoparsematch:
-                deathwords = ["blew", "burned", "drowned", "experienced", "fell", "got", "hit", "starved", "suffocated", "tried", "walked", "was", "went", "withered"]
-                player = infoparsematch.groups()[0]
-                keyword = infoparsematch.groups()[1].split()[0]
-                message = infoparsematch.groups()[1]
-                if keyword == "left":
-                    yield from client.send_message(channel, "`" + player + "` left the server")
-                elif keyword == "joined":
-                    pass
-                elif keyword == "lost":
-                    pass
-                elif keyword in deathwords:
-                    yield from client.send_message(channel, "`" + player + "` " + message)
-
-            if ipparsematch:
-                parsed = ipparsematch.groups()
-                # print ipparsematch.groups()
-                name = parsed[0]
-                ip = parsed[1].split(':')[0]
-                try:
-                    hostaddr = socket.gethostbyaddr( ip )[0]
-                except:
-                    hostaddr = "none"
-
-                ipinfo = getgeo( ip )
-                ipstat= " ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
-                yield from client.send_message(privchannel, "`" + name + "` !!!DENIED!!! " + ipstat)
-#                print ipstat
-#                headers = {"user_credentials" : boxcarkey,
-#                "notification[title]": name + " " + "!!DENIED!!!" + " " + ipstat,
-#                "notification[source_name]" : "Barlynaland" }
-#                url= "https://new.boxcar.io/api/notifications"
-#
-#                r = requests.post(url, params=headers)
-#
-            if joinparsematch:
-#
-                parsed = joinparsematch.groups()
-#                print line
-#                print joinparsematch.groups()
-                player = parsed[0]
-                yield from client.send_message(channel, "`" + player + "`  joined the server")
-
-                ip = parsed[1].split(':')[0]
-                message = "joined"
-                try:
-                    hostaddr = socket.gethostbyaddr( ip )[0]
-                except:
-                    hostaddr = "none"
-                ipinfo = getgeo( ip )
-                ipstat= u" ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
-                # print(repr(ipstat))
-                yield from client.send_message(privchannel, "`" + player + "` " + ipstat)
 
 @asyncio.coroutine
 def handle_exception():
