@@ -26,6 +26,10 @@ discordChannel = config["discordChannel"]
 discordPrivChannel = config["discordPrivChannel"]
 discordToken = config["discordToken"]
 
+if not discordToken:
+    print("Discord token not set")
+    sys.exit()
+
 
 channelobject = discord.Object(id=discordChannel)
 privchannelobject = discord.Object(id=discordPrivChannel)
