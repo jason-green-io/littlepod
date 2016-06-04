@@ -41,10 +41,10 @@ mcstart ()
         wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENTVERSION/$CLIENTVERSION.jar
     fi
     echo "Starting named pipe"
+    sleep 5
    ( pipestart ) &
     echo "Starting server"
 
-    cp /minecraft/host/mcdata/world/data/villages.dat.bak /minecraft/host/mcdata/world/data/villages.dat
    ( /usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean ) &
    PID=$!
 
