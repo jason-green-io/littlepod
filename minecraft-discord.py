@@ -16,7 +16,7 @@ import showandtellraw
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
 
-
+name = config['name']
 dbfile = config['dbfile']
 mcfolder = config['mcdata']
 URL = config['URL']
@@ -81,9 +81,17 @@ def on_message(message):
     if message.author == client.user:
         return
     print(message.author.display_name, message.clean_content.encode("utf-8"))
+
+    if message.channel.is_private:
+        coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
+        
+        if coordscomma:
+            
+            yield from client.send_message(channelobject, coordsmessage( coordscomma ))
+            tellcoords(coordscomma)
+
     if message.channel.id == discordChannel:
         links = re.findall('(https?://\S+)', message.content)
-        coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
 
         player = str(message.author.display_name)
         messagetext = str(message.clean_content) 
@@ -94,10 +102,6 @@ def on_message(message):
 
         vanillabean.send(finalline)
 
-        if coordscomma:
-            
-            yield from client.send_message(channelobject, coordsmessage( coordscomma ))
-            tellcoords(coordscomma)
 
         if links:
            telllinks( links )
@@ -270,8 +274,13 @@ def my_background_task():
                 nextlineforlist = False    
                 players = [a.strip() for a in line.split(":")[3].split(",")]
                 formattedplayers = ["~{}".format(a) if a in mutedlist else a for a in players]
-                print(formattedplayers, mutedlist, players)
-                yield from client.edit_channel(client.get_channel(discordChannel), position=1, name="server-chat", topic="Players on the server {}/20\n`({})`\nMuted players start with `~`".format(numplayers, " ".join(formattedplayers)))
+                currentTopic = client.get_channel(discordChannel).topic
+                topicLineList = currentTopic.split('\n')
+                topicLine = [line for line in enumerate(topicLineList) if line[1].startswith(name)][0][0]
+                
+                topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, numplayers, " ".join(formattedplayers))
+                
+                yield from client.edit_channel(client.get_channel(discordChannel), position=1, name="server-chat", topic="\n".join(topicLineList))
            
             if event == "muteTeam":
                 nummuteplayers = data[1]
