@@ -29,6 +29,13 @@ lag += cur.fetchall()
 
 cur.execute('select * from activity where datetime > datetime("now", "{}")'.format(timeframe))
 activity = cur.fetchall()
+
+cur.execute('select name, count(name) from activity where datetime > datetime("now", "{}" group by name order by count(name) desc'.format(timeframe))
+
+playerstest = cur.fetchall()
+
+print(playerstest)
+
 cur.execute('SELECT process, ts, end  FROM process WHERE ts > datetime("now", "{}")'.format(timeframe))
 process = cur.fetchall()
 
@@ -98,11 +105,6 @@ ax2.set_ylabel("server processes")
 ax2.xaxis.set_major_locator(hours)
 ax2.xaxis.set_major_formatter(hoursFmt)
 ax2.set_xlim(timespan)
-ax2.xaxis.grid(True)
-ax2.set_yticklabels(procs)
-ax2.set_yticks(xrange(0, len(procs) + 1))
-
-
 fig.set_size_inches(20.48, 10.24)
 plt.tight_layout()
 plt.savefig(webdata + "/stats.png",  dpi=100)
