@@ -144,7 +144,7 @@ def eventIP(data):
 @asyncio.coroutine 
 def eventDeath1(data):
     player = data[1]
-    player = player.replace("?7","")
+    player = player.replace("?7","").replace("?r","")
     message = data[2:]
     yield from client.send_message(channelobject, "`{}` {}".format(player, "".join(message)))
 

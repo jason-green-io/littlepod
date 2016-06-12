@@ -29,6 +29,13 @@ lag += cur.fetchall()
 
 cur.execute('select * from activity where datetime > datetime("now", "{}")'.format(timeframe))
 activity = cur.fetchall()
+
+cur.execute('select name, count(name) from activity where datetime > datetime("now", "{}" group by name order by count(name) desc'.format(timeframe))
+
+playerstest = cur.fetchall()
+
+print(playerstest)
+
 cur.execute('SELECT process, ts, end  FROM process WHERE ts > datetime("now", "{}")'.format(timeframe))
 process = cur.fetchall()
 
