@@ -39,7 +39,7 @@ conn.close()
 
 timespan = [datetime.datetime.now() - datetime.timedelta(days=14), datetime.datetime.now()]
 hours = mdates.DayLocator()
-hoursFmt = mdates.DateFormatter('%D')
+hoursFmt = mdates.DateFormatter('%d')
 
 if activity == []:
     activity = [("2015-01-01 00:00:00.0", "No players active")]
@@ -47,9 +47,9 @@ if activity == []:
 
 ax = []
 fig = plt.figure()
-ax0 = plt.subplot2grid((4,1), (0,0), rowspan=2)
-ax1 = plt.subplot2grid((4,1), (3,0))
-ax2 = plt.subplot2grid((4,1), (2,0))
+ax0 = plt.subplot2grid((6,1), (0,0), rowspan=4)
+ax1 = plt.subplot2grid((6,1), (5,0))
+ax2 = plt.subplot2grid((6,1), (4,0))
 
 xlag, ylag = tuple(zip(*lag))
 xlag = [datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in xlag]
@@ -103,7 +103,7 @@ ax2.set_yticklabels(procs)
 ax2.set_yticks(xrange(0, len(procs) + 1))
 
 
-fig.set_size_inches(20.48, 10.24)
+fig.set_size_inches(10.24, 20.48)
 plt.tight_layout()
 plt.savefig(webdata + "/stats.png",  dpi=100)
 

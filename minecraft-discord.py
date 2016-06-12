@@ -163,6 +163,7 @@ def eventDeath3(data):
     player = player.replace("?7","").replace("?r","")
     message = list(data[2:])
     message[1] = "`{}`".format(message[1])
+    message[1] = message[1].replace("?7","").replace("?r","")
     message[3] = "`{}`".format(message[3])
     yield from client.send_message(channelobject, "`{}` {}".format(player, "".join(message)))
 
