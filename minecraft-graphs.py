@@ -16,6 +16,7 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
 
 dbfile = config['dbfile']
 webdata = config['webdata']
+name = config["name"]
 
 lag = [("2015-01-01 00:00:00",0)]
 timeframe = "-14 days"
@@ -30,11 +31,10 @@ lag += cur.fetchall()
 cur.execute('select * from activity where datetime > datetime("now", "{}")'.format(timeframe))
 activity = cur.fetchall()
 
-cur.execute('select name, count(name) from activity where datetime > datetime("now", "{}" group by name order by count(name) desc'.format(timeframe))
+cur.execute('select name, count(name) from activity where datetime > datetime("now", "{}") group by name order by count(name) asc'.format(timeframe))
 
-playerstest = cur.fetchall()
+players = cur.fetchall()
 
-print(playerstest)
 
 cur.execute('SELECT process, ts, end  FROM process WHERE ts > datetime("now", "{}")'.format(timeframe))
 process = cur.fetchall()
@@ -54,9 +54,11 @@ if activity == []:
 
 ax = []
 fig = plt.figure()
-ax0 = plt.subplot2grid((6,1), (0,0), rowspan=4)
-ax1 = plt.subplot2grid((6,1), (5,0))
-ax2 = plt.subplot2grid((6,1), (4,0))
+figlen = 8
+ax0 = plt.subplot2grid((figlen,1), (0,0), rowspan=figlen-2)
+ax0.set_title(name)
+ax1 = plt.subplot2grid((figlen,1), (figlen-1,0))
+ax2 = plt.subplot2grid((figlen,1), (figlen-2,0))
 
 xlag, ylag = tuple(zip(*lag))
 xlag = [datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in xlag]
@@ -76,7 +78,7 @@ ax1.grid(True)
 
 xact, yact = tuple(zip(*activity))
 xact = [datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S.%f") for time in xact]
-players = [""] + list({player for player in yact})
+players = [""] + [player[0] for player in players]
 yact = [players.index(p) for p in yact]
 xactdates = mdates.date2num(xact)
 ax0.xaxis_date()
@@ -86,7 +88,7 @@ ax0.set_xlim(timespan)
 ax0.scatter(xactdates, yact, marker=".")
 ax0.grid(True)
 ax0.set_yticklabels(players)
-ax0.set_yticks(xrange(0, len(players) + 1))
+ax0.set_yticks(range(0, len(players) + 1))
 ax0.set_ylabel("player activity")
 
 plt.tight_layout()
@@ -107,7 +109,7 @@ ax2.xaxis.set_major_formatter(hoursFmt)
 ax2.set_xlim(timespan)
 ax2.xaxis.grid(True)
 ax2.set_yticklabels(procs)
-ax2.set_yticks(xrange(0, len(procs) + 1))
+ax2.set_yticks(range(0, len(procs) + 1))
 
 
 fig.set_size_inches(10.24, 20.48)
