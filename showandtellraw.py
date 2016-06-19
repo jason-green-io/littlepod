@@ -50,8 +50,8 @@ def tohtml( string ):
 
 
 def tojson( string ):
-
-    return json.dumps( { "text" : "", "extra" : parse( string ) } )
+    
+    return json.dumps( { "text" : "", "extra" : parse( string ) }, ensure_ascii=False )
 
 
 def parse( string ):
