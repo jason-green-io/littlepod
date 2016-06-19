@@ -131,7 +131,7 @@ def getgeo(ip):
     return response.json()
 
 @asyncio.coroutine 
-def eventIP(data):
+def eventIp(data):
     name = data[1]
     ip = data[2].split(':')[0]
     try:
