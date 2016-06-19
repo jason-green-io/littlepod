@@ -26,9 +26,13 @@ add = set(whitelistSource.values()) - set(whitelistDest.values())
 remove = set(whitelistDest.values()) - set(whitelistSource.values())
 
 
+
+
 for each in add:
+    vanillabean.send("/whitelist add {}".format(each))
     print("/whitelist add {}".format(each))
 
 
 for each in remove:
+    vanillabean.send("/whitelist remove {}".format(each))
     print("/whitelist remove {}".format(each))
