@@ -91,10 +91,10 @@ def genbuilds(builds, players):
         name = each[0]
         if name.lower() in players:
             coords = each[1].split("|")
-            buildfinal.append( "## `{}`".format(name))
+            buildfinal.append( "## {}".format(name.replace("_", "\_")))
             for coord in coords:
                 link = coordstolink(coord)
-                subprocess.call("/usr/bin/phantomjs --debug=true /minecraft/makethumbnails.js " + link + " /minecraft/host/webdata/thumbs/" + coord + ".png", shell=True)
+                subprocess.call("/usr/bin/phantomjs --ssl-protocol=tlsv1 --debug=true /minecraft/minecraft-builds.js " + link + " /minecraft/host/webdata/thumbs/" + coord + ".png", shell=True)
                 buildfinal.append( "[!["+ coord + "](thumbs/" + coord +  ".png)](" + link + ")")
     return "\n".join(buildfinal)
          
