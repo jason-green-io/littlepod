@@ -14,6 +14,7 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
 mcversion = config['mcversion']    
 dbfile = config['dbfile']
 name = config['name']
+webdata = config["webdata"]
 
 def spawnfilter(poi):
     if poi["id"] == "spawn":
@@ -22,6 +23,8 @@ def spawnfilter(poi):
 
 
 def poi2text(poi, json=json):
+    with file as open(webdata + "/test.md", "a"):
+        file.write("|" + "|".join([poi["Text1"], poi["Text2"], poi["Text3"], poi["Text4"]]) + "|")
     return u"\n".join([poi["Text1"], poi["Text2"], poi["Text3"], poi["Text4"]])
 
 
