@@ -47,7 +47,7 @@ client = discord.Client()
 def telllinks( links ):
     for each in links:
         print( each)
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + " [_Link_|{}]".format(each)))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson((serverFormat + " [_Link_|{}]").format(servername, each)))
 
 
 def coordsmessage( coords ):
@@ -102,9 +102,14 @@ def on_message(message):
         messagetext = str(message.clean_content) 
         messagetext = messagetext.replace('"', r"\"")
         discordtext =  u'{"text" : "\\u2689 ", "color" : "aqua" }'
+        
+        if message.author.bot:
+            nameFormat = '<aqua^\<>{{<green^{}>~{}}}<aqua^\>>'
+        else:
+            nameFormat = '<aqua^\<>{{<gold^{}>~{}}}<aqua^\>>'
 
         #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
-        tellrawText =  u'<aqua^\<>{{<gold^{}>~{}}}<aqua^\>> {}'.format(display_name.replace("_", "\_"), discordName.replace("_", "\_").replace("@","\@"), messagetext)
+        tellrawText =  (nameFormat + u' {}').format(display_name.replace("_", "\_"), discordName.replace("_", "\_").replace("@","\@"), messagetext)
         finalline = '/tellraw @a[team=!mute] ' + showandtellraw.tojson(tellrawText)
 
         vanillabean.send(finalline)
