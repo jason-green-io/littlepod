@@ -22,6 +22,10 @@ mcfolder = config['mcdata']
 URL = config['URL']
 servername = config['name']
 
+serverFormat = "<aqua^\<><green^{}><aqua^\>>"
+playerFormat = "<aqua^\<><gold^{}><aqua^\>>"
+
+
 discordChannel = config["discordChannel"]
 discordPrivChannel = config["discordPrivChannel"]
 discordToken = config["discordToken"]
@@ -43,7 +47,7 @@ client = discord.Client()
 def telllinks( links ):
     for each in links:
         print( each)
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^{}> [_Link_|{}]".format(servername, each)))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + " [_Link_|{}]".format(each)))
 
 
 def coordsmessage( coords ):
@@ -63,7 +67,7 @@ def tellcoords( coords ):
     for each in coords:
         print (each, each[0], each[1], each[2])
 
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^" + servername + "> [Map: _" + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] +  "_|http://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0]"))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _" + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] +  "_|http://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0]"))
 
 
 
