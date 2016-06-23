@@ -206,7 +206,7 @@ def eventLeft(data):
 
 @asyncio.coroutine 
 def eventChat(data):
-    coordscomma =  re.findall( "^([EONeon]) (-?\d+), (-?\d+)", data[2])
+    coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", data[2])
     links = re.findall('<(https?://\S+)>', data[2])
 
     player = data[1]
