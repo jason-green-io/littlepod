@@ -106,7 +106,7 @@ def on_message(message):
         if message.author.bot:
             nameFormat = '<aqua^\<>{{<green^{}>~{}}}<aqua^\>> '
             mcplayer, mcmessage = messagetext.split(" ", 1)
-            messagetext = mcplayer.strip('`').replace("<", "\<").replace(">", "\>").replace("_","\_") + " " + mcmessage
+            messagetext = mcplayer.strip('`') + " " + mcmessage
         else:
             nameFormat = '<aqua^\<>{{<gold^{}>~{}}}<aqua^\>> '
 
