@@ -111,8 +111,8 @@ def on_message(message):
             nameFormat = '<aqua^\<>{{<gold^{}>~{}}}<aqua^\>>'
 
         #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
-        tellrawText =  (nameFormat + u' {}').format(display_name.replace("_", "\_"), discordName.replace("_", "\_").replace("@","\@"), messagetext)
-        finalline = '/tellraw @a[team=!mute] ' + showandtellraw.tojson(tellrawText)
+        tellrawText =  nameFormat.format(display_name.replace("_", "\_"), discordName.replace("_", "\_").replace("@","\@"))
+        finalline = '/tellraw @a[team=!mute] ' + showandtellraw.tojson(tellrawText, noparse=messagetext)
 
         vanillabean.send(finalline)
 
