@@ -49,9 +49,11 @@ def tohtml( string ):
     return "".join(html)
 
 
-def tojson( string ):
-    
-    return json.dumps( { "text" : "", "extra" : parse( string ) }, ensure_ascii=False )
+def tojson( string, noparse="this is not parsed *&^@$" ):
+    jsontext = parse(string)
+    if noparse:
+        jsontext.append({"text": noparse })
+    return json.dumps( { "text" : "", "extra" : jsontext }, ensure_ascii=False )
 
 
 def parse( string ):
@@ -221,12 +223,12 @@ def parse( string ):
 
         result3 += interimresult
 #        print result3
-
+    
     return result3
 
 
 if __name__ == "__main__":
 
     print(string)
-    print(tojson(string))
+    print(tojson(string, noparse="this is not parsed *-^@"))
     print(tohtml( string ))
