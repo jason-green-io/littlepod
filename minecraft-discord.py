@@ -104,11 +104,11 @@ def on_message(message):
         discordtext =  u'{"text" : "\\u2689 ", "color" : "aqua" }'
         
         if message.author.bot:
-            nameFormat = '<aqua^\<>{{<green^{}>~{}}}<aqua^\>>'
+            nameFormat = '<aqua^\<>{{<green^{}>~{}}}<aqua^\>> '
             mcplayer, mcmessage = messagetext.split(" ", 1)
             messagetext = mcplayer.strip('`').replace("<", "\<").replace(">", "\>").replace("_","\_") + " " + mcmessage
         else:
-            nameFormat = '<aqua^\<>{{<gold^{}>~{}}}<aqua^\>>'
+            nameFormat = '<aqua^\<>{{<gold^{}>~{}}}<aqua^\>> '
 
         #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
         tellrawText =  nameFormat.format(display_name.replace("_", "\_"), discordName.replace("_", "\_").replace("@","\@"))
