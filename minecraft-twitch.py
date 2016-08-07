@@ -13,6 +13,8 @@ import stat
 import logging
 import threading
 import time
+import datetime
+import dateutil.parser
 import sys
 import os
 import subprocess
@@ -26,7 +28,7 @@ import yaml
 import oauth2 as oauth
 sys.path.append('/minecraft')
 import vanillabean
-
+import showandtellraw
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -45,8 +47,10 @@ twitter = config['twitter']
 followers = {}
 newfollowers = []
 viewers = 0
-
-
+streaming = False
+createTime = ''
+title = ""
+debug = False
 
 s=socket.socket( )
 
@@ -75,35 +79,11 @@ def tweetbook():
         tweets.append( r'"[\"\",{\"text\":\"' + tweettext + r'\n\n\",\"color\":\"blue\"},{\"text\":\"' + "- @" + fav.get("user").get("screen_name") + r'\",\"color\":\"dark_aqua\"}]"')
 
     bookline = r'/give greener_ca minecraft:written_book 1 0 {title:"Tweets",author:"The Internet",pages:[' + ",".join(tweets) + ']}'
-    print(bookline)
+    #logging.debug(bookline)
     return bookline
 
-class LogTail:
-    def __init__(self, logfile):
-        self.logfile = os.path.abspath(logfile)
-        self.f = open(self.logfile,"r")
-        file_len = os.stat(self.logfile)[stat.ST_SIZE]
-        self.f.seek(file_len)
-        self.pos = self.f.tell()
-    def _reset(self):
-        self.f.close()
-        self.f = open(self.logfile, "r")
-        self.pos = self.f.tell()
-    def tail(self):
-        while 1:
-            self.pos = self.f.tell()
-            line = self.f.readline()
-            if not line:
-                if os.stat(self.logfile)[stat.ST_SIZE] < self.pos:
-                    self._reset()
-                else:
-                    time.sleep(1)
-                    self.f.seek(self.pos)
-            else:
-                print(line)
 
-
-def updatefollowers():
+def updateTwitchdata():
     try:
     # Ugly hack to force SSLv3 and avoid
     # urllib2.URLError: <urlopen error [Errno 1] _ssl.c:504: error:14077438:SSL routines:SSL23_GET_SERVER_HELLO:tlsv1 alert internal error>
@@ -113,7 +93,9 @@ def updatefollowers():
         pass
 
 
-
+    global title        
+    global streaming
+    global createTime    
     global followers
     global newfollowers
     global viewers
@@ -124,16 +106,32 @@ def updatefollowers():
         try:
             streamdata = requests.get("https://api.twitch.tv/kraken/streams/greener_ca").json()
             followerdata = requests.get("https://api.twitch.tv/kraken/channels/greener_ca/follows/?limit=100").json()
+            logging.debug(streamdata)
+
         except IOError:
             logging.debug( "IOError, dammit" )
         except ValueError:
             logging.debug( "ValueError, dammit" )
 
-        if streamdata.get("stream") == None:
-            viewers = 0
-        else:
+        if streamdata.get("stream") != None:
+            updateStreaming(True)
             viewers = int(streamdata.get("stream").get("viewers"))
+            createTime = dateutil.parser.parse(streamdata.get("stream").get("created_at"))
+            title = streamdata.get("stream").get("channel").get("status")
+            logging.debug(title)
+            
+        elif debug:
+            updateStreaming(True)
+           
+            viewers = 10000
+            title = "Barlynaland | Episode 99 - Blah test"
+            createTime = dateutil.parser.parse("2016-02-12T04:42:31Z")
 
+        else:
+            updateStreaming(False)
+            title = "Nope | Nope"
+            viewers = 0
+            
         for follows in followerdata.get("follows"):
             updatedfollowers.update( {follows.get("user").get("name") : follows.get("user").get("bio") } )
         if firstrun:
@@ -145,8 +143,6 @@ def updatefollowers():
                 logging.debug( "Here are your new followers: " + str(newfollowers) )
         followers = updatedfollowers
         logging.debug( "You have " + str(len(followers)) + " followers" )
-        vanillabean.send("/scoreboard players set §6Followers §5Twitch " + str(len(followers)))
-        vanillabean.send("/scoreboard players set §6Viewers §5Twitch " + str(viewers))
 
         time.sleep( 60 )
 
@@ -155,6 +151,24 @@ def sendtotwitch( string ):
     logging.debug( "Sent to twitch: " + string )
     s.send(b"PRIVMSG #greener_ca :" + string.encode("utf-8") + b"\r\n")
 
+def updateStreaming(bool):
+    global streaming
+    
+    if bool == streaming:
+        pass
+    elif bool == True:
+        streaming = True
+        vanillabean.send( "/scoreboard teams join Twitch greener_ca" )
+        jsontext = showandtellraw.tojson("<aqua^\<><dark_purple^twitch><aqua^\>> you are streaming")
+        vanillabean.send("/tellraw greener_ca " + jsontext)
+        logging.debug("Started streaming")
+    else:
+        streaming = False
+        vanillabean.send( "/scoreboard teams leave Twitch greener_ca" )
+        jsontext = showandtellraw.tojson("<aqua^\<><dark_purple^twitch><aqua^\>> you are NOT  streaming")
+        vanillabean.send("/tellraw greener_ca " + jsontext)
+        logging.debug("Stopped streaming")
+        
 def shownewfollowers():
     global newfollowers
 
@@ -166,8 +180,8 @@ def shownewfollowers():
             finalline1 = '/title greener_ca subtitle {"text":"new follower!","color":"aqua"}'
             finalline2 = '/title greener_ca title {"text":"' + yay + '","color":"green"}'
             vanillabean.send( sendreset )
-            vanillabean.send( finalline1, "7")
-            vanillabean.send( finalline2, "7")
+            vanillabean.send( finalline1)
+            vanillabean.send( finalline2)
             systemmessage( [ time.asctime(),  yay, "is a new follower!" ] )
             newfollowers.remove( yay )
             time.sleep( 10 )
@@ -219,14 +233,98 @@ def colorname( name ):
     else:
         return '{"text":" <' + name + '> ","color":"aqua"}'
 
+def pretty_date(time=False):
+    """
+    Get a datetime object or a int() Epoch timestamp and return a
+    pretty string like 'an hour ago', 'Yesterday', '3 months ago',
+    'just now', etc
+    """
+    from datetime import datetime
+    from datetime import timezone
+
+    now = datetime.now(timezone.utc)
+    if type(time) is int:
+        diff = now - datetime.fromtimestamp(time)
+    elif isinstance(time,datetime):
+        diff = now - time
+    elif not time:
+        diff = now - now
+    second_diff = diff.seconds
+    day_diff = diff.days
+        
+    if day_diff < 0:
+        return ''
+        
+    if day_diff == 0:
+        if second_diff < 10:
+            return "just now"
+        if second_diff < 60:
+            return str(second_diff) + " seconds ago"
+        if second_diff < 120:
+            return "a minute ago"
+        if second_diff < 3600:
+            return str(second_diff // 60) + " minutes ago"
+        if second_diff < 7200:
+            return "an hour ago"
+        if second_diff < 86400:
+            return str(second_diff // 3600) + " hours ago"
+    if day_diff == 1:
+        return "Yesterday"
+    if day_diff < 7:
+        return str(day_diff) + " days ago"
+    if day_diff < 31:
+        return str(day_diff // 7) + " weeks ago"
+    if day_diff < 365:
+        return str(day_diff // 30) + " months ago"
+    return str(day_diff // 365) + " years ago"
+
+def startEpisode():
+    global title
+    showtitle = title.split("|")[0].strip()
+    episodetitle = title.split("|")[1].strip()
+    for sec in range(300, -1, -1):
+        if sec == 10:
+            bookcommand = tweetbook()
+            logging.debug(bookcommand)
+            vanillabean.send(bookcommand)
+
+        timerText = "{} min {} sec".format(*divmod(sec, 60))
+        vanillabean.send('/title greener_ca title {{"text": "{}"}}'.format(timerText))
+        time.sleep(1)
+
+
+    time.sleep(8)
+
+    vanillabean.send('/title greener_ca subtitle {{"text": "{1}", "color": "gold"}}\n/title greener_ca title {{"text": "{0}", "color": "gold"}}'.format(showtitle, episodetitle))
+
+    time.sleep(15 * 60)
+    
+    vanillabean.send('/title greener_ca title {"text": "tweets", "color": "gold"}')
+    time.sleep(60 * 4)
+
+    vanillabean.send('/title greener_ca title {"text": "wrap it up", "color": "gold"}')
+    
+    time.sleep(60)
+
+    vanillabean.send('/title greener_ca subtitle {{"text": "{1}", "color": "gold"}}\n/title greener_ca title {{"text": "{0}", "color": "gold"}}'.format(showtitle, 'see you next time!'))
+
+    time.sleep(11)
+
+    vanillabean.send('/title greener_ca title {{"text": "{}"}}'.format("done"))
+
 
 def minecraftlistener():
-    logfile = os.path.abspath("/minecraft/host/mcdata/logs/latest.log")
-    f = open(logfile,"r")
+    episodeThread = threading.Thread(target=startEpisode,name="startEpisode")
+    episodeThread.setDaemon(True)
+    nextlineforlist = False
+    numplayers = 0
+    logfile = os.path.abspath(mcfolder + "/logs/latest.log")
+    f = open(logfile, "r", encoding="utf-8")
     file_len = os.stat(logfile)[stat.ST_SIZE]
     f.seek(file_len)
     pos = f.tell()
-
+    UUID = {}
+    
     while True:
         pos = f.tell()
         line = f.readline().strip()
@@ -240,30 +338,38 @@ def minecraftlistener():
                 time.sleep( 1 )
                 f.seek(pos)
         else:
-            commandparseRE = re.compile( "\[.*\] \[Server thread/INFO\]: \<(.*)\> !(.*)" )
-            commandparsematch = commandparseRE.match( line )
+            
+            eventData = vanillabean.genEvent(line)
+            event = ""
+            data = ()
+            if eventData:
+                # print(eventData)
+                event, data = eventData
+                logging.debug((event, data))
 
-            if commandparsematch == None:
-                continue
-            elif commandparsematch != None:
-                parsed = commandparsematch.groups()
 
-                name = parsed[0]
-                message = parsed[1]
-                if message == "tweets":
-                    vanillabean.send( tweetbook() )
-                elif message == "stats":
-                    vanillabean.send( "/scoreboard teams join Twitch greener_ca" )
-                elif message == "nostats":
-                    vanillabean.send( "/scoreboard teams leave Twitch greener_ca" )
-                elif "episode" in message:
-                    subprocess.Popen( "/minecraft/minecraft-episode.sh " + message.split(" ",1)[1], shell=True )
+            if event == "logged":
+                player = data[1]
+                if player == "greener_ca":
+                    if not episodeThread.is_alive():
+                        episodeThread.start()
 
-                elif name == "greener_ca":
-                    finalline = message
 
-                    sendtotwitch( finalline  )
-
+                    
+            """                if message == "tweets":
+            vanillabean.send( tweetbook() )
+            elif message == "stats":
+            vanillabean.send( "/scoreboard teams join Twitch greener_ca" )
+            elif message == "nostats":
+            vanillabean.send( "/scoreboard teams leave Twitch greener_ca" )
+            elif "episode" in message:
+            subprocess.Popen( "/minecraft/minecraft-episode.sh " + message.split(" ",1)[1], shell=True )
+            
+            elif name == "greener_ca":
+            finalline = message
+            
+            sendtotwitch( finalline  )
+            """
 
 def twitchlistener():
 
@@ -324,26 +430,46 @@ def twitchlistener():
                 systemmessage( [ datetime, name, message ] )
 
 
+
+def chatUpdate():
+    global streaming
+    global debug
+    global createTime
+    
+    while True:
+        time.sleep(5 * 60)
+        if streaming or debug:
+            logging.debug("Updating chat")
+
+            text = "<aqua^\<><dark_purple^twitch><aqua^\>> {}\/{} started {}".format(viewers, len(followers), pretty_date(time=createTime))
+            logging.debug(text)
+            vanillabean.send("/tellraw greener_ca " + showandtellraw.tojson(text))
+
+
 def main():
 
 
-    thread1 = threading.Thread(target=updatefollowers,name="updatefollowers")
-    thread2 = threading.Thread(target=twitchlistener,name="twitchlistener")
+    thread1 = threading.Thread(target=updateTwitchdata,name="updateTwitchdata")
+    #thread2 = threading.Thread(target=twitchlistener,name="twitchlistener")
     thread3 = threading.Thread(target=shownewfollowers,name="shownewfollowers")
-    thread4 = threading.Thread(target=minecraftlistener,name="minecraftlistener")
-
+    # thread4 = threading.Thread(target=minecraftlistener,name="minecraftlistener")
+    thread5 = threading.Thread(target=chatUpdate,name="chatUpdate")
+    
     thread1.setDaemon(True)
-    thread2.setDaemon(True)
+    #thread2.setDaemon(True)
     thread3.setDaemon(True)
-    thread4.setDaemon(True)
+    # thread4.setDaemon(True)
+    thread5.setDaemon(True)
 
+
+    
     thread1.start()
-    thread2.start()
+    #thread2.start()
     thread3.start()
-    thread4.start()
+    # thread4.start()
+    thread5.start()
 
-    while True:
-        time.sleep( 1 )
+    minecraftlistener()
 
 
 if __name__ == "__main__":
