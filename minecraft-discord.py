@@ -158,14 +158,14 @@ def eventIp(data):
 @asyncio.coroutine 
 def eventDeath1(data):
     player = data[1]
-    player = player.replace("?7","").replace("?r","")
+    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     message = data[2:]
     yield from client.send_message(channelobject, "`{}` {}".format(player, "".join(message)))
 
 @asyncio.coroutine 
 def eventDeath2(data):
     player = data[1]
-    player = player.replace("?7","").replace("?r","")
+    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     message = list(data[2:])
     message[1] = "`{}`".format(message[1])
     yield from client.send_message(channelobject, "`{}` {}".format(player, "".join(message)))
@@ -174,10 +174,10 @@ def eventDeath2(data):
 @asyncio.coroutine 
 def eventDeath3(data):
     player = data[1]
-    player = player.replace("?7","").replace("?r","")
+    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     message = list(data[2:])
     message[1] = "`{}`".format(message[1])
-    message[1] = message[1].replace("?7","").replace("?r","")
+    message[1] = re.sub(r"\?\d(.*)\?r",r"\1", message[1])
     message[3] = "`{}`".format(message[3])
     yield from client.send_message(channelobject, "`{}` {}".format(player, "".join(message)))
 
@@ -185,7 +185,7 @@ def eventDeath3(data):
 @asyncio.coroutine 
 def eventLogged(data):
     player = data[1]
-    player = player.replace("?7","").replace("?r","")
+    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     yield from client.send_message(channelobject, "`{}`  joined the server".format(player))
 
     ip = data[2].split(':')[0]
@@ -201,7 +201,7 @@ def eventLogged(data):
 @asyncio.coroutine 
 def eventLeft(data):
     player = data[1]
-    player = player.replace("?7","").replace("?r","")
+    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     yield from client.send_message(channelobject, "`{}` left the server".format(player))
 
 
@@ -212,8 +212,6 @@ def eventChat(data):
     links = re.findall('<(https?://\S+)>', data[2])
 
     player = data[1]
-    player = player.replace("\u00a75","").replace("\u00a7r","")
-    player = player.replace("?r","")
     message = data[2]
 
     for each in re.findall("@\S+", message):
@@ -230,7 +228,7 @@ def eventChat(data):
         telllinks( links )
 
     if not player.startswith("?7"):
-        player = player.replace("?7", "")
+        player = re.sub(r"\?\d(.*)\?r",r"\1", player)
         finalmessage = "`<{}>` {}".format(player, message)
         print(repr(finalmessage))
         yield from client.send_message(channelobject, finalmessage)

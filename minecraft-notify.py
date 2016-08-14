@@ -1,4 +1,6 @@
 #!/usr/bin/python -u
+import queue
+import threading
 import stat
 import os
 import time
@@ -30,8 +32,36 @@ otherdata = config['otherdata']
 
 UUID = ""
 
+q = queue.Queue()
+
+serverName = "<aqua^\<><green^{}><aqua^\>>".format(servername)
+worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
 
 
+def writeToDB():
+    while True:
+        DBWriter(q.get())
+        q.task_done()
+
+
+def DBWriter(queryArgs):
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+    
+    fail = True
+    while(fail):
+        try:
+            cur.execute(*queryArgs)
+            conn.commit()
+            fail = False
+        except sqlite3.OperationalError:
+            print("Locked")
+            fail = True
+
+threadDBWriter = threading.Thread(target=writeToDB)
+threadDBWriter.start()
+
+        
 def daily():
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
@@ -71,23 +101,25 @@ def eventLag(data):
     conn.close()
 
 def tellcoords( coords ):
-    worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
+    
 
     for each in coords:
         print(each, each[0], each[1], each[2])
 
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^{}> [Map: _ {}  {} _|http://{}/map/#/{}/64/{}/-3/{}/0]".format(servername, worlddict[ each[0].lower() ][0], ",".join([each[1], each[2]]), URL, each[1], each[2], worlddict[ each[0].lower() ][1])))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson(serverName + " [Map: _{} {}_|http://{}/map/#/{}/64/{}/-3/{}/0]".format(worlddict[ each[0].lower() ][0], ", ".join([each[1], each[2]]), URL, each[1], each[2], worlddict[ each[0].lower() ][1])))
 
 
 def telllinks( links ):
     for each in links:
         print(each)
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson("<green^{}> [_Link_|{}]".format(servername, each)))
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson(serverName + " [_Link_|{}]".format(each)))
 
 
 def eventCommand(data):
     time, name, message = data
-    command, args = message.split(" ",1)
+    command = message.split(" ",1)[0]
+    args = message.split(" ",1)[1:]
+    print(args)
     name = name.replace("?7","").replace("?r","")
     if command == "mute":
         if args == "on":
@@ -122,8 +154,33 @@ def eventCommand(data):
             pass
 
     if command == "status":
-        cur.execute('INSERT OR IGNORE INTO status (status, name) VALUES(?, ?)', (args, name))
-        cur.execute('UPDATE status SET status = ? WHERE name = ?', (args, name))
+        if args:
+            status = args[0]
+        else:
+            status = ""
+
+        cur.execute('INSERT OR IGNORE INTO status (status, name) VALUES(?, ?)', (status, name))
+        cur.execute('UPDATE status SET status = ? WHERE name = ?', (status, name))
+
+
+    if command == "maildrop":
+            cur.execute("SELECT * FROM maildrop WHERE name = ? COLLATE NOCASE", (name,))
+            maildrop = cur.fetchall()
+
+            for mail in maildrop:
+                dimcoords, boxname, desc, slots, hidden, inverted = mail
+                dim, coords = dimcoords.split(",",1)
+
+                URLcoords = coords.replace(",", "/")           
+
+                toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson(serverName + ' {{Maildrop [_{}_|http://{}/map/#/{}/-1/{}/0]~{} {}}} {}'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), URL, URLcoords, worlddict[dim][1], worlddict[dim][0], coords, "has {} items".format(slots) if slots else "is empty") )
+                vanillabean.send( toserver )
+                print(toserver)
+                
+    
+
+    conn.commit()
+    conn.close()
 
     conn.commit()
     conn.close()
@@ -142,8 +199,6 @@ def eventLogged(data):
     #response = json.loads(oauth_req( "https://api.twitter.com/1.1/statuses/update.json?" + tweetmessage, AccessToken, AccessTokenSecret, http_method="POST"))
     #print response
     
-    conn = sqlite3.connect(dbfile)
-    cur = conn.cursor()
 
     try:
         for each in open( otherdata + "/motd.txt", "r" ).readlines():
@@ -154,11 +209,49 @@ def eventLogged(data):
     except:
         pass
 
-    cur.execute("SELECT * FROM maildrop WHERE slots > 0 and name = ? COLLATE NOCASE", (name,))
+
+    
+
+
+    conn = sqlite3.connect(dbfile, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+    cur = conn.cursor()
+
+    '''
+    cur.execute('select m.name, desc,  m.coords, slots, c.ts as "[timestamp]", a.datetime as "[timestamp]"from maildrop as m natural left join (select coords, chest, ts from chests group by coords order by ts) as c join (select name, datetime from activity where datetime < datetime("now", "-5 minutes") group by name order by datetime) as a on c.ts > a.datetime and a.name == m.name ;')
+
+    results = cur.fetchall()
+
+    conn.commit()
+    conn.close()
+
+
+    attrs = ['years', 'months', 'days', 'hours', 'minutes']
+    human_readable = lambda delta: ['%d %s' % (getattr(delta, attr), getattr(delta, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(delta, attr)]
+
+
+
+    for each in results:
+        name, desc, coords, slots, updateTime, playerTime = each
+        coordsSplit = coords.split(',')
+        maplink = "http://{}/map/#/{}/64/{}/-3/{}/0".format(URL, coordsSplit[1], coordsSplit[2], worlddict[coordsSplit[0]][1])
+        print(maplink)
+        print("hey {}, [{}|{}] has {} slots filled, updated {} ago".format(each[0], each[1] if each[1] else "On map", maplink, each[3], " ".join(human_readable(relativedelta(datetime.datetime.now(), each[4])))))
+
+    '''
+
+
+
+
+
+
+    cur.execute("SELECT * FROM maildrop WHERE inverted = 0 and slots > 0 and name = ? COLLATE NOCASE", (name,))
     maildrop = cur.fetchall()
 
-    for mail in maildrop:
-        dimcoords, boxname, slots, hidden = mail
+    cur.execute("SELECT * FROM maildrop WHERE inverted = 1 and slots = 0 and name = ? COLLATE NOCASE", (name,))
+    maildropinv = cur.fetchall()
+
+    for mail in maildrop + maildropinv:
+        dimcoords, boxname, desc, slots, hidden, inverted = mail
         dim, coords = dimcoords.split(",",1)
 
         if dim == "e":
@@ -170,10 +263,10 @@ def eventLogged(data):
         
         URLcoords = coords.replace(",", "/")           
 
-        toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson('<green^Maildrop> for you at {} [_{}_|http://{}/map/#/{}/-1/{}/0]'.format(dim, coords, URL, URLcoords, worldnum) )
+        toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson(serverName + ' {{Maildrop [_{}_|http://{}/map/#/{}/-1/{}/0]~{} {}}} {}'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), URL, URLcoords, worldnum, worlddict[dim][0], coords, "has {} items".format(slots) if slots else "is empty") )
         vanillabean.send( toserver )
-
-    cur.execute('insert into joins values (?,?,?,?)', (datetime.datetime.now(), name, UUID.get(name, "Unknown"), ip))
+        print(toserver)
+    q.put(('insert into joins values (?,?,?,?)', (datetime.datetime.now(), name, UUID.get(name, "Unknown"), ip)))
     
 
     conn.commit()
@@ -181,15 +274,15 @@ def eventLogged(data):
 
 
 def eventChat(data):
-    coordscomma = re.findall("^([OENoen]) (-?\d+), (-?\d+)", data[1])
-    links = re.findall(r'https?://\S+', data[1])
+    coordscomma = re.findall("^([OENoen]) (-?\d+), ?(-?\d+)", data[2])
+    links = re.findall(r'https?://\S+', data[2])
     if coordscomma:
         print(coordscomma)
-        tellcoords( coordscomma )
+        tellcoords(coordscomma)
     
     if links:
         print(links)
-        telllinks( links )
+        telllinks(links)
 
 
 def eventUUID(data):
@@ -214,7 +307,7 @@ def playerlist(numplayers, line):
 
     if int(numplayers) > 0:
         for player in players:
-            cur.execute('INSERT INTO activity (datetime, name) VALUES (?,?)', (datetime.datetime.now(), player.strip()))
+            q.put(('INSERT INTO activity (datetime, name) VALUES (?,?)', (datetime.datetime.now(), player.strip())))
 
     # for location in teleplayers:
     #     cur.execute('INSERT INTO location (name, x, y, z) VALUES(?,?,?,?)', location)
