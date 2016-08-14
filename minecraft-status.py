@@ -94,7 +94,8 @@ def genbuilds(builds, players):
             buildfinal.append( "## {}".format(name.replace("_", "\_")))
             for coord in coords:
                 link = coordstolink(coord)
-                subprocess.call("/usr/bin/phantomjs --ssl-protocol=tlsv1 --debug=true /minecraft/minecraft-builds.js " + link + " /minecraft/host/webdata/thumbs/" + coord + ".png", shell=True)
+                phantomjsLink = coordstolink(coord).replace(URL,"127.0.0.1:8080")
+                subprocess.call("/usr/bin/phantomjs --debug=true --ssl-protocol=tlsv1 /minecraft/minecraft-builds.js " + phantomjsLink + " /minecraft/host/webdata/thumbs/" + coord + ".png", shell=True, timeout=10)
                 buildfinal.append( "[!["+ coord + "](thumbs/" + coord +  ".png)](" + link + ")")
     return "\n".join(buildfinal)
          

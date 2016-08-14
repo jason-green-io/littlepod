@@ -30,7 +30,7 @@ def tohtml( string ):
     for each in parse( string ):
         style = []
         text = each.get("text")
-        print(each)
+        # print(each)
         if "color" in each:
             style.append( "color: " + colorlist.get(each.get("color")) +";")
         if "bold" in each:
@@ -49,7 +49,7 @@ def tohtml( string ):
     return "".join(html)
 
 
-def tojson( string, noparse="this is not parsed *&^@$" ):
+def tojson( string, noparse="" ):
     jsontext = parse(string)
     if noparse:
         jsontext.append({"text": noparse })
