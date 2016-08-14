@@ -23,14 +23,11 @@
    } 
   },{
     // web server
-    "name"       : "minecraft-twistd",
-    "script"     : "minecraft-twistd.sh",
+    "name"       : "minecraft-nginx",
+    "script"     : "minecraft-nginx.sh",
     "cwd"         : "/minecraft",
-    "error_file"  : "/minecraft/host/otherdata/logs/minecraft-web-err.log",
-    "out_file"    : "/minecraft/host/otherdata/logs/minecraft-web-out.log",
-    "env": {
-      "PYTHONUNBUFFERED": "yes",
-    }
+    "error_file"  : "/minecraft/host/otherdata/logs/minecraft-nginx-err.log",
+    "out_file"    : "/minecraft/host/otherdata/logs/minecraft-nginx-out.log",
   },{
     // notify
     "name"       : "minecraft-notify",
