@@ -29,7 +29,7 @@ def chestsEnd(poi):
     return chestsUniversal(poi, "e")
 
 def chestsUniversal( poi, dim ):
-    if poi['id'] == 'Chest':
+    if poi['id'] in ['Chest', "minecraft:chest"]:
         
         #filetime = time.strftime("%Y%m%d%H%M")
         chestfile = otherdata + '/chests/latest' + "." + dim + '.json'

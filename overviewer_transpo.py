@@ -158,11 +158,16 @@ def signFilterFlywayEnd( poi ):
 
 
 def signFilterfly(poi, dim, poi2text=poi2text):
-    if poi['id'] == 'Sign' and "*flyway*" in poi['Text1']:
+    if poi['id'] in ['Sign', "minecraft:sign"] and "*flyway*" in poi['Text1']:
         # print(poi)
         lines = ["Text1","Text2","Text3","Text4"]
         text = []
         for each in lines:
+            try:
+                poi[each] = json.loads(poi[each]).get("text")
+
+            except:
+                pass
             text.append(poi[each].replace(u"\uf701","").replace(u"\uf700",""))
         print(text)
         if text[3]:
@@ -183,13 +188,18 @@ def signFilterfly(poi, dim, poi2text=poi2text):
 
 
 def signFilterpoint(poi, dim, color, poi2text=poi2text):
-    if poi['id'] == 'Sign' and "*{}*".format(color) in poi['Text1']:
+    if poi['id'] in ['Sign', "minecraft:sign"] and "*{}*".format(color) in poi['Text1']:
         # print(poi)
         lines = ["Text1","Text2","Text3","Text4"]
         text = []
         for each in lines:
+            try:
+                poi[each] = json.loads(poi[each]).get("text")
+
+            except:
+                pass
             text.append(poi[each].replace(u"\uf701","").replace(u"\uf700",""))
-        print(text)
+
         if text[3]:
             for polyid in text[3].split(','):
                 try:
@@ -204,7 +214,7 @@ def signFilterpoint(poi, dim, color, poi2text=poi2text):
                 conn.close()
 
         if text[1] or text[2]:  
-            print(poi)
+
             return poi2text(poi)
 
 
