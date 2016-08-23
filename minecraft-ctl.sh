@@ -44,7 +44,7 @@ mcstart ()
     sleep 5
    ( pipestart ) &
     echo "Starting server"
-
+    sleep 5
    ( echo $LANG; /usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean ) &
    PID=$!
 
