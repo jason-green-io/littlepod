@@ -12,6 +12,7 @@ import re
 import sqlite3
 import sys
 import oauth2 as oauth
+from collections import Counter
 sys.path.append('/minecraft')
 import showandtellraw
 import vanillabean
@@ -59,10 +60,53 @@ def DBWriter(queryArgs):
             fail = True
 
 threadDBWriter = threading.Thread(target=writeToDB)
+threadDBWriter.setDaemon(True)
 threadDBWriter.start()
 
-        
-def daily():
+donothing = lambda *args: None        
+
+def stats(stat):
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+
+    cur.execute('select name, group_concat(stats) from stats natural join playerUUID where datetime >= datetime("now", "-7 days") group by UUID')
+    peeps = cur.fetchall()
+
+    conn.commit()
+    conn.close()
+
+    sumPeep = {}
+
+    for peep in peeps:
+        stats = "[" + peep[1] + "]"
+        statsCount = Counter()
+        stats = eval(stats)
+        for each in stats:
+            statsCount.update(each)
+            sumPeep.update({peep[0]: statsCount})
+            
+        return sorted([(each[0], each[1].get(stat, 0)) for each in sumPeep.items()], key=lambda a: a[1], reverse=True)[0]
+
+
+def flyStat():
+    name, stat = stats("stat.aviateOneCm")
+    vanillabean.tweet("Congrats to {} for flying {} kms this week!".format(name, stat / 100 / 1000))
+
+def minecartStat():
+    name, stat = stats("stat.minecartOneCm")
+    vanillabean.tweet("Congrats to {} for sitting in a minecart for {} m this week!".format(name, stat / 100 ))
+
+def sneakStat():
+    name, stat = stats("stat.sneakTime")
+    vanillabean.tweet("Congrats to {} for sneaking {} m this week!".format(name, stat / 100 ))
+
+def boatStat():
+    name, stat = stats("stat.boatOneCm")
+    vanillabean.tweet("Congrats to {} for boating {} m this week!".format(name, stat / 100 ))
+
+    
+
+def playtimeStat():
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
     cur.execute('select count(datetime) as total, name from activity where datetime >= datetime("now", "-7 days") group by name order by total desc limit 1')
@@ -79,8 +123,14 @@ def monthly():
     pass
 
 
-schedule.every().monday.at("07:00").do(daily)
-#schedule.every(5).minutes.do(daily)
+schedule.every().monday.at("07:00").do(playtimeStat)
+schedule.every().tuesday.at("07:00").do(donothing)
+schedule.every().wednesday.at("07:00").do(flyStat)
+schedule.every().thursday.at("07:00").do(minecartStat)
+schedule.every().friday.at("07:00").do(boatStat)
+schedule.every().saturday.at("07:00").do(sneakStat)
+schedule.every().sunday.at("07:00").do(donothing)
+
 
 def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=None ):
     consumer = oauth.Consumer( key=ConsumerKey , secret=ConsumerSecret )
@@ -95,7 +145,7 @@ def eventLag(data):
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
-    cur.execute("INSERT INTO loglag VALUES (?,?)", (datetime.datetime.now(), tick))
+    q.put(("INSERT INTO loglag VALUES (?,?)", (datetime.datetime.now(), tick)))
 
     conn.commit()
     conn.close()
@@ -139,17 +189,17 @@ def eventCommand(data):
         print(network, user)
 
         if network == "twitch":
-            cur.execute('INSERT OR IGNORE INTO status (twitch, name) VALUES(?, ?)', (user, name))
-            cur.execute('UPDATE status SET twitch = ? WHERE name = ?', (user, name))
+            q.put(('INSERT OR IGNORE INTO status (twitch, name) VALUES(?, ?)', (user, name)))
+            q.put(('UPDATE status SET twitch = ? WHERE name = ?', (user, name)))
         if network == "youtube":
-            cur.execute('INSERT OR IGNORE INTO status (youtube, name) VALUES(?, ?)', (user, name))
-            cur.execute('UPDATE status SET youtube = ? WHERE name = ?', (user, name))
+            q.put(('INSERT OR IGNORE INTO status (youtube, name) VALUES(?, ?)', (user, name)))
+            q.put(('UPDATE status SET youtube = ? WHERE name = ?', (user, name)))
         if network == "twitter":
-            cur.execute('INSERT OR IGNORE INTO status (twitter, name) VALUES(?, ?)', (user, name))
-            cur.execute('UPDATE status SET twitter = ? WHERE name = ?', (user, name))
+            q.put(('INSERT OR IGNORE INTO status (twitter, name) VALUES(?, ?)', (user, name)))
+            q.put(('UPDATE status SET twitter = ? WHERE name = ?', (user, name)))
         if network == "reddit":
-            cur.execute('INSERT OR IGNORE INTO status (reddit, name) VALUES(?, ?)', (user, name))
-            cur.execute('UPDATE status SET reddit = ? WHERE name = ?', (user, name))
+            q.put(('INSERT OR IGNORE INTO status (reddit, name) VALUES(?, ?)', (user, name)))
+            q.put(('UPDATE status SET reddit = ? WHERE name = ?', (user, name)))
         if network == "clear":
             pass
 
@@ -159,8 +209,8 @@ def eventCommand(data):
         else:
             status = ""
 
-        cur.execute('INSERT OR IGNORE INTO status (status, name) VALUES(?, ?)', (status, name))
-        cur.execute('UPDATE status SET status = ? WHERE name = ?', (status, name))
+        q.put(('INSERT OR IGNORE INTO status (status, name) VALUES(?, ?)', (status, name)))
+        q.put(('UPDATE status SET status = ? WHERE name = ?', (status, name)))
 
 
     if command == "maildrop":
@@ -178,9 +228,6 @@ def eventCommand(data):
                 print(toserver)
                 
     
-
-    conn.commit()
-    conn.close()
 
     conn.commit()
     conn.close()
@@ -323,7 +370,7 @@ def eventAchievement(data):
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
 
-    cur.execute("INSERT INTO achievements VALUES (?,?,?)", (datetime.datetime.now(), name, ach))
+    q.put(("INSERT INTO achievements VALUES (?,?,?)", (datetime.datetime.now(), name, ach)))
     vanillabean.tweet('{} just got "{}"'.format(name, ach))
     conn.commit()
     conn.close()

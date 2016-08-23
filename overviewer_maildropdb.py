@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import sqlite3
 import sys
+import Queue
+import threading
 sys.path.append('/minecraft')
 import vanillabean2
 import yaml
@@ -26,11 +28,35 @@ absentplayers = [player[0].lower() for player in cur.fetchall()]
 conn.commit()
 conn.close()
 
-print(curplayers)
-print(oldplayers)
-print(absentplayers)
+q = Queue.Queue()
+
+def writeToDB():
+    global q
+    while True:
+        DBWriter(q.get())
+        q.task_done()
 
 
+def DBWriter(queryArgs):
+    global dbfile
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+    
+    fail = True
+    while(fail):
+        try:
+            cur.execute(*queryArgs)
+            conn.commit()
+            fail = False
+        except sqlite3.OperationalError:
+            print("Locked")
+            fail = True
+
+
+
+threadDBWriter = threading.Thread(target=writeToDB)
+threadDBWriter.setDaemon(True)
+threadDBWriter.start()
 
 def maildropFilterOverworld(poi):
     return maildropFilteruniversal( poi, "o" )
@@ -68,11 +94,12 @@ def absentMaildropFilterEnd(poi):
     return absentMaildropFilteruniversal( poi, "e" )
 
 def inactiveMaildropFilteruniversal( poi, dim, players=oldplayers ):
-    if poi['id'] == ('Chest' or "minecraft:chest"):
+    if poi['id'] in ['Chest', "minecraft:chest"]:
         if poi.has_key('CustomName'):
             rawplayer = poi['CustomName']
-            inverted = True if "!" in rawplayer[0:2] else False
-            hidden = rawplayer[0] == "."
+           
+            inverted = rawplayer[0] == "!" 
+            hidden = rawplayer[0] in [".", "!"]
             playerdesc = rawplayer.lstrip(".").lstrip('!').split(" ", 1)
             player = playerdesc[0]
     
@@ -84,10 +111,10 @@ def inactiveMaildropFilteruniversal( poi, dim, players=oldplayers ):
 
 
 def absentMaildropFilteruniversal( poi, dim, players=absentplayers ):
-    if poi['id'] == ('Chest' or "minecraft:chest"):
+    if poi['id'] in ['Chest', "minecraft:chest"]:
         if poi.has_key('CustomName'):
             rawplayer = poi['CustomName']
-            hidden = rawplayer[0] == ("." or "!")
+            hidden = rawplayer[0] in [".", "!"]
             inverted = rawplayer[0] == "!"
             playerdesc = rawplayer.lstrip(".").lstrip("!").split(" ", 1)
             player = playerdesc[0]
@@ -99,7 +126,7 @@ def absentMaildropFilteruniversal( poi, dim, players=absentplayers ):
                 cur = conn.cursor()
                 # cur.execute('insert into maildrop values (?,?,?,?,?)', (dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z']), player, False, len(poi['Items']), hidden))
                 coords = dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z'])
-                cur.execute('INSERT OR REPLACE INTO tempmaildrop (coords, name, desc, slots, hidden, inverted ) VALUES (?, ?, ?, ? ,?, ?)', (coords, player, desc, len(poi['Items']), hidden, inverted))
+                q.put(('INSERT OR REPLACE INTO tempmaildrop (coords, name, desc, slots, hidden, inverted ) VALUES (?, ?, ?, ? ,?, ?)', (coords, player, desc, len(poi['Items']), hidden, inverted)))
                 conn.commit()
                 conn.close()
                 
@@ -110,11 +137,11 @@ def absentMaildropFilteruniversal( poi, dim, players=absentplayers ):
 
 def maildropFilteruniversal( poi, dim, players=curplayers ):
 
-    if poi['id'] == ('Chest' or "minecraft:chest"):
+    if poi['id'] in ['Chest', "minecraft:chest"]:
         if poi.has_key('CustomName'):
             rawplayer = poi['CustomName']
-            inverted = True if "!" in rawplayer[0:2] else False
-            hidden = rawplayer[0] == "."
+            inverted = rawplayer[0] == "!"
+            hidden = rawplayer[0] in [".", "!"]
             playerdesc = rawplayer.lstrip(".").lstrip("!").split(" ", 1)
             player = playerdesc[0]
     
@@ -126,7 +153,7 @@ def maildropFilteruniversal( poi, dim, players=curplayers ):
                 cur = conn.cursor()
                 # cur.execute('insert into maildrop values (?,?,?,?,?)', (dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z']), player, False, len(poi['Items']), hidden))
                 coords = dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z'])
-                cur.execute('INSERT OR REPLACE INTO tempmaildrop (coords, name, desc, slots, hidden, inverted ) VALUES (?, ?, ?, ? ,?, ?)', (coords, player, desc, len(poi['Items']), hidden, inverted))
+                q.put(('INSERT OR REPLACE INTO tempmaildrop (coords, name, desc, slots, hidden, inverted ) VALUES (?, ?, ?, ? ,?, ?)', (coords, player, desc, len(poi['Items']), hidden, inverted)))
                 conn.commit()
                 conn.close()
 
@@ -137,13 +164,13 @@ def maildropFilteruniversal( poi, dim, players=curplayers ):
 
 
 
-markersover = [ dict(name="maildrops (list of shame)", icon="icons/orange/temple_ruins.png", filterFunction=absentMaildropFilterOverworld, checked=True),
-               dict(name="maildrops (un-whitelisted)", icon="icons/orange/symbol_blank.png", filterFunction=inactiveMaildropFilterOverworld, checked=True),
-               dict(name="maildrops", icon="icons/orange/temple-2.png", filterFunction=maildropFilterOverworld, checked=True) ]
-markersnether = [ dict(name="maildrops (list of shame)", icon="icons/orange/temple_ruins.png", filterFunction=absentMaildropFilterNether, checked=True),
-                 dict(name="maildrops (un-whitelisted)", icon="icons/orange/symbol_blank.png", filterFunction=inactiveMaildropFilterNether, checked=True),
-                 dict(name="maildrops", icon="icons/orange/temple-2.png", filterFunction=maildropFilterNether, checked=True) ]
-markersend = [ dict(name="maildrops (list of shame)", icon="icons/ornage/temple_ruins.png", filterFunction=absentMaildropFilterEnd, checked=True),
-              dict(name="maildrops (un-whitelisted)", icon="icons/orange/symbol_blank.png", filterFunction=inactiveMaildropFilterEnd, checked=True),
-              dict(name="maildrops", icon="icons/orange/temple-2.png", filterFunction=maildropFilterEnd, checked=True) ]
+markersover = [ dict(name="maildrops (list of shame)", icon="icons/orange/temple_ruins.png", filterFunction=absentMaildropFilterOverworld, checked=False),
+               dict(name="maildrops (un-whitelisted)", icon="icons/orange/symbol_blank.png", filterFunction=inactiveMaildropFilterOverworld, checked=False),
+               dict(name="maildrops", icon="icons/orange/temple-2.png", filterFunction=maildropFilterOverworld, checked=False) ]
+markersnether = [ dict(name="maildrops (list of shame)", icon="icons/orange/temple_ruins.png", filterFunction=absentMaildropFilterNether, checked=False),
+                 dict(name="maildrops (un-whitelisted)", icon="icons/orange/symbol_blank.png", filterFunction=inactiveMaildropFilterNether, checked=False),
+                 dict(name="maildrops", icon="icons/orange/temple-2.png", filterFunction=maildropFilterNether, checked=False) ]
+markersend = [ dict(name="maildrops (list of shame)", icon="icons/ornage/temple_ruins.png", filterFunction=absentMaildropFilterEnd, checked=False),
+              dict(name="maildrops (un-whitelisted)", icon="icons/orange/symbol_blank.png", filterFunction=inactiveMaildropFilterEnd, checked=False),
+              dict(name="maildrops", icon="icons/orange/temple-2.png", filterFunction=maildropFilterEnd, checked=False) ]
 

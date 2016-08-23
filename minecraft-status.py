@@ -84,26 +84,6 @@ def genshame(shame):
     return shamefinal
 
 
-def genbuilds(builds, players):
-    buildfinal =[] 
-    players =  [player[0].lower() for player in players]
-    for each in builds:
-        name = each[0]
-        if name.lower() in players:
-            coords = each[1].split("|")
-            buildfinal.append( "## {}".format(name.replace("_", "\_")))
-            for coord in coords:
-                link = coordstolink(coord)
-                phantomjsLink = coordstolink(coord).replace(URL,"127.0.0.1")
-                subprocess.call("/usr/bin/phantomjs --debug=true --ssl-protocol=tlsv1 /minecraft/minecraft-builds.js " + phantomjsLink + " /minecraft/host/webdata/thumbs/" + coord + ".png", shell=True, timeout=10)
-                buildfinal.append( "[!["+ coord + "](thumbs/" + coord +  ".png)](" + link + ")")
-    return "\n".join(buildfinal)
-         
-        
-def coordstolink(coords):
-    worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }    
-    dim, x, y, z = tuple(coords.split(","))
-    return "http://" + URL + "/map/#/" + x + "/" + y + "/" + z + "/-2/" + worlddict[dim][1] + "/0"
 
 
 conn = sqlite3.connect(dbfile, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
@@ -122,9 +102,6 @@ shame = cur.fetchall()
 cur.execute("SELECT * FROM quickie")
 quickie = cur.fetchall()
 
-cur.execute('select name, group_concat(coords,"|") from maildrop where hidden != 1 group by name')
-builds = cur.fetchall()
-print(builds)
 cur.execute('select count(name) from whitelist')
 numwhitelist = cur.fetchall()[0][0]
 
@@ -214,6 +191,3 @@ a:visited { color:white; }
 with open(webdata + "/status.md", "w") as outfile:
     outfile.write(stats)
 
-buildfinal = genbuilds(builds, players + oldplayers)
-with open(webdata + "/builds.md", "w") as outfile:
-    outfile.write(buildfinal)

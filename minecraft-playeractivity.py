@@ -2,6 +2,7 @@
 '''
 Created on 2014-07-03
 '''
+import threading
 import shutil
 import sys
 import time
@@ -9,6 +10,7 @@ import os
 import yaml
 import sqlite3
 import json
+import queue
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import FileSystemEventHandler
@@ -23,15 +25,42 @@ mcfolder = config['mcdata']
 dbfile = config['dbfile']
 otherdata = config["otherdata"]
 
+q = queue.Queue()
+
+def writeToDB():
+    while True:
+        DBWriter(q.get())
+        q.task_done()
+
+
+def DBWriter(queryArgs):
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+
+    fail = True
+    while(fail):
+        try:
+            cur.execute(*queryArgs)
+            conn.commit()
+            fail = False
+        except sqlite3.OperationalError:
+            print("Locked")
+            fail = True
+
+threadDBWriter = threading.Thread(target=writeToDB)
+threadDBWriter.setDaemon(True)
+threadDBWriter.start()
+
+
 def digits(val, digits):
-        hi = int(1) << (digits * 4)
+    hi = int(1) << (digits * 4)
         
-        uuidPart = hex(hi | (val & (hi-1)))[3:]
-        # print(uuidPart)
-        return uuidPart
+    uuidPart = hex(hi | (val & (hi-1)))[3:]
+    # print(uuidPart)
+    return uuidPart
 
 def getUUID(least, most):
-        return digits(most >> 32, 8) + "-" + digits(most >> 16, 4) + "-" + digits(most, 4) + "-" + digits(least >> 48, 4) + "-" + digits(least, 12)
+    return digits(most >> 32, 8) + "-" + digits(most >> 16, 4) + "-" + digits(most, 4) + "-" + digits(least >> 48, 4) + "-" + digits(least, 12)
 
 
 def getpos(filename):
@@ -71,7 +100,7 @@ class PosHandler(PatternMatchingEventHandler):
             # print pos
             conn = sqlite3.connect(dbfile, timeout=30)
             cur = conn.cursor()
-            cur.execute("INSERT INTO location (UUID, dim, x, y, z) VALUES (?,?,?,?,?)", pos)
+            q.put(("INSERT INTO location (UUID, dim, x, y, z) VALUES (?,?,?,?,?)", pos))
 
             conn.commit()
             conn.close()
@@ -119,7 +148,7 @@ class StatHandler(FileSystemEventHandler):
                 print(name, diff)
                 conn = sqlite3.connect(dbfile, timeout=30)
                 cur = conn.cursor()
-                cur.execute("INSERT INTO stats (UUID, stats) VALUES (?,?)", (name, str(diff)))
+                q.put(("INSERT INTO stats (UUID, stats) VALUES (?,?)", (name, str(diff))))
 
                 conn.commit()
                 conn.close()
