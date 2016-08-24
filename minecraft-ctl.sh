@@ -4,6 +4,14 @@ set -m
 eval $(parse_yaml /minecraft/host/config/server.yaml "config_")
 CLIENTVERSION=$config_mcversion
 VERSION=$config_mcversion
+
+if [[ ! -p /minecraft/vanillabean ]]; then
+    rm /minecraft/vanillabean
+    mkfifo /minecraft/vanillabean
+fi
+
+
+
 tobackup ()
 {
     echo "Sending to backup"
@@ -18,10 +26,6 @@ fromram ()
 
 function pipestart ()
 {
-    if [[ ! -p /minecraft/vanillabean ]]; then
-
-        mkfifo /minecraft/vanillabean
-    fi
     cat > /minecraft/vanillabean
 }
 
@@ -42,16 +46,17 @@ mcstart ()
     fi
     echo "Starting named pipe"
     sleep 5
-   ( pipestart ) &
+    ( pipestart ) &
+    
     echo "Starting server"
     sleep 5
-   ( echo $LANG; /usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean ) &
-   PID=$!
+    ( echo $LANG; /usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean ) &
+    PID=$!
 
 
-    wait $PID
-    echo "Server stopped"
-    tobackup
+   wait $PID
+   echo "Server stopped"
+   tobackup
 }
 
 mcstop ()
