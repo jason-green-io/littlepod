@@ -7,7 +7,7 @@ eval $(parse_yaml /minecraft/host/config/server.yaml "config_")
 if [[ $1 == "yesterday" ]]; then
     yesterday=$(date -d @$(($(date +%s) - 24 * 3600)) +%Y%m%d)
     ADMIN=$config_webdata/map/$config_mapadminsecret/$yesterday
-    mkdir $ADMIN
+    mkdir -p $ADMIN
 
     overviewer.py --skip-scan --config=/minecraft/host/config/overviewerconfigadmin.py --genpoi yesterday
 
@@ -20,7 +20,7 @@ else
 
     rm -r $ADMIN/*
 
-    mkdir $ADMIN
+    mkdir -p $ADMIN
 
     overviewer.py --skip-scan --config=/minecraft/host/config/overviewerconfigadmin.py --genpoi
 

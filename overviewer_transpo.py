@@ -222,27 +222,27 @@ def signFilterpoint(poi, dim, color, poi2text=poi2text):
 
 
 
-overmarker = [ dict(name="NetherTrans purple over", icon="icons/purple/highway.png", filterFunction=signFilterPurplelineOver, createInfoWindow=True, checked=True),
- dict(name="NetherTrans red over", icon="icons/red/highway.png", filterFunction=signFilterRedlineOver, createInfoWindow=True, checked=True),
- dict(name="NetherTrans blue over", icon="icons/blue/highway.png", filterFunction=signFilterBluelineOver, createInfoWindow=True, checked=True),
- dict(name="NetherTrans green over", icon="icons/green/highway.png", filterFunction=signFilterGreenlineOver, createInfoWindow=True, checked=True),
- dict(name="NetherTrans yellow over", icon="icons/yellow/highway.png", filterFunction=signFilterYellowlineOver, createInfoWindow=True, checked=True),
- dict(name="FlyWay over", icon="icons/skyblue/airport.png", filterFunction=signFilterFlywayOver, createInfoWindow=True, checked=True),
- dict(name="transpo over", icon="", filterFunction=polyFilterOver, createInfoWindow=True, checked=True) ]
+overmarker = [ dict(name="NetherTrans purple over", icon="icons/purple/highway.png", filterFunction=signFilterPurplelineOver, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans red over", icon="icons/red/highway.png", filterFunction=signFilterRedlineOver, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans blue over", icon="icons/blue/highway.png", filterFunction=signFilterBluelineOver, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans green over", icon="icons/green/highway.png", filterFunction=signFilterGreenlineOver, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans yellow over", icon="icons/yellow/highway.png", filterFunction=signFilterYellowlineOver, createInfoWindow=True, checked=False),
+ dict(name="FlyWay over", icon="icons/skyblue/airport.png", filterFunction=signFilterFlywayOver, createInfoWindow=True, checked=False),
+ dict(name="transpo over", icon="", filterFunction=polyFilterOver, createInfoWindow=True, checked=False) ]
 
-nethermarker = [ dict(name="NetherTrans purple nether", icon="icons/purple/highway.png", filterFunction=signFilterPurplelineNether, createInfoWindow=True, checked=True),
- dict(name="NetherTrans red nether", icon="icons/red/highway.png", filterFunction=signFilterRedlineNether, createInfoWindow=True, checked=True),
- dict(name="NetherTrans blue nether", icon="icons/blue/highway.png", filterFunction=signFilterBluelineNether, createInfoWindow=True, checked=True),
- dict(name="NetherTrans green nether", icon="icons/green/highway.png", filterFunction=signFilterGreenlineNether, createInfoWindow=True, checked=True),
- dict(name="NetherTrans yellow nether", icon="icons/yellow/highway.png", filterFunction=signFilterYellowlineNether, createInfoWindow=True, checked=True),
- dict(name="FlyWay nether", icon="icons/skyblue/airport.png", filterFunction=signFilterFlywayNether, createInfoWindow=True, checked=True),
- dict(name="transpo nether", icon="", filterFunction=polyFilterNether, createInfoWindow=True, checked=True) ]
+nethermarker = [ dict(name="NetherTrans purple nether", icon="icons/purple/highway.png", filterFunction=signFilterPurplelineNether, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans red nether", icon="icons/red/highway.png", filterFunction=signFilterRedlineNether, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans blue nether", icon="icons/blue/highway.png", filterFunction=signFilterBluelineNether, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans green nether", icon="icons/green/highway.png", filterFunction=signFilterGreenlineNether, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans yellow nether", icon="icons/yellow/highway.png", filterFunction=signFilterYellowlineNether, createInfoWindow=True, checked=False),
+ dict(name="FlyWay nether", icon="icons/skyblue/airport.png", filterFunction=signFilterFlywayNether, createInfoWindow=True, checked=False),
+ dict(name="transpo nether", icon="", filterFunction=polyFilterNether, createInfoWindow=True, checked=False) ]
 
-endmarker = [ dict(name="NetherTrans purple end", icon="icons/purple/highway.png", filterFunction=signFilterPurplelineEnd, createInfoWindow=True, checked=True),
- dict(name="NetherTrans red end", icon="icons/red/highway.png", filterFunction=signFilterRedlineEnd, createInfoWindow=True, checked=True),
- dict(name="NetherTrans blue end", icon="icons/blue/highway.png", filterFunction=signFilterBluelineEnd, createInfoWindow=True, checked=True),
- dict(name="NetherTrans green end", icon="icons/green/highway.png", filterFunction=signFilterGreenlineEnd, createInfoWindow=True, checked=True),
- dict(name="NetherTrans yellow end", icon="icons/yellow/highway.png", filterFunction=signFilterYellowlineEnd, createInfoWindow=True, checked=True), 
- dict(name="FlyWay end", icon="icons/skyblue/airport.png", filterFunction=signFilterFlywayEnd, createInfoWindow=True, checked=True), 
- dict(name="transpo end", icon="icons/yellow/highway.png", filterFunction=polyFilterEnd, createInfoWindow=True, checked=True) ]
+endmarker = [ dict(name="NetherTrans purple end", icon="icons/purple/highway.png", filterFunction=signFilterPurplelineEnd, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans red end", icon="icons/red/highway.png", filterFunction=signFilterRedlineEnd, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans blue end", icon="icons/blue/highway.png", filterFunction=signFilterBluelineEnd, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans green end", icon="icons/green/highway.png", filterFunction=signFilterGreenlineEnd, createInfoWindow=True, checked=False),
+ dict(name="NetherTrans yellow end", icon="icons/yellow/highway.png", filterFunction=signFilterYellowlineEnd, createInfoWindow=True, checked=False), 
+ dict(name="FlyWay end", icon="icons/skyblue/airport.png", filterFunction=signFilterFlywayEnd, createInfoWindow=True, checked=False), 
+ dict(name="transpo end", icon="icons/yellow/highway.png", filterFunction=polyFilterEnd, createInfoWindow=True, checked=False) ]
 

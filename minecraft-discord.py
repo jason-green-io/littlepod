@@ -8,8 +8,8 @@ import time
 import re
 import requests
 import sys
-sys.path.append('/minecraft/discord.py')
 import discord
+sys.path.append('/minecraft/discord.py')
 import vanillabean
 import showandtellraw
 
