@@ -90,159 +90,93 @@ def polys():
 
 
     return polys
+
+
 def poi2text(poi, json=json):
     return u"\n".join([poi["Text1"], poi["Text2"], poi["Text3"], poi["Text4"]])
 
 
-
-def polyFilterOver( poi ):
-    return polyFilter( poi, "o" ) 
-
-
-def polyFilterNether( poi ):
-    return polyFilter( poi, "n" ) 
+# Overworld
+def FilterOver( poi ):
+    return FilterUniversal(poi, "o")
 
 
-def polyFilterEnd( poi):
-    return polyFilter( poi, "e" ) 
+# Nether
+def FilterNether( poi ):
+    return FilterUniversal(poi, "n")
+
+# End
+def FilterEnd( poi ):
+    return FilterUniversal(poi, "e")
 
 
-def polyFilter(poi, dim):
+def fixText(poi):
+    global json
+    lines = ["Text1","Text2","Text3","Text4"]
+    for each in lines:
+        try:
+            poi[each] = json.loads(poi[each]).get("text")
+            
+        except:
+            pass
+        poi[each] = poi[each].replace(u"\uf701","").replace(u"\uf700","")
+    print(poi)
+    return poi
+    
+
+def FilterUniversal(poi, dim):
     if poi["id"] == "transpo" and poi["dim"] == dim:
         # print poi
         return poi
 
-# Overworld
-def signFilterPurplelineOver( poi ):
-    return signFilterpoint(poi, "o", "purpleline")
-def signFilterRedlineOver( poi ):
-    return signFilterpoint(poi, "o", "redline")
-def signFilterBluelineOver( poi ):
-    return signFilterpoint(poi, "o", "blueline")
-def signFilterYellowlineOver( poi ):
-    return signFilterpoint(poi, "o", "yellowline")
-def signFilterGreenlineOver( poi ):
-    return signFilterpoint(poi, "o", "greenline")
-def signFilterFlywayOver( poi ):
-    return signFilterfly(poi, "o")
-
-
-# Nether
-def signFilterPurplelineNether( poi ):
-    return signFilterpoint(poi, "n", "purpleline")
-def signFilterRedlineNether( poi ):
-    return signFilterpoint(poi, "n", "redline")
-def signFilterBluelineNether( poi ):
-    return signFilterpoint(poi, "n", "blueline")
-def signFilterYellowlineNether( poi ):
-    return signFilterpoint(poi, "n", "yellowline")
-def signFilterGreenlineNether( poi ):
-    return signFilterpoint(poi, "n", "greenline")
-def signFilterFlywayNether( poi ):
-    return signFilterfly(poi, "n")
-
-# End
-def signFilterPurplelineEnd( poi ):
-    return signFilterpoint(poi, "e", "purpleline")
-def signFilterRedlineEnd( poi ):
-    return signFilterpoint(poi, "e", "redline")
-def signFilterBluelineEnd( poi ):
-    return signFilterpoint(poi, "e", "blueline")
-def signFilterYellowlineEnd( poi ):
-    return signFilterpoint(poi, "e", "yellowline")
-def signFilterGreenlineEnd( poi ):
-    return signFilterpoint(poi, "e", "greenline")
-def signFilterFlywayEnd( poi ):
-    return signFilterfly(poi, "e")
-
-
-
-def signFilterfly(poi, dim, poi2text=poi2text):
-    if poi['id'] in ['Sign', "minecraft:sign"] and "*flyway*" in poi['Text1']:
-        # print(poi)
-        lines = ["Text1","Text2","Text3","Text4"]
-        text = []
-        for each in lines:
-            try:
-                poi[each] = json.loads(poi[each]).get("text")
-
-            except:
-                pass
-            text.append(poi[each].replace(u"\uf701","").replace(u"\uf700",""))
-        print(text)
-        if text[3]:
-            try:
-                code, destination = tuple(text[3].split("-"))    
-                if len(code) != 3 and len(destination) != 3:
-                    return poi2text(poi) 
-                conn = sqlite3.connect(dbfile)
-                cur = conn.cursor()
-                cur.execute("INSERT INTO flyway (dim, coords, text1, text2, code, destination) VALUES (?, ?, ?, ?, ?, ?)",(dim, "{},{},{}".format(poi["x"], poi["y"],poi["z"]), text[1], text[2], code, destination ))
-                conn.commit()
-                conn.close()
-            except:
-                return poi2text(poi)
-        else:
-            return poi2text(poi)   
-        #return poi2text(poi)
-
-
-def signFilterpoint(poi, dim, color, poi2text=poi2text):
-    if poi['id'] in ['Sign', "minecraft:sign"] and "*{}*".format(color) in poi['Text1']:
-        # print(poi)
-        lines = ["Text1","Text2","Text3","Text4"]
-        text = []
-        for each in lines:
-            try:
-                poi[each] = json.loads(poi[each]).get("text")
-
-            except:
-                pass
-            text.append(poi[each].replace(u"\uf701","").replace(u"\uf700",""))
-
-        if text[3]:
-            for polyid in text[3].split(','):
+    global poi2text
+    lines = {"*purpleline*":"icons/purple/highway.png", "*redline*":"icons/red/highway.png", "*greenline*":"icons/green/highway.png", "*blueline*":"icons/blue/highway.png", "*yellowline*":"icons/yellow/highway.png"}
+    if poi['id'] in ['Sign', "minecraft:sign"]:
+        poi = fixText(poi)
+        if "*flyway*" in poi['Text1']:
+            # print(poi)
+            if poi["Text4"]:
                 try:
-                    intid = int(polyid)
+                    code, destination = tuple(poi["Text4"].split("-"))    
+                    if len(code) != 3 and len(destination) != 3:
+                        poi["icon"] = "icons/skyblue/airport.png"
+                        return poi2text(poi) 
+                    conn = sqlite3.connect(dbfile)
+                    cur = conn.cursor()
+                    cur.execute("INSERT INTO flyway (dim, coords, text1, text2, code, destination) VALUES (?, ?, ?, ?, ?, ?)",(dim, "{},{},{}".format(poi["x"], poi["y"],poi["z"]), poi["Text2"], poi["Text3"], code, destination ))
+                    conn.commit()
+                    conn.close()
                 except:
-                    return poi2text(poi) 
+                    poi["icon"] = "icons/skyblue/airport.png"
+                    return poi2text(poi)
+            
                 
-                conn = sqlite3.connect(dbfile)
-                cur = conn.cursor()
-                cur.execute("INSERT INTO polylines (dim, color, id, coords) VALUES (?, ?, ?, ?)",(dim, color, intid, "{},{},{}".format(poi["x"], poi["y"],poi["z"])))
-                conn.commit()
-                conn.close()
+            
 
-        if text[1] or text[2]:  
+        if poi["Text1"] in lines.keys():
+            # print(poi)
+            poi["icon"] = lines[poi["Text1"]]
+            if poi["Text4"]:
+                for polyid in poi["Text4"].split(','):
+                    try:
+                        intid = int(polyid)
+                    except:
+                        return poi2text(poi) 
+                
+                    conn = sqlite3.connect(dbfile)
+                    cur = conn.cursor()
+                    cur.execute("INSERT INTO polylines (dim, color, id, coords) VALUES (?, ?, ?, ?)",(dim, poi["Text1"].strip("*"), intid, "{},{},{}".format(poi["x"], poi["y"],poi["z"])))
+                    conn.commit()
+                    conn.close()
 
-            return poi2text(poi)
+            if poi["Text2"] or poi["Text3"]:  
+
+                return poi2text(poi)
 
 
+overmarker = [ dict(name="Transpo over", filterFunction=FilterOver, createInfoWindow=True, checked=False)]
 
+nethermarker = [ dict(name="Transpo nether", filterFunction=FilterNether, createInfoWindow=True, checked=False)]
 
-
-
-overmarker = [ dict(name="NetherTrans purple over", icon="icons/purple/highway.png", filterFunction=signFilterPurplelineOver, createInfoWindow=True, checked=False),
- dict(name="NetherTrans red over", icon="icons/red/highway.png", filterFunction=signFilterRedlineOver, createInfoWindow=True, checked=False),
- dict(name="NetherTrans blue over", icon="icons/blue/highway.png", filterFunction=signFilterBluelineOver, createInfoWindow=True, checked=False),
- dict(name="NetherTrans green over", icon="icons/green/highway.png", filterFunction=signFilterGreenlineOver, createInfoWindow=True, checked=False),
- dict(name="NetherTrans yellow over", icon="icons/yellow/highway.png", filterFunction=signFilterYellowlineOver, createInfoWindow=True, checked=False),
- dict(name="FlyWay over", icon="icons/skyblue/airport.png", filterFunction=signFilterFlywayOver, createInfoWindow=True, checked=False),
- dict(name="transpo over", icon="", filterFunction=polyFilterOver, createInfoWindow=True, checked=False) ]
-
-nethermarker = [ dict(name="NetherTrans purple nether", icon="icons/purple/highway.png", filterFunction=signFilterPurplelineNether, createInfoWindow=True, checked=False),
- dict(name="NetherTrans red nether", icon="icons/red/highway.png", filterFunction=signFilterRedlineNether, createInfoWindow=True, checked=False),
- dict(name="NetherTrans blue nether", icon="icons/blue/highway.png", filterFunction=signFilterBluelineNether, createInfoWindow=True, checked=False),
- dict(name="NetherTrans green nether", icon="icons/green/highway.png", filterFunction=signFilterGreenlineNether, createInfoWindow=True, checked=False),
- dict(name="NetherTrans yellow nether", icon="icons/yellow/highway.png", filterFunction=signFilterYellowlineNether, createInfoWindow=True, checked=False),
- dict(name="FlyWay nether", icon="icons/skyblue/airport.png", filterFunction=signFilterFlywayNether, createInfoWindow=True, checked=False),
- dict(name="transpo nether", icon="", filterFunction=polyFilterNether, createInfoWindow=True, checked=False) ]
-
-endmarker = [ dict(name="NetherTrans purple end", icon="icons/purple/highway.png", filterFunction=signFilterPurplelineEnd, createInfoWindow=True, checked=False),
- dict(name="NetherTrans red end", icon="icons/red/highway.png", filterFunction=signFilterRedlineEnd, createInfoWindow=True, checked=False),
- dict(name="NetherTrans blue end", icon="icons/blue/highway.png", filterFunction=signFilterBluelineEnd, createInfoWindow=True, checked=False),
- dict(name="NetherTrans green end", icon="icons/green/highway.png", filterFunction=signFilterGreenlineEnd, createInfoWindow=True, checked=False),
- dict(name="NetherTrans yellow end", icon="icons/yellow/highway.png", filterFunction=signFilterYellowlineEnd, createInfoWindow=True, checked=False), 
- dict(name="FlyWay end", icon="icons/skyblue/airport.png", filterFunction=signFilterFlywayEnd, createInfoWindow=True, checked=False), 
- dict(name="transpo end", icon="icons/yellow/highway.png", filterFunction=polyFilterEnd, createInfoWindow=True, checked=False) ]
+endmarker = [ dict(name="Transpo end", filterFunction=FilterEnd, createInfoWindow=True, checked=False)]
 
