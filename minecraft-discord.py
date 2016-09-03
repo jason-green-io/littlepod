@@ -22,9 +22,9 @@ mcfolder = config['mcdata']
 URL = config['URL']
 servername = config['name']
 
-serverFormat = "<aqua^\<><green^{}><aqua^\>>"
-playerFormat = "<aqua^\<><gold^{}><aqua^\>>"
-
+serverFormat = "<blue^\<><green^{}><blue^\>>"
+playerFormat = "<blue^\<><white^{}><blue^\>>"
+patronFormat = "<blue^\<><red^{}><blue^\>>"
 
 discordChannel = config["discordChannel"]
 discordPrivChannel = config["discordPrivChannel"]
@@ -101,14 +101,19 @@ def on_message(message):
         discordName = str(message.author)
         messagetext = str(message.clean_content) 
         messagetext = messagetext.replace('"', r"\"")
-        discordtext =  u'{"text" : "\\u2689 ", "color" : "aqua" }'
+        discordtext =  u'{"text" : "\\u2689 ", "color" : "blue" }'
+
+        print([a.name for a in message.author.roles])
         
         if message.author.bot:
-            nameFormat = '<aqua^\<>{{<green^{}>~{}}}<aqua^\>> '
+            nameFormat = '<blue^\<>{{<green^{}>~{}}}<blue^\>> '
             mcplayer, mcmessage = messagetext.split(" ", 1)
             messagetext = mcplayer.strip('`') + " " + mcmessage
+        elif "patron" in [a.name for a in message.author.roles]:
+            
+            nameFormat = '<blue^\<>{{<red^{}>~{}}}<blue^\>> '
         else:
-            nameFormat = '<aqua^\<>{{<gold^{}>~{}}}<aqua^\>> '
+            nameFormat = '<blue^\<>{{<white^{}>~{}}}<blue^\>> '
 
         #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
         tellrawText =  nameFormat.format(display_name.replace("_", "\_"), discordName.replace("_", "\_").replace("@","\@"))
