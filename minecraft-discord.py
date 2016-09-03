@@ -298,7 +298,7 @@ def my_background_task():
                 
                 topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, numplayers, " ".join(formattedplayers))
                 
-                yield from client.edit_channel(client.get_channel(discordChannel), position=1, name="server-chat", topic="\n".join(topicLineList))
+                yield from client.edit_channel(client.get_channel(discordChannel), position=1, name="whitelisted-servers", topic="\n".join(topicLineList))
            
             if event == "muteTeam":
                 nummuteplayers = data[1]
