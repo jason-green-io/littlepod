@@ -46,7 +46,8 @@ def genbuilds(builds, players):
     buildfinal =[] 
     players =  [player[0].lower() for player in players]
     timeNow = str(int(time.time()))
-    thumbsFolder = "/minecraft/host/webdata/thumbs"
+    dateNow = time.strftime("%Y-%m-%d")
+    thumbsFolder = "/minecraft/host/webdata/thumbs/"
     for each in builds:
         name = each[0]
         if name.lower() in players:
@@ -54,14 +55,24 @@ def genbuilds(builds, players):
             buildfinal.append( "## {}".format(name.replace("_", "\_")))
             for coord in coords:
                 link = coordstolink(coord)
-                buildFolder = name + "/" + coord
+
+                buildFolder = name + "/" + coord + "/"
+                
                 buildPngName = timeNow + ".png"
-                buildPng = thumbsFolder + "/" + buildFolder + "/" + buildPngName
+                buildPng = thumbsFolder + buildFolder + buildPngName
+
+                buildGifName = coord + ".gif"
+                buildGif = thumbsFolder + buildFolder + buildGifName
+                
                 os.makedirs(thumbsFolder + name, exist_ok=True)
                 phantomjsLink = coordstolink(coord).replace(URL,"127.0.0.1")
-                command = ["/usr/bin/phantomjs", "--debug=true", "--ssl-protocol=tlsv1", "/minecraft/minecraft-builds.js", phantomjsLink, buildPng]
+                command = ["/usr/bin/phantomjs", "--debug=true", "--ssl-protocol=tlsv1", "/minecraft/minecraft-builds.js", phantomjsLink, thumbsFolder + buildFolder + "temp.png"]
                 subprocess.call(command, shell=False, timeout=10)
-                buildfinal.append( "[!["+ coord + "](thumbs/" + buildFolder + "/" + buildPngName +  ")](" + link + ")")
+                command = "/usr/bin/convert {0}temp.png -gravity southeast -stroke '#000C' -strokewidth 2 -annotate 0 {1} -stroke none -fill white -annotate 0 {1} {2}; rm {0}temp.png".format(thumbsFolder + buildFolder, dateNow, buildPng)
+                subprocess.call(command, shell=True)
+                command = "convert -delay 10 -loop 0 {}*.png {}".format(thumbsFolder + buildFolder, buildGif)
+                subprocess.call(command, shell=True)
+                buildfinal.append( "[![{}](thumbs/{})]({})\n\n[gif]({})".format(coord, buildFolder + buildPngName, link, "thumbs/" + buildFolder + buildGifName))
     return "\n".join(buildfinal)
 
 
