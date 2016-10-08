@@ -21,17 +21,25 @@ name = config["name"]
 lag = [("2015-01-01 00:00:00",0)]
 timeframe = "-14 days"
 
-conn = sqlite3.connect(dbfile)
+def getStat(stats, stat):
+    return eval(stats).get(stat,0)
 
+
+conn = sqlite3.connect(dbfile)
+conn.create_function("getStat", 2, getStat)
 cur = conn.cursor()
 
 cur.execute('select datetime(ts), ticks from loglag where ts > datetime("now", "{}")'.format(timeframe))
 lag += cur.fetchall()
 
-cur.execute('select * from activity where datetime > datetime("now", "{}")'.format(timeframe))
+cur.execute('select datetime, name, getStat(stats, "stat.playOneMinute") from stats natural join playerUUID where datetime > datetime("now", "{}")'.format(timeframe))
 activity = cur.fetchall()
 
-cur.execute('select name, count(name) from activity where datetime > datetime("now", "{}") group by name order by count(name) asc'.format(timeframe))
+
+    
+
+
+cur.execute('select name, count(getStat(stats, "stat.playOneMinute")) as total from stats natural join playerUUID where datetime > datetime("now", "{}") group by name order by total asc'.format(timeframe))
 
 players = cur.fetchall()
 
@@ -76,8 +84,8 @@ ax1.grid(True)
 
 
 
-xact, yact = tuple(zip(*activity))
-xact = [datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S.%f") for time in xact]
+xact, yact, area = tuple(zip(*activity))
+xact = [datetime.datetime.strptime(time, "%Y-%m-%d %H:%M:%S") for time in xact]
 players = [""] + [player[0] for player in players]
 yact = [players.index(p) for p in yact]
 xactdates = mdates.date2num(xact)
@@ -85,7 +93,9 @@ ax0.xaxis_date()
 ax0.xaxis.set_major_locator(hours)
 ax0.xaxis.set_major_formatter(hoursFmt)
 ax0.set_xlim(timespan)
-ax0.scatter(xactdates, yact, marker=".")
+print(area[0:10])
+ax0.scatter(xactdates, yact, c=area, s=25, linewidth=0, alpha=.8, marker='s', cmap="winter")
+
 ax0.grid(True)
 ax0.set_yticklabels(players)
 ax0.set_yticks(range(0, len(players) + 1))

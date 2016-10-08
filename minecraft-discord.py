@@ -1,4 +1,5 @@
 #!/usr/bin/python3 -u
+import sqlite3
 import asyncio
 import yaml
 import os
@@ -71,7 +72,28 @@ def tellcoords( coords ):
 
 
 
+def updateTopic():
+    yield from client.wait_until_ready()
+    print("Updating topic")
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+    while True:
+        cur.execute('select name from stats natural join playerUUID where datetime > datetime("now", "-5 minutes") group by name')
+        players = cur.fetchall()
+    
+    
+        formattedplayers = ["{}".format(a[0]) for a in players]
+        currentTopic = client.get_channel(discordChannel).topic
+        topicLineList = currentTopic.split('\n')
+        topicLine = [line for line in enumerate(topicLineList) if line[1].startswith(name)][0][0]
+        
+        topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
+                
+        yield from client.edit_channel(client.get_channel(discordChannel), position=1, name="whitelisted-servers", topic="\n".join(topicLineList))
+        
+        yield from  asyncio.sleep(300)
 
+    conn.close()
 
 @client.async_event
 def on_status(member, old_game, old_status):
@@ -109,14 +131,14 @@ def on_message(message):
             nameFormat = '<blue^\<>{{<green^{}>~{}}}<blue^\>> '
             mcplayer, mcmessage = messagetext.split(" ", 1)
             messagetext = mcplayer.strip('`') + " " + mcmessage
-        elif "patron" in [a.name for a in message.author.roles]:
+        elif "patrons" in [a.name for a in message.author.roles]:
             
             nameFormat = '<blue^\<>{{<red^{}>~{}}}<blue^\>> '
         else:
             nameFormat = '<blue^\<>{{<white^{}>~{}}}<blue^\>> '
 
         #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
-        tellrawText =  nameFormat.format(display_name.replace("_", "\_"), discordName.replace("_", "\_").replace("@","\@"))
+        tellrawText =  nameFormat.format(display_name.replace("_", "\_").replace("~","\~"), discordName.replace("_", "\_").replace("@","\@").replace("~","\~"))
         finalline = '/tellraw @a[team=!mute] ' + showandtellraw.tojson(tellrawText, noparse=messagetext)
 
         vanillabean.send(finalline)
@@ -256,9 +278,7 @@ def my_background_task():
 
     nextlineformute = False
     mutedlist = []
-    nextlineforlist = False
-    numplayers = 0
-
+    
     while not client.is_closed:
         pos = f.tell()
         line = f.readline().strip()
@@ -288,26 +308,12 @@ def my_background_task():
                 mutedlist = [a.strip(",") for a in line.split(":")[3].split(" ")]
                 mutedlist.remove('')
             
-            if nextlineforlist:
-                nextlineforlist = False    
-                players = [a.strip() for a in line.split(":")[3].split(",")]
-                formattedplayers = ["~{}".format(a) if a in mutedlist else a for a in players]
-                currentTopic = client.get_channel(discordChannel).topic
-                topicLineList = currentTopic.split('\n')
-                topicLine = [line for line in enumerate(topicLineList) if line[1].startswith(name)][0][0]
-                
-                topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, numplayers, " ".join(formattedplayers))
-                
-                yield from client.edit_channel(client.get_channel(discordChannel), position=1, name="whitelisted-servers", topic="\n".join(topicLineList))
            
             if event == "muteTeam":
                 nummuteplayers = data[1]
                 nextlineformute = True 
 
-            if event == "playerList":
-                numplayers = data[1]
-                nextlineforlist = True
-            
+                
             if event == "chat":
                 yield from eventChat(data)
 
@@ -330,7 +336,7 @@ def my_background_task():
                 yield from eventLeft(data)
 
 
-@asyncio.coroutine
+
 def handle_exception():
     try:
         yield from my_background_task()
@@ -341,12 +347,15 @@ def handle_exception():
 loop = asyncio.get_event_loop()
 
 try:
-    asyncio.async(handle_exception())
-    loop.run_until_complete(client.run(discordToken))
+
+    client.loop.create_task(my_background_task())
+    client.loop.create_task(updateTopic())
+    client.run(discordToken)   
+   
 except Exception:
-    loop.run_until_complete(client.close())
-finally:
-    loop.close()
+    print("I crashed amd actually exited")
+    client.close()
+    sys.exit()
 
 
 

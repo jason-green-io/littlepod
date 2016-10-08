@@ -1,2 +1,2 @@
 #!/bin/bash
-nginx -p /minecraft/host/config -c nginx.conf
+sudo nginx -p /minecraft/host/config -c nginx.conf

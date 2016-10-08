@@ -107,9 +107,16 @@ def boatStat():
     
 
 def playtimeStat():
+    def getStat(stats, stat):
+            return eval(stats).get(stat,0)
+
+
     conn = sqlite3.connect(dbfile)
+    conn.create_function("getStat", 2, getStat)
+        
+    
     cur = conn.cursor()
-    cur.execute('select count(datetime) as total, name from activity where datetime >= datetime("now", "-7 days") group by name order by total desc limit 1')
+    cur.execute('select count(getStat(stats, "stat.playOneMinute")) as total, name from stats natural join playerUUID where datetime >= datetime("now", "-7 days") group by name order by total desc limit 1')
     top = cur.fetchall()[0]
     
     conn.commit()
@@ -172,10 +179,11 @@ def eventCommand(data):
     print(args)
     name = name.replace("?7","").replace("?r","")
     if command == "mute":
-        if args == "on":
+        if "on" in args:
+            print("yup")
             vanillabean.send("/scoreboard teams join mute {}".format(name))
             vanillabean.send("/tell {} Muting Discord".format(name))
-        elif args == "off":
+        elif "off" in args:
             vanillabean.send("/scoreboard teams leave mute {}".format(name))
             vanillabean.send("/tell {} Un-Muting Discord".format(name))
     
@@ -262,33 +270,6 @@ def eventLogged(data):
 
     conn = sqlite3.connect(dbfile, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
     cur = conn.cursor()
-
-    '''
-    cur.execute('select m.name, desc,  m.coords, slots, c.ts as "[timestamp]", a.datetime as "[timestamp]"from maildrop as m natural left join (select coords, chest, ts from chests group by coords order by ts) as c join (select name, datetime from activity where datetime < datetime("now", "-5 minutes") group by name order by datetime) as a on c.ts > a.datetime and a.name == m.name ;')
-
-    results = cur.fetchall()
-
-    conn.commit()
-    conn.close()
-
-
-    attrs = ['years', 'months', 'days', 'hours', 'minutes']
-    human_readable = lambda delta: ['%d %s' % (getattr(delta, attr), getattr(delta, attr) > 1 and attr or attr[:-1]) for attr in attrs if getattr(delta, attr)]
-
-
-
-    for each in results:
-        name, desc, coords, slots, updateTime, playerTime = each
-        coordsSplit = coords.split(',')
-        maplink = "http://{}/map/#/{}/64/{}/-3/{}/0".format(URL, coordsSplit[1], coordsSplit[2], worlddict[coordsSplit[0]][1])
-        print(maplink)
-        print("hey {}, [{}|{}] has {} slots filled, updated {} ago".format(each[0], each[1] if each[1] else "On map", maplink, each[3], " ".join(human_readable(relativedelta(datetime.datetime.now(), each[4])))))
-
-    '''
-
-
-
-
 
 
     cur.execute("SELECT * FROM maildrop WHERE inverted = 0 and slots > 0 and name = ? COLLATE NOCASE", (name,))

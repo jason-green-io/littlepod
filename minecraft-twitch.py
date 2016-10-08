@@ -347,13 +347,13 @@ def minecraftlistener():
                 event, data = eventData
                 logging.debug((event, data))
 
-
+            '''
             if event == "logged":
                 player = data[1]
                 if player == "greener_ca":
                     if not episodeThread.is_alive():
                         episodeThread.start()
-
+            '''
 
                     
             """                if message == "tweets":

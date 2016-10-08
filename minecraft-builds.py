@@ -28,8 +28,13 @@ cur = conn.cursor()
 cur.execute('select name, group_concat(coords,"|") from maildrop where hidden != 1 group by name')
 builds = cur.fetchall()
 
+def getStat(stats, stat):
+    return eval(stats).get(stat,0)
 
-cur.execute("SELECT * FROM groups")
+
+conn.create_function("getStat", 2, getStat)
+
+cur.execute('select name, UUID, datetime as "ts [timestamp]", status, twitter, twitch, youtube, reddit from (select *, count(getStat(stats, "stat.playOneMinute")) as count from stats natural join playerUUID WHERE (datetime > datetime("now", "-14 day") AND name != "") group by name order by datetime ) natural left join status order by count desc')
 players = cur.fetchall()
 
 
@@ -70,7 +75,7 @@ def genbuilds(builds, players):
                 subprocess.call(command, shell=False, timeout=10)
                 command = "/usr/bin/convert {0}temp.png -gravity southeast -stroke '#000C' -strokewidth 2 -annotate 0 {1} -stroke none -fill white -annotate 0 {1} {2}; rm {0}temp.png".format(thumbsFolder + buildFolder, dateNow, buildPng)
                 subprocess.call(command, shell=True)
-                command = "convert -delay 10 -loop 0 {}*.png {}".format(thumbsFolder + buildFolder, buildGif)
+                command = "convert -delay 10 {}*.png {}".format(thumbsFolder + buildFolder, buildGif)
                 subprocess.call(command, shell=True)
                 buildfinal.append( "[![{}](thumbs/{})]({})\n\n[gif]({})".format(coord, buildFolder + buildPngName, link, "thumbs/" + buildFolder + buildGifName))
     return "\n".join(buildfinal)

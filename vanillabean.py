@@ -86,7 +86,8 @@ def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=N
     return content
 
 def genEvent(line):
-	parseDict = OrderedDict([("deathSquashAnvil", "^\[(.*)\] \[Server thread/INFO\]: (.*)( was squashed by a falling anvil)$"),
+	parseDict = OrderedDict([("deathFloorLava", "^\[(.*)\] \[Server thread/INFO\]: (.*)(  discovered floor was lava)$"),
+                                 ("deathSquashAnvil", "^\[(.*)\] \[Server thread/INFO\]: (.*)( was squashed by a falling anvil)$"),
                                  ("deathSquashBlock", "^\[(.*)\] \[Server thread/INFO\]: (.*)( was squashed by a falling block)$"),
                                  ("deathFlames", "^\[(.*)\] \[Server thread/INFO\]: (.*)( went up in flames)$"),
                                  ("deathBurned", "^\[(.*)\] \[Server thread/INFO\]: (.*)( burned to death)$"),
@@ -113,6 +114,7 @@ def genEvent(line):
                                  ("deathWeaponSlain", "^\[(.*)\] \[Server thread/INFO\]: (.*)( was slain by )(.*)( using )(.*)$"),
                                  ("deathWeaponShot", "^\[(.*)\] \[Server thread/INFO\]: (.*)( was shot by )(.*)( using )(.*)$"),
                                  ("deathWeaponFinished", "^\[(.*)\] \[Server thread/INFO\]: (.*)( got finished off by )(.*)( using )(.*)$"),
+                                 ("deathEnemyFloorLava", "^\[(.*)\] \[Server thread/INFO\]: (.*)( walked into danger zone due to )(.*)$"),
                                  ("deathEnemyBlewUp", "^\[(.*)\] \[Server thread/INFO\]: (.*)( was blown up by )(.*)$"),
                                  ("deathEnemyDrowned", "^\[(.*)\] \[Server thread/INFO\]: (.*)( drowned whilst trying to escape )(.*)$"),
                                  ("deathEnemyIntoCactus", "^\[(.*)\] \[Server thread/INFO\]: (.*)( walked into a cactus while trying to escape )(.*)$"),

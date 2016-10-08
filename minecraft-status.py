@@ -84,12 +84,20 @@ def genshame(shame):
     return shamefinal
 
 
-
+def getStat(stats, stat):
+    return eval(stats).get(stat,0)
+             
 
 conn = sqlite3.connect(dbfile, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 cur = conn.cursor()
+conn.create_function("getStat", 2, getStat)
 
-cur.execute("SELECT * FROM groups")
+
+
+
+
+cur.execute('select name, UUID, datetime as "ts [timestamp]", status, twitter, twitch, youtube, reddit from (select *, count(getStat(stats, "stat.playOneMinute")) as count from stats natural join playerUUID WHERE (datetime > datetime("now", "-14 day") AND name != "") group by name order by datetime ) natural left join status order by count desc')
+
 players = cur.fetchall()
 
 
@@ -132,10 +140,6 @@ list of players that haven't been online for greater than 2 weeks
 
 
 
-statsgraph = """## Last 14 days activity
-
-![lag](http://""" + URL + """/stats.png)
-"""
 
 statsshame = """## List of shame
 
@@ -145,7 +149,7 @@ list of players that haven't played on the server in over 2 weeks! Shaaaaaame!
 |-|-:|
 """
 
-stats = statsplayers + gengroups(players) + statsoldplayers + gengroups(oldplayers) + statsgraph
+stats = statsplayers + gengroups(players) + statsoldplayers + gengroups(oldplayers)
 
 totalminutes = 0
 for each in quickie:

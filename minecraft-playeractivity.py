@@ -98,12 +98,10 @@ class PosHandler(PatternMatchingEventHandler):
             # print filename
             pos = getpos(filename)
             # print pos
-            conn = sqlite3.connect(dbfile, timeout=30)
-            cur = conn.cursor()
+
             q.put(("INSERT INTO location (UUID, dim, x, y, z) VALUES (?,?,?,?,?)", pos))
 
-            conn.commit()
-            conn.close()
+
 
 '''
 Extend FileSystemEventHandler to be able to write custom on_any_event method
@@ -135,7 +133,7 @@ class StatHandler(FileSystemEventHandler):
                 newjson = json.load(statfile)
                 pass 
             listofstats = list(newjson.keys()) 
-            removestats = ["achievement.exploreAllBiomes", "stat.timeSinceDeath", "stat.playOneMinute", "stat.walkOneCm", "stat.sprintOneCm"]
+            removestats = ["achievement.exploreAllBiomes", "stat.timeSinceDeath", "stat.walkOneCm", "stat.sprintOneCm"]
             for rstat in removestats:
                 if rstat in listofstats:
                     listofstats.remove(rstat)
@@ -146,12 +144,9 @@ class StatHandler(FileSystemEventHandler):
 
             if diff:
                 print(name, diff)
-                conn = sqlite3.connect(dbfile, timeout=30)
-                cur = conn.cursor()
+
                 q.put(("INSERT INTO stats (UUID, stats) VALUES (?,?)", (name, str(diff))))
 
-                conn.commit()
-                conn.close()
 
             shutil.copyfile(filename, pastname)
 
