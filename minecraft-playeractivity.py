@@ -128,10 +128,14 @@ class StatHandler(FileSystemEventHandler):
                 with open(pastname, "r") as statfile:
                     oldjson = json.load(statfile)
             except:
-                pass
-            with open(filename, "r") as statfile:
-                newjson = json.load(statfile)
-                pass 
+                return
+
+            try:
+                with open(filename, "r") as statfile:
+                    newjson = json.load(statfile)
+            except:
+                return 
+
             listofstats = list(newjson.keys()) 
             removestats = ["achievement.exploreAllBiomes", "stat.timeSinceDeath", "stat.walkOneCm", "stat.sprintOneCm"]
             for rstat in removestats:

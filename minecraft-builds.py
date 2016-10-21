@@ -77,7 +77,7 @@ def genbuilds(builds, players):
                 subprocess.call(command, shell=True)
                 command = "convert -delay 10 {}*.png {}".format(thumbsFolder + buildFolder, buildGif)
                 subprocess.call(command, shell=True)
-                buildfinal.append( "[![{}](thumbs/{})]({})\n\n[gif]({})".format(coord, buildFolder + buildPngName, link, "thumbs/" + buildFolder + buildGifName))
+                buildfinal.append( "[![{}](thumbs/{})]({})\n[gif]({})\n".format(coord, buildFolder + buildPngName, link, "thumbs/" + buildFolder + buildGifName))
     return "\n".join(buildfinal)
 
 

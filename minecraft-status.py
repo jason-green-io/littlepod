@@ -107,7 +107,7 @@ oldplayers = cur.fetchall()
 cur.execute("SELECT * FROM shame")
 shame = cur.fetchall()
 
-cur.execute("SELECT * FROM quickie")
+cur.execute('select name, sum(getStat(stats, "stat.playOneMinute")) / 20 / 60 as total from stats natural join playerUUID where datetime > datetime("now", "-7 days") group by name order by total  desc')
 quickie = cur.fetchall()
 
 cur.execute('select count(name) from whitelist')

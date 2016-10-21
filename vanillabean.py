@@ -69,7 +69,10 @@ mobList = ["Bat",
             "Zombie",
             "Zombie Horse",
             "Zombie Pigman",
-            "Zombie Villager"]
+            "Zombie Villager",
+            "Vex",
+            "Evoker",
+            "Vindicator"]
 
 
 def send(command):

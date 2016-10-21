@@ -9,6 +9,8 @@ cd /minecraft
 UUID=$(uuidgen)
 sqlite3 $DBFILE -init <(echo .timeout 20000) "INSERT INTO process (process, id) values (\"poi\", \"$UUID\")"
 sqlite3 $DBFILE -init <(echo .timeout 20000) "CREATE TABLE tempmaildrop (coords primary key, name, desc, slots, hidden, inverted)"
+sqlite3 $DBFILE -init <(echo .timeout 20000) "DROP TABLE pois"
+sqlite3 $DBFILE -init <(echo .timeout 20000) "CREATE TABLE pois (coords primary key, type, text1, text2, text3)"
 
 python /usr/lib/python2.7/dist-packages/overviewer_core/aux_files/genPOI.py --config=/minecraft/host/config/overviewerconfig.py
 

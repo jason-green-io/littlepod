@@ -122,7 +122,7 @@ def on_message(message):
         display_name = str(message.author.display_name)
         discordName = str(message.author)
         messagetext = str(message.clean_content) 
-        messagetext = messagetext.replace('"', r"\"")
+        # messagetext = messagetext.replace('"', r"\"")
         discordtext =  u'{"text" : "\\u2689 ", "color" : "blue" }'
 
         print([a.name for a in message.author.roles])
@@ -138,7 +138,7 @@ def on_message(message):
             nameFormat = '<blue^\<>{{<white^{}>~{}}}<blue^\>> '
 
         #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
-        tellrawText =  nameFormat.format(display_name.replace("_", "\_").replace("~","\~"), discordName.replace("_", "\_").replace("@","\@").replace("~","\~"))
+        tellrawText =  nameFormat.format(display_name.replace("_", "\_").replace("~",""), discordName.replace("_", "\_").replace("@","\@").replace("~",""))
         finalline = '/tellraw @a[team=!mute] ' + showandtellraw.tojson(tellrawText, noparse=messagetext)
 
         vanillabean.send(finalline)
@@ -225,6 +225,7 @@ def eventLogged(data):
     ipstat= u" ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
     yield from client.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
 
+
 @asyncio.coroutine 
 def eventLeft(data):
     player = data[1]
@@ -241,6 +242,9 @@ def eventChat(data):
     player = data[1]
     message = data[2]
 
+    if player == "greener_ca" and message == "die":
+        assert False
+    
     for each in re.findall("@\S+", message):
         memberfrommc = each.lstrip("@")
         print(memberfrommc)
@@ -337,19 +341,27 @@ def my_background_task():
 
 
 
-def handle_exception():
+def handle_bgtask():
     try:
         yield from my_background_task()
     except Exception:
         print("Uhoh!")
         sys.exit(1)
 
+def handle_updateTopic():
+    try:
+        yield from updateTopic()
+    except Exception:
+        print("Uhoh!")
+        sys.exit(1)
+
+        
 loop = asyncio.get_event_loop()
 
 try:
 
-    client.loop.create_task(my_background_task())
-    client.loop.create_task(updateTopic())
+    client.loop.create_task(handle_bgtask())
+    client.loop.create_task(handle_updateTopic())
     client.run(discordToken)   
    
 except Exception:
