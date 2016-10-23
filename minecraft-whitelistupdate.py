@@ -5,6 +5,8 @@ import json
 import sqlite3
 import vanillabean
 import sys
+import queue
+import threading
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -17,6 +19,41 @@ mcfolder = config['mcdata']
 whitelist = {each["uuid"]: each["name"] for each in json.load(open(mcfolder + "/whitelist.json"))}
 
 # print(whitelist)
+
+q = queue.Queue()
+
+def writeToDB():
+    global q
+    while True:
+        DBWriter(q.get())
+        q.task_done()
+
+
+def DBWriter(queryArgs):
+    global dbfile
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+    
+    fail = True
+    while(fail):
+        try:
+            cur.execute(*queryArgs)
+            conn.commit()
+            fail = False
+        except sqlite3.OperationalError:
+            print("Locked")
+            fail = True
+            
+
+            
+threadDBWriter = threading.Thread(target=writeToDB)
+threadDBWriter.setDaemon(True)
+threadDBWriter.start()
+                                                                                                
+
+
+
+
 
 conn = sqlite3.connect(dbfile)
 cur = conn.cursor()
@@ -56,7 +93,7 @@ cur.execute("DELETE FROM whitelist")
 
 for each in list(whitelist.items()):
 
-    cur.execute("INSERT OR IGNORE INTO whitelist (name, UUID) VALUES (?,?)", (each[1], each[0]))
+    q.put(("INSERT OR IGNORE INTO whitelist (name, UUID) VALUES (?,?)", (each[1], each[0])))
 
 conn.commit()
 conn.close()

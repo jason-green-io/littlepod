@@ -4,6 +4,8 @@ import sqlite3
 import yaml
 import glob
 import os
+import queue
+import threading
 from collections import defaultdict
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
@@ -22,6 +24,39 @@ dimlist = ["o", "n", "e"]
 
 
 files = glob.glob(latestfile + "*") + glob.glob(oldfile + "*")
+
+
+q = queue.Queue()
+
+def writeToDB():
+    global q
+    while True:
+        DBWriter(q.get())
+        q.task_done()
+
+
+def DBWriter(queryArgs):
+    global dbfile
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+    
+    fail = True
+    while(fail):
+        try:
+            cur.execute(*queryArgs)
+            conn.commit()
+            fail = False
+        except sqlite3.OperationalError:
+            print("Locked")
+            fail = True
+            
+
+        
+threadDBWriter = threading.Thread(target=writeToDB)
+threadDBWriter.setDaemon(True)
+threadDBWriter.start()
+                                                                                                
+
 
 
 
@@ -78,15 +113,13 @@ for each in dimlist:
 
         elif changes not in oldchestlistcompare:
             diffdict[ ",".join([each] + list(changes[0:3])) ].update( { itemname : chestlistcompare[ changes ]})
-    conn = sqlite3.connect(dbfile)
-    cur = conn.cursor()
+
     
     for each in diffdict.items():
-        cur.execute('INSERT INTO chests (coords, chest) VALUES (?, ?)', (each[0], json.dumps(each[1])))
+        q.put(('INSERT INTO chests (coords, chest) VALUES (?, ?)', (each[0], json.dumps(each[1]))))
         print( each[0], json.dumps(each[1]) )
 
-    conn.commit()
-    conn.close()        
+
     # return [ { "id": "chestactivity" + str(day), "x" : chest[0][0], "y" : chest[0][1],  "z" : chest[0][2], "contents" : "\n".join(chest[1]) } for chest in diffdict.items() ]
 
 

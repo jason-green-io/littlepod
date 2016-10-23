@@ -2,6 +2,8 @@ import json
 import sqlite3
 import yaml
 import math
+import Queue
+import threading
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -9,7 +11,36 @@ with open('/minecraft/host/config/server.yaml', 'r') as configfile:
 
 dbfile = config['dbfile']
 
+q = Queue.Queue()
 
+def writeToDB():
+    global q
+    while True:
+        DBWriter(q.get())
+        q.task_done()
+        
+
+def DBWriter(queryArgs):
+    global dbfile
+    conn = sqlite3.connect(dbfile)
+    cur = conn.cursor()
+    
+    fail = True
+    while(fail):
+        try:
+            cur.execute(*queryArgs)
+            conn.commit()
+            fail = False
+        except sqlite3.OperationalError:
+            print("Locked")
+            fail = True
+
+
+
+threadDBWriter = threading.Thread(target=writeToDB)
+threadDBWriter.setDaemon(True)
+threadDBWriter.start()
+                                                                                                
 
 
 def calcBearing(coord1, coord2):
@@ -141,11 +172,11 @@ def FilterUniversal(poi, dim):
                     if len(code) != 3 and len(destination) != 3:
                         poi["icon"] = "icons/skyblue/airport.png"
                         return poi2text(poi) 
-                    conn = sqlite3.connect(dbfile)
-                    cur = conn.cursor()
-                    cur.execute("INSERT INTO flyway (dim, coords, text1, text2, code, destination) VALUES (?, ?, ?, ?, ?, ?)",(dim, "{},{},{}".format(poi["x"], poi["y"],poi["z"]), poi["Text2"], poi["Text3"], code, destination ))
-                    conn.commit()
-                    conn.close()
+                    #conn = sqlite3.connect(dbfile)
+                    #cur = conn.cursor()
+                    q.put(("INSERT INTO flyway (dim, coords, text1, text2, code, destination) VALUES (?, ?, ?, ?, ?, ?)",(dim, "{},{},{}".format(poi["x"], poi["y"],poi["z"]), poi["Text2"], poi["Text3"], code, destination )))
+                    #conn.commit()
+                    #conn.close()
                 except:
                     poi["icon"] = "icons/skyblue/airport.png"
                     return poi2text(poi)
@@ -163,11 +194,11 @@ def FilterUniversal(poi, dim):
                     except:
                         return poi2text(poi) 
                 
-                    conn = sqlite3.connect(dbfile)
-                    cur = conn.cursor()
-                    cur.execute("INSERT INTO polylines (dim, color, id, coords) VALUES (?, ?, ?, ?)",(dim, poi["Text1"].strip("*"), intid, "{},{},{}".format(poi["x"], poi["y"],poi["z"])))
-                    conn.commit()
-                    conn.close()
+                    #conn = sqlite3.connect(dbfile)
+                    #cur = conn.cursor()
+                    q.put(("INSERT INTO polylines (dim, color, id, coords) VALUES (?, ?, ?, ?)",(dim, poi["Text1"].strip("*"), intid, "{},{},{}".format(poi["x"], poi["y"],poi["z"]))))
+                    #conn.commit()
+                    #conn.close()
 
             if poi["Text2"] or poi["Text3"]:  
 

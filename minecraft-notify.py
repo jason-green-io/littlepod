@@ -222,19 +222,47 @@ def eventCommand(data):
 
 
     if command == "maildrop":
-            cur.execute("SELECT * FROM maildrop WHERE name = ? COLLATE NOCASE", (name,))
-            maildrop = cur.fetchall()
 
-            for mail in maildrop:
-                dimcoords, boxname, desc, slots, hidden, inverted = mail
-                dim, coords = dimcoords.split(",",1)
+        def maildropPage(page):
+            if page:
+                cur.execute("SELECT * FROM maildrop WHERE name = ? COLLATE NOCASE limit ?, ?", (name, (page - 1) * 5, 5))
+                maildrop = cur.fetchall()
 
-                URLcoords = coords.replace(",", "/")           
-
-                toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson(serverName + ' {{Maildrop [_{}_|http://{}/map/#/{}/-1/{}/0]~{} {}}} {}'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), URL, URLcoords, worlddict[dim][1], worlddict[dim][0], coords, "has {} items".format(slots) if slots else "is empty") )
-                vanillabean.send( toserver )
-                print(toserver)
+            
+                vanillabean.send("/tellraw {} ".format(name) + showandtellraw.tojson("{} <yellow^--- {} maildrop(s) - page {} of {} - \(!maildrop \<page\>\) --->".format(serverName, total, page, totalPages)))
+                for mail in maildrop:
+                    dimcoords, boxname, desc, slots, hidden, inverted = mail
+                    dim, coords = dimcoords.split(",",1)
                 
+                    URLcoords = coords.replace(",", "/")           
+            
+                    toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson(serverName + ' {{Maildrop [_{}_|http://{}/map/#/{}/-1/{}/0]~{} {}}} {}'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), URL, URLcoords, worlddict[dim][1], worlddict[dim][0], coords, "has {} items".format(slots) if slots else "is empty") )
+                    vanillabean.send( toserver )
+                    print(toserver)
+
+            else:
+                pass
+
+
+
+
+
+        cur.execute('SELECT count(coords) FROM maildrop WHERE name = ? COLLATE NOCASE', (name,))
+        total = cur.fetchall()[0][0]
+        pageDiv = divmod(total, 5)
+        totalPages = pageDiv[0] + bool(pageDiv[1])
+        
+        if args:
+            try:
+                page = int(args[0])
+                if page <= totalPages:
+                    maildropPage(page)
+            except:
+
+                pass
+        else:
+            page = 1
+            maildropPage(page)
     
 
     conn.commit()
