@@ -14,7 +14,7 @@ fi
 
 tobackup ()
 {
-    echo "Sending to backup"
+    echo $(date) "Sending to backup"
     rsync -av --inplace --delete /minecraft/host/mcdata/world /minecraft/host/otherdata/mcbackup
 }
 
@@ -26,6 +26,7 @@ fromram ()
 
 function pipestart ()
 {
+    echo $(date) "Starting named pipe"
     cat > /minecraft/vanillabean
 }
 
@@ -44,23 +45,26 @@ mcstart ()
     if [[ ! -f $CLIENTVERSION.jar ]]; then
         wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENTVERSION/$CLIENTVERSION.jar
     fi
-    echo "Starting named pipe"
+
     sleep 5
     ( pipestart ) &
     
-    echo "Starting server"
+    echo $(date) "Starting server"
     sleep 5
     ( echo $LANG; /usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean ) &
     PID=$!
 
 
    wait $PID
-   echo "Server stopped"
+   sleep 30
+   
+   echo $(date) "Server stopped"
    tobackup
 }
 
 mcstop ()
 {
+    echo $(date) "Stopping minecraft server"
     /minecraft/vanillabean.py "/say server restarting in 10 seconds"
     sleep 10
     echo "/stop" > /minecraft/vanillabean
@@ -70,14 +74,14 @@ mcstop ()
 
 sync ()
 {
-    #echo "$(date) Sending sava-all to server"
+    echo $(date) "Sending sava-all to server"
     /minecraft/vanillabean.py "/save-off" 
     sleep 2
-    /minecraft/vanillabean.py "/save-all" 
+    /minecraft/vanillabean.py "/save-all flush" 
 
     sleep 10
 
-    #echo "$(date) Syncing ramdisk with disk"
+    echo $(date) "Syncing ramdisk with disk"
     tobackup
     #echo "$(date) Creating snapshot"
     # sudo zfs snapshot main/minecraft/world@$(date +%Y%m%d%H%M)
@@ -86,7 +90,7 @@ sync ()
 
     /minecraft/vanillabean.py "/save-on" 
 
-    echo "$(date) sync done"
+    echo $(date) "sync done"
 }
 
 case $1 in
