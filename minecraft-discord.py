@@ -280,8 +280,6 @@ def my_background_task():
     f.seek(file_len)
     pos = f.tell()
 
-    nextlineformute = False
-    mutedlist = []
     
     while not client.is_closed:
         pos = f.tell()
@@ -307,17 +305,6 @@ def my_background_task():
                 event, data = eventData
                 print(event, data)
             
-            if nextlineformute:
-                nextlineformute = False
-                mutedlist = [a.strip(",") for a in line.split(":")[3].split(" ")]
-                mutedlist.remove('')
-            
-           
-            if event == "muteTeam":
-                nummuteplayers = data[1]
-                nextlineformute = True 
-
-                
             if event == "chat":
                 yield from eventChat(data)
 

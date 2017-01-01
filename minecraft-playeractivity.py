@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/python3 -u
 '''
 Created on 2014-07-03
 '''
@@ -96,12 +96,13 @@ class PosHandler(PatternMatchingEventHandler):
             time.sleep(1)
             filename = event.dest_path
             # print filename
-            pos = getpos(filename)
-            # print pos
+            try:
+                pos = getpos(filename)
+                # print pos
 
-            q.put(("INSERT INTO location (UUID, dim, x, y, z) VALUES (?,?,?,?,?)", pos))
-
-
+                q.put(("INSERT INTO location (UUID, dim, x, y, z) VALUES (?,?,?,?,?)", pos))
+            except:
+                print("File disappeared!")
 
 '''
 Extend FileSystemEventHandler to be able to write custom on_any_event method
@@ -128,6 +129,7 @@ class StatHandler(FileSystemEventHandler):
                 with open(pastname, "r") as statfile:
                     oldjson = json.load(statfile)
             except:
+                shutil.copyfile(filename, pastname)
                 return
 
             try:

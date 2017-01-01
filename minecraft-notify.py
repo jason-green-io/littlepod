@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/python3 -u
 import queue
 import threading
 import stat
@@ -85,7 +85,7 @@ def stats(stat):
             statsCount.update(each)
             sumPeep.update({peep[0]: statsCount})
             
-        return sorted([(each[0], each[1].get(stat, 0)) for each in sumPeep.items()], key=lambda a: a[1], reverse=True)[0]
+    return sorted([(each[0], each[1].get(stat, 0)) for each in sumPeep.items()], key=lambda a: a[1], reverse=True)[0]
 
 
 def flyStat():
