@@ -89,7 +89,7 @@ def genEvent(line):
 
 
 def send(command):
-    with io.open("/minecraft/vanillabean", "w", encoding='utf-8') as file:
+    with io.open("/minecraft/vanillabean", "a", encoding='utf-8') as file:
         print(command.encode('utf-8'))
         final = command + u"\n"
         file.write(final)

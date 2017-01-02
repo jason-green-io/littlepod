@@ -76,7 +76,7 @@ mobList = ["Bat",
 
 
 def send(command):
-    with open("/minecraft/vanillabean", "w", encoding='utf-8') as file:
+    with open("/minecraft/vanillabean", "a", encoding='utf-8') as file:
         # print(command)
         final = command + u"\n"
         file.write(final)
@@ -143,7 +143,6 @@ def genEvent(line):
                                  ("command", "^\[(.*)\] \[Server thread/INFO\]: \<(.*)\> !(.*)$"),
                                  ("chat", "^\[(.*)\] \[Server thread/INFO\]: \<(.*)\> (.*)$"),
                                  ("playerList", "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$"),
-                                 ("muteTeam", "^\[(.*)\] \[Server thread/INFO]: Showing (.*) player\(s\) in team mute:$"),
                                  ("UUID", "^\[(.*)\] \[User Authenticator #.*/INFO\]: UUID of player (.*) is (.*)$"),
                                  ("achievement", "^\[(.*)\] \[Server thread/INFO\]: (\w*) has just earned the achievement \[(.*)\]$"),
                                  ("lag", "^\[(.*)\] \[Server thread/WARN\]: Can't keep up! Did the system time change, or is the server overloaded\? Running (\d*)ms behind, skipping (\d*) tick\(s\)$")])

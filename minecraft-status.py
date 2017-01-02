@@ -159,15 +159,15 @@ totalplayer = len(quickie)
 
 
 with open(otherdata + "/quickie.txt", "w") as outfile:
-    line = ("[<gold^_Activity_>|http://barlynaland.greener.ca/#!status.md] <gold^last 7 days ><dark_purple^" +
+    line = ("<gold^last 7 d: ><dark_purple^" +
             str(totalplayer) +
             "><gold^\\\\>" +
             "<dark_purple^" + str(numwhitelist) + " >" +
             "<gold^players seen, ><dark_purple^" +
             "%.1F" % (totalminutes / 60.0) +
-            "><gold^ hours, average ><dark_purple^" +
+            "><gold^ h, average ><dark_purple^" +
             "%.1F" % (totalminutes / 60.0 / totalplayer) +
-            "><gold^ hours per player>")
+            "><gold^ h\/player>")
     print(line)
     outfile.write(line)
 

@@ -7,6 +7,8 @@ import vanillabean
 import sys
 import queue
 import threading
+import datetime
+from pytz import timezone
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -17,8 +19,28 @@ mcfolder = config['mcdata']
 
 
 whitelist = {each["uuid"]: each["name"] for each in json.load(open(mcfolder + "/whitelist.json"))}
+usercache = {each["uuid"]: (datetime.datetime.strptime(each["expiresOn"], "%Y-%m-%d %H:%M:%S %z") - datetime.timedelta(days=30), each["name"]) for each in json.load(open(mcfolder + "/usercache.json"))}
 
-# print(whitelist)
+expired = []
+active = []
+neverseen = []
+
+for each in sorted(usercache, key=usercache.get):
+    if each in whitelist.keys() and usercache[each][0] <= datetime.datetime.now(timezone('UTC')) - datetime.timedelta(days=120):
+        # print(each, usercache[each])
+        expired.append(whitelist[each])
+
+for each in sorted(usercache, key=usercache.get):
+    if each in whitelist.keys() and usercache[each][0] > datetime.datetime.now(timezone('UTC')) - datetime.timedelta(days=120):
+        # print(each, usercache[each])
+        active.append(whitelist[each])
+
+
+print("Expired ---")
+print(expired)
+print("Active ---")
+print(active)
+        
 
 q = queue.Queue()
 
@@ -51,32 +73,6 @@ threadDBWriter.setDaemon(True)
 threadDBWriter.start()
                                                                                                 
 
-
-
-
-
-conn = sqlite3.connect(dbfile)
-cur = conn.cursor()
-
-cur.execute('select name, UUID from (select * from (select * from joins order by date asc) group by UUID) where date < datetime("now", "-120 day") group by UUID')
-old = [each[1] for each in cur.fetchall()]
-
-cur.execute('select name, UUID from (select * from (select * from joins order by date asc) group by UUID) group by UUID')
-active = [each[1] for each in cur.fetchall()]
-# print(current)
-
-cur.execute('select * from whitelist where ts < datetime("now", "-14 days")')
-twoWeeksOnList = [each[1] for each in cur.fetchall()]
-
-didntlogin = [each for each in twoWeeksOnList if each not in active]
-
-
-
-expired = [each[1] for each in list(whitelist.items()) if each[0] in old or each[0] in didntlogin]
-
-
-print(expired)
-
 delete = False
 
 if len(sys.argv) > 1:
@@ -88,15 +84,20 @@ for name in expired:
     else:
         print(name)
 
+conn = sqlite3.connect(dbfile)
+cur = conn.cursor()
 
 cur.execute("DELETE FROM whitelist")
+
+conn.commit()
+conn.close()
+
+whitelist = {each["uuid"]: each["name"] for each in json.load(open(mcfolder + "/whitelist.json"))}
 
 for each in list(whitelist.items()):
 
     q.put(("INSERT OR IGNORE INTO whitelist (name, UUID) VALUES (?,?)", (each[1], each[0])))
 
-conn.commit()
-conn.close()
 
-
-
+while not q.empty():
+    pass

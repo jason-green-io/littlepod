@@ -14,7 +14,7 @@ sqlite3 $DBFILE -init <(echo .timeout 20000) "CREATE TABLE pois (coords primary 
 
 python /usr/lib/python2.7/dist-packages/overviewer_core/aux_files/genPOI.py --config=/minecraft/host/config/overviewerconfig.py
 
-sqlite3 $DBFILE -init <(echo .timeout 20000) "DROP TABLE maildrop; ALTER TABLE tempmaildrop RENAME TO maildrop"
+sqlite3 $DBFILE -init <(echo .timeout 20000) "DROP TABLE IF EXISTS maildrop; ALTER TABLE tempmaildrop RENAME TO maildrop"
 sqlite3 $DBFILE -init <(echo .timeout 20000) "UPDATE process SET end = CURRENT_TIMESTAMP WHERE id = \"$UUID\""
 
 /minecraft/minecraft-maildrops.py

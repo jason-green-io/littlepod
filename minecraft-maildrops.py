@@ -30,7 +30,7 @@ def updatePois():
     conn.commit()
     conn.close()
 
-
+    dimDict = {"o":0, "n": 2, "e": 1}
     
 
     with codecs.open(webdata + "/pois.md", "w", "utf-8") as file:
@@ -47,7 +47,7 @@ def updatePois():
 
             for poi in poiList:
                 coords = poi[0].split(",")
-                dim = coords.pop(0)
+                dim = dimDict[coords.pop(0)]
                 link = "http://{}/map/#/{}/{}/{}/-2/{}/0".format(URL, coords[0], coords[1], coords[2], dim)
                 webline = u"|[{}]({})|\n".format(" ".join([ poi[2], poi[3], poi[4]]), link)
                 file.write(webline)

@@ -4,35 +4,22 @@ set -m
 eval $(parse_yaml /minecraft/host/config/server.yaml "config_")
 CLIENTVERSION=$config_mcversion
 VERSION=$config_mcversion
+CONTROL="/minecraft/vanillabean"
 
-if [[ ! -p /minecraft/vanillabean ]]; then
-    rm /minecraft/vanillabean
-    mkfifo /minecraft/vanillabean
-fi
+case "$1" in
+send)
+
+    if kill -0 $(cat /minecraft/minecraft-ctl.sh.pid) > /dev/null 2&>1; then
+       echo $2 >> $CONTROL
+    else
+	echo Not sent: $2
+    fi
+;;
 
 
+start)
 
-tobackup ()
-{
-    echo $(date) "Sending to backup"
-    rsync -av --inplace --delete /minecraft/host/mcdata/world /minecraft/host/otherdata/mcbackup
-}
 
-fromram ()
-{
-    echo "Syncing ramdisk to disk"
-    rsync -av /dev/shm/world /minecraft/host/mcdata    
-}
-
-function pipestart ()
-{
-    echo $(date) "Starting named pipe"
-    cat > /minecraft/vanillabean
-}
-
-mcstart ()
-{
-    trap mcstop INT
 
     cd /minecraft/host/mcdata
 
@@ -46,61 +33,45 @@ mcstart ()
         wget -t inf https://s3.amazonaws.com/Minecraft.Download/versions/$CLIENTVERSION/$CLIENTVERSION.jar
     fi
 
-    sleep 5
-    ( pipestart ) &
     
     echo $(date) "Starting server"
-    sleep 5
-    ( echo $LANG; /usr/bin/java -jar minecraft_server.$VERSION.jar nogui < /minecraft/vanillabean ) &
-    PID=$!
+
+    (tail -F -n 0 $CONTROL | /usr/bin/java -jar minecraft_server.$VERSION.jar nogui  & echo $! > /minecraft/minecraft-ctl.sh.pid)
 
 
-   wait $PID
-   sleep 30
-   
-   echo $(date) "Server stopped"
-   tobackup
-}
 
-mcstop ()
-{
+ 
+;;
+
+stop)
+
     echo $(date) "Stopping minecraft server"
-    /minecraft/vanillabean.py "/say server restarting in 10 seconds"
+    echo "/say server restarting in 10 seconds" >> $CONTROL
     sleep 10
-    echo "/stop" > /minecraft/vanillabean
-}
+    echo "/stop" >> $CONTROL
+;;
 
 
 
-sync ()
-{
-    echo $(date) "Sending sava-all to server"
-    /minecraft/vanillabean.py "/save-off" 
+sync)
+
+    echo $(date) "Sending save-all to server"
+    echo "/save-off" >> $CONTROL
     sleep 2
-    /minecraft/vanillabean.py "/save-all flush" 
+    echo "/save-all flush" >> $CONTROL 
 
     sleep 10
 
-    echo $(date) "Syncing ramdisk with disk"
-    tobackup
+    echo $(date) "Syncing world to backup"
+
+    rsync -av --inplace --delete /minecraft/host/mcdata/world /minecraft/host/otherdata/mcbackup
     #echo "$(date) Creating snapshot"
     # sudo zfs snapshot main/minecraft/world@$(date +%Y%m%d%H%M)
 
     sleep 10
 
-    /minecraft/vanillabean.py "/save-on" 
+    echo "/save-on" >> $CONTROL 
 
     echo $(date) "sync done"
-}
-
-case $1 in
-start)
-mcstart
-;;
-stop)
-mcstop
-;;
-sync)
-sync
 ;;
 esac
