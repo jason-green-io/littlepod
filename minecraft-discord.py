@@ -1,4 +1,5 @@
 #!/usr/bin/python3 -u
+import json
 import sqlite3
 import asyncio
 import yaml
@@ -125,7 +126,7 @@ def on_message(message):
         discordName = str(message.author)
         messagetext = str(message.clean_content) 
         # messagetext = messagetext.replace('"', r"\"")
-        discordtext =  u'{"text" : "\\u2689 ", "color" : "blue" }'
+        discordtext =  u'{"text" : "\u2689 ", "color" : "blue" }'
 
         print([a.name for a in message.author.roles])
         

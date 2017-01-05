@@ -10,7 +10,10 @@ cd /minecraft
 
 if [[ ! -d /minecraft/host/otherdata ]]; then
     echo "Creating folders for other data"
-    mkdir -p /minecraft/host/otherdata
+    mkdir -p /minecraft/host/otherdata/stats
+    mkdir -p /minecraft/host/otherdata/chests
+    mkdir -p /minecraft/host/otherdata/items
+
 else
     echo "Found otherdata folder"
 fi
