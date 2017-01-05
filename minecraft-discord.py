@@ -81,16 +81,18 @@ def updateTopic():
         cur.execute('select name from stats natural join playerUUID where datetime > datetime("now", "-5 minutes") group by name')
         players = cur.fetchall()
     
-    
+
         formattedplayers = ["{}".format(a[0]) for a in players]
-        currentTopic = client.get_channel(discordChannel).topic
+        channel = client.get_channel(discordChannel)
+        currentTopic = channel.topic
+        currentName = channel.name
         topicLineList = currentTopic.split('\n')
         topicLine = [line for line in enumerate(topicLineList) if line[1].startswith(name)][0][0]
-        
+
         topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
-                
-        yield from client.edit_channel(client.get_channel(discordChannel), position=1, name="whitelisted-servers", topic="\n".join(topicLineList))
-        
+
+        yield from client.edit_channel(channel, position=1, name=currentName, topic="\n".join(topicLineList))
+                                                 
         yield from  asyncio.sleep(300)
 
     conn.close()
