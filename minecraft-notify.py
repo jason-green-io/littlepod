@@ -30,6 +30,7 @@ mcfolder = config['mcdata']
 URL = config['URL']
 servername = config['name']
 otherdata = config['otherdata']
+tweet = config['tweet']
 
 UUID = ""
 
@@ -129,14 +130,14 @@ def weekly():
 def monthly():
     pass
 
-
-schedule.every().monday.at("07:00").do(playtimeStat)
-schedule.every().tuesday.at("07:00").do(donothing)
-schedule.every().wednesday.at("07:00").do(flyStat)
-schedule.every().thursday.at("07:00").do(minecartStat)
-schedule.every().friday.at("07:00").do(boatStat)
-schedule.every().saturday.at("07:00").do(sneakStat)
-schedule.every().sunday.at("07:00").do(donothing)
+if tweet:
+    schedule.every().monday.at("07:00").do(playtimeStat)
+    schedule.every().tuesday.at("07:00").do(donothing)
+    schedule.every().wednesday.at("07:00").do(flyStat)
+    schedule.every().thursday.at("07:00").do(minecartStat)
+    schedule.every().friday.at("07:00").do(boatStat)
+    schedule.every().saturday.at("07:00").do(sneakStat)
+    schedule.every().sunday.at("07:00").do(donothing)
 
 
 def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=None ):
