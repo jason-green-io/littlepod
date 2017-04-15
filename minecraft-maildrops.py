@@ -27,19 +27,23 @@ def updatePois():
     cur.execute("SELECT * FROM pois order by type")
     pois = cur.fetchall()
 
+    cur.execute("SELECT * FROM maildrop WHERE inverted = 0 and hidden = 0 ORDER BY name COLLATE NOCASE")
+    maildrops = cur.fetchall()
+
+
     conn.commit()
     conn.close()
 
-    dimDict = {"o":0, "n": 2, "e": 1}
+
     
 
     with codecs.open(webdata + "/pois.md", "w", "utf-8") as file:
         
-        file.write("""# POIs\n""")
+        file.write("""#map index\n""")
 
         
         for poiType, poiList in groupby(pois, lambda x: x[1].strip("*")):
-            print(repr(poiType.strip().strip("*")))
+            # print(repr(poiType.strip().strip("*")))
             file.write("""## {}
 |name|
 |:-|
@@ -47,22 +51,27 @@ def updatePois():
 
             for poi in poiList:
                 coords = poi[0].split(",")
-                dim = dimDict[coords.pop(0)]
+                dim = worlddict[coords.pop(0)][1]
                 link = "http://{}/map/#/{}/{}/{}/-2/{}/0".format(URL, coords[0], coords[1], coords[2], dim)
                 webline = u"|[{}]({})|\n".format(" ".join([ poi[2], poi[3], poi[4]]), link)
                 file.write(webline)
             
+        file.write("""## {}
+|player|name|
+|:-|:-|
+""".format("maildrops"))
 
+        for mail in maildrops:
+            dimcoords, boxname, desc, slots, hidden, inverted = mail
+            dim, coords = dimcoords.split(",",1)
 
+            URLcoords = coords.replace(",", "/")           
+            link = "http://{}/map/#/{}/-2/{}/0".format(URL, URLcoords, worlddict[dim][1])
+            webline = u"|{}|[{}]({})|\n".format(boxname, desc if desc else "{} {}".format(worlddict[dim][0], coords), link)
+            file.write(webline)
 
-
-
-
-    
-
-                                    
-
-
+            
+            # print(webline)
 
 
 
@@ -80,18 +89,12 @@ def sendMaildrops():
         dimcoords, boxname, desc, slots, hidden, inverted = mail
         dim, coords = dimcoords.split(",",1)
 
-        if dim == "e":
-            worldnum = "1"
-        elif dim == "n":
-            worldnum = "2"
-        elif dim == "o":
-            worldnum = "0"
         
         URLcoords = coords.replace(",", "/")           
 
-        toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson(serverName + ' {{Maildrop [_{}_|http://{}/map/#/{}/-1/{}/0]~{} {}}} {}'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), URL, URLcoords, worldnum, worlddict[dim][0], coords, "has {} items".format(slots) if slots else "is empty") )
-        vanillabean.send( toserver )
-        print(toserver)
+        toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson(serverName + ' {{Maildrop [_{}_|http://{}/map/#/{}/-1/{}/0]~{} {}}} {}'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), URL, URLcoords, worlddict[dim][1], worlddict[dim][0], coords, "has {} items".format(slots) if slots else "is empty") )
+        #vanillabean.send( toserver )
+        # print(toserver)
 
     
 

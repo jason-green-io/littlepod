@@ -70,6 +70,7 @@ if len(files) != 6:
 
 
 for each in dimlist:
+    print(each)
     oldchestlist = [ json.loads( chest.strip() ) for chest in open(oldfile + "." + each + ".json", 'r').readlines() if "LootTable" not in chest ]
     chestlist = [ json.loads( chest.strip() ) for chest in open(latestfile + "." + each + ".json", 'r').readlines() if "LootTable" not in chest]
 

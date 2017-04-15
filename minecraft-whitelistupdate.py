@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import time
 import yaml
 import json
 import sqlite3
@@ -100,4 +100,4 @@ for each in list(whitelist.items()):
 
 
 while not q.empty():
-    pass
+    time.sleep(5)

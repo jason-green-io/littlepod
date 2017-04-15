@@ -1,9 +1,11 @@
 #!/usr/bin/python3 -u
+import string
 import queue
 import threading
 import stat
 import os
 import time
+import random
 import datetime
 import json
 import yaml
@@ -18,8 +20,10 @@ import showandtellraw
 import vanillabean
 import schedule
 
+
 sys.path.append('/minecraft/host/config')
 from twitch_catch_conf import *
+import logging
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -36,18 +40,55 @@ UUID = ""
 
 q = queue.Queue()
 
-serverName = "<aqua^\<><green^{}><aqua^\>>".format(servername)
+serverName = "<blue^\<><green^{}><blue^\>>".format(servername)
 worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
 
 
 def writeToDB():
     while True:
-        DBWriter(q.get())
+        dbQuery(dbfile, 30, q.get())
         q.task_done()
+
+def getStat(stats, stat):
+        if stats:
+            evalStats = eval(stats)
+
+            if type(evalStats) is dict:
+                return evalStats.get(stat, 0)
+
+
+
+        
+
+def dbQuery(db, timeout, query):
+    conn = sqlite3.connect(db)
+    conn.create_function("getStat", 2, getStat)
+    results = []
+    for x in range(0, timeout):
+        try:
+            with conn:
+                cur = conn.cursor()
+                cur.execute(*query)
+                logging.warn(query)
+                results = cur.fetchall()
+        except sqlite3.OperationalError:
+            logging.info("Try {} - Locked".format(x))
+            time.sleep(random.random())
+            pass
+        finally:
+            break
+    else:
+        with conn:
+            cur = conn.cursor()
+            cur.execute(*query)
+            logging.info(query)
+            results = cur.fetchall()
+
+    return results
 
 
 def DBWriter(queryArgs):
-    conn = sqlite3.connect(dbfile)
+    conn = sqlite3.connect(dbfile, 30)
     cur = conn.cursor()
     
     fail = True
@@ -58,6 +99,7 @@ def DBWriter(queryArgs):
             fail = False
         except sqlite3.OperationalError:
             print("Locked")
+            time.sleep(random.random())
             fail = True
 
 threadDBWriter = threading.Thread(target=writeToDB)
@@ -67,14 +109,8 @@ threadDBWriter.start()
 donothing = lambda *args: None        
 
 def stats(stat):
-    conn = sqlite3.connect(dbfile)
-    cur = conn.cursor()
 
-    cur.execute('select name, group_concat(stats) from stats natural join playerUUID where datetime >= datetime("now", "-7 days") group by UUID')
-    peeps = cur.fetchall()
-
-    conn.commit()
-    conn.close()
+    peeps = dbQuery(dbfile, 30, ('select name, group_concat(stats) from playeractivity natural join playerUUID where datetime >= datetime("now", "-7 days") group by UUID',))
 
     sumPeep = {}
 
@@ -108,20 +144,12 @@ def boatStat():
     
 
 def playtimeStat():
-    def getStat(stats, stat):
-            return eval(stats).get(stat,0)
-
-
-    conn = sqlite3.connect(dbfile)
-    conn.create_function("getStat", 2, getStat)
-        
     
-    cur = conn.cursor()
-    cur.execute('select count(getStat(stats, "stat.playOneMinute")) as total, name from stats natural join playerUUID where datetime >= datetime("now", "-7 days") group by name order by total desc limit 1')
-    top = cur.fetchall()[0]
+
     
-    conn.commit()
-    conn.close()  
+    top = dbQuery(dbfile, 30, ('select count(getStat(stats, "stat.playOneMinute")) as total, name from playeractivity natural join playerUUID where datetime >= datetime("now", "-7 days") group by name order by total desc limit 1',))[0]
+
+    
     vanillabean.tweet("Congrats to {} for playing {} minutes this week!".format(top[1], str(top[0])))
 
 def weekly():
@@ -150,13 +178,9 @@ def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=N
 def eventLag(data):
     ts, ms, tick = data
 
-    conn = sqlite3.connect(dbfile)
-    cur = conn.cursor()
 
     q.put(("INSERT INTO loglag VALUES (?,?)", (datetime.datetime.now(), tick)))
 
-    conn.commit()
-    conn.close()
 
 def tellcoords( coords ):
     
@@ -188,8 +212,7 @@ def eventCommand(data):
             vanillabean.send("/scoreboard teams leave mute {}".format(name))
             vanillabean.send("/tell {} Un-Muting Discord".format(name))
     
-    conn = sqlite3.connect(dbfile)
-    cur = conn.cursor()
+
     
     if command == "social":    
 
@@ -226,8 +249,8 @@ def eventCommand(data):
 
         def maildropPage(page):
             if page:
-                cur.execute("SELECT * FROM maildrop WHERE name = ? COLLATE NOCASE limit ?, ?", (name, (page - 1) * 5, 5))
-                maildrop = cur.fetchall()
+                maildrop = dbQuery(dbfile, 30, ("SELECT * FROM maildrop WHERE name = ? COLLATE NOCASE limit ?, ?", (name, (page - 1) * 5, 5)))
+
 
             
                 vanillabean.send("/tellraw {} ".format(name) + showandtellraw.tojson("{} <yellow^--- {} maildrop(s) - page {} of {} - \(!maildrop \<page\>\) --->".format(serverName, total, page, totalPages)))
@@ -248,8 +271,9 @@ def eventCommand(data):
 
 
 
-        cur.execute('SELECT count(coords) FROM maildrop WHERE name = ? COLLATE NOCASE', (name,))
-        total = cur.fetchall()[0][0]
+        total = dbQuery(dbfile, 30, ('SELECT count(coords) FROM maildrop WHERE name = ? COLLATE NOCASE', (name,)))[0][0]
+
+        
         pageDiv = divmod(total, 5)
         totalPages = pageDiv[0] + bool(pageDiv[1])
         
@@ -266,9 +290,7 @@ def eventCommand(data):
             maildropPage(page)
     
 
-    conn.commit()
-    conn.close()
-
+    
 
 
 
@@ -282,30 +304,24 @@ def eventLogged(data):
     #tweetmessage = urllib.urlencode({"status": name + " " + message})
     #response = json.loads(oauth_req( "https://api.twitter.com/1.1/statuses/update.json?" + tweetmessage, AccessToken, AccessTokenSecret, http_method="POST"))
     #print response
-    
+
+    token = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
     try:
         for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
             time.sleep(1)
-            message = "/tellraw " + name + " " + showandtellraw.tojson( each.strip() )
+            message = "/tellraw " + name + " " + showandtellraw.tojson( each.strip().replace("verifykey", token) )
             vanillabean.send( message )
     except:
         pass
 
 
+
+    maildrop = dbQuery(dbfile, 30, ("SELECT * FROM maildrop WHERE inverted = 0 and slots > 0 and name = ? COLLATE NOCASE", (name,)))
     
 
-
-    conn = sqlite3.connect(dbfile, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
-    cur = conn.cursor()
-
-
-    cur.execute("SELECT * FROM maildrop WHERE inverted = 0 and slots > 0 and name = ? COLLATE NOCASE", (name,))
-    maildrop = cur.fetchall()
-
-    cur.execute("SELECT * FROM maildrop WHERE inverted = 1 and slots = 0 and name = ? COLLATE NOCASE", (name,))
-    maildropinv = cur.fetchall()
+    maildropinv = dbQuery(dbfile, 30, ("SELECT * FROM maildrop WHERE inverted = 1 and slots = 0 and name = ? COLLATE NOCASE", (name,)))
 
     for mail in maildrop + maildropinv:
         dimcoords, boxname, desc, slots, hidden, inverted = mail
@@ -323,11 +339,11 @@ def eventLogged(data):
         toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson(serverName + ' {{Maildrop [_{}_|http://{}/map/#/{}/-1/{}/0]~{} {}}} {}'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), URL, URLcoords, worldnum, worlddict[dim][0], coords, "has {} items".format(slots) if slots else "is empty") )
         vanillabean.send( toserver )
         print(toserver)
-    q.put(('insert into joins values (?,?,?,?)', (datetime.datetime.now(), name, UUID.get(name, "Unknown"), ip)))
-    
+    q.put(('INSERT INTO joins VALUES (?,?,?,?)', (datetime.datetime.now(), name, UUID.get(name, "Unknown"), ip)))
+    q.put(('REPLACE INTO discordverify (name, token) VALUES (?, ?)', (name, token)))
 
-    conn.commit()
-    conn.close()
+   
+   
 
 
 def eventChat(data):
@@ -359,8 +375,7 @@ def playerlist(numplayers, line):
     # print teleplayers
     # teleplayers = [(each[0], each[2].strip(','), each[3].strip(','), each[4]) for each in teleplayers if len(each) > 0]
     # print teleplayers
-    conn = sqlite3.connect(dbfile)
-    cur = conn.cursor()
+  
 
     if int(numplayers) > 0:
         for player in players:
@@ -369,21 +384,17 @@ def playerlist(numplayers, line):
     # for location in teleplayers:
     #     cur.execute('INSERT INTO location (name, x, y, z) VALUES(?,?,?,?)', location)
 
-    conn.commit()
-    conn.close()
+  
 
 
 def eventAchievement(data):
 
     time, name, ach = data
 
-    conn = sqlite3.connect(dbfile)
-    cur = conn.cursor()
 
     q.put(("INSERT INTO achievements VALUES (?,?,?)", (datetime.datetime.now(), name, ach)))
     vanillabean.tweet('{} just got "{}"'.format(name, ach))
-    conn.commit()
-    conn.close()
+
     
 
 

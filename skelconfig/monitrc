@@ -10,10 +10,24 @@
       slots 100                     # optionally limit the queue size
 
 SET MAILSERVER smtp.gmail.com PORT 587
-    username "barlynaland@greener.ca" password "4uvCFeHeZU" using tlsv1
+    username "" password "" using tlsv1
     with timeout 30 seconds
 
-set alert root@greener.ca                       # receive all alerts
+set alert trigger@applet.ifttt.com                       # receive all alerts
+
+
+set mail-format {
+    from: monit@$HOST
+    subject: $HOST --  $EVENT $SERVICE
+    message: $EVENT Service $SERVICE
+                   Date:        $DATE
+                   Action:      $ACTION
+                   Description: $DESCRIPTION
+  
+
+
+ }
+
 
 set httpd port 2812 and
      use address localhost  # only accept connection from localhost

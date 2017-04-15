@@ -7,6 +7,7 @@ import os
 import codecs
 import stat
 import time
+import random
 import re
 import requests
 import sys
@@ -45,6 +46,29 @@ serverrestart = False
 client = discord.Client()
 
 
+def dbQuery(db, timeout, query):
+    conn = sqlite3.connect(db)
+    results = ""
+    for x in range(0, timeout):
+        try:
+            with conn:
+                cur = conn.cursor()
+                cur.execute(*query)
+                results = cur.fetchall()
+        except sqlite3.OperationalError:
+            print("Try {} - Locked".format(x))
+            time.sleep(random.random())
+            pass
+        finally:
+            break
+    else:
+        with conn:
+            cur = conn.cursor()
+            cur.execute(*query)
+            results = cur.fetchall()
+
+    return results
+
 
 def telllinks( links ):
     for each in links:
@@ -79,8 +103,8 @@ def updateTopic():
     conn = sqlite3.connect(dbfile)
     cur = conn.cursor()
     while True:
-        cur.execute('select name from stats natural join playerUUID where datetime > datetime("now", "-5 minutes") group by name')
-        players = cur.fetchall()
+        players = dbQuery(dbfile, 30, ('select name from playeractivity natural join playerUUID where datetime > datetime("now", "-2 minutes") group by name',))
+
     
 
         formattedplayers = ["{}".format(a[0]) for a in players]
@@ -94,7 +118,7 @@ def updateTopic():
 
         yield from client.edit_channel(channel, position=1, name=currentName, topic="\n".join(topicLineList))
                                                  
-        yield from  asyncio.sleep(300)
+        yield from  asyncio.sleep(60)
 
     conn.close()
 
@@ -109,7 +133,7 @@ def on_message(message):
     # we do not want the bot to reply to itself
     if message.author == client.user:
         return
-    print(message.author.display_name, message.clean_content.encode("utf-8"))
+    print(message.author.display_name, message.clean_content.encode("utf-8"), message.attachments)
 
     if message.channel.is_private:
         coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
@@ -117,7 +141,22 @@ def on_message(message):
         if coordscomma:
             
             yield from client.send_message(channelobject, coordsmessage( coordscomma ))
-            tellcoords(coordscomma)
+            # tellcoords(coordscomma)
+            
+        if message.content.startswith("/verify"):
+            verifytoken = message.content.split()[-1]
+            verify = dbQuery(dbfile, 30, ('SELECT * from discordverify WHERE token = ?',(verifytoken,)))
+            print(verify)
+            if verify:
+                nickname = verify[0][0]
+                server =  client.get_server("140194383118073856")
+                member = server.get_member(message.author.id)
+                verifyrole = [x for x in server.roles if x.name == "verified"][0]
+                print(verifyrole)
+                yield from client.add_roles(member, verifyrole)
+                yield from client.change_nickname(member, nickname)
+                yield from client.send_message(message.channel, "You have been verified with IGN {}.".format(nickname))
+        
 
     if message.channel.id == discordChannel:
         links = re.findall('(https?://\S+)', message.content)
@@ -269,7 +308,7 @@ def eventChat(data):
 
     if coordscomma:
         yield from client.send_message(channelobject, coordsmessage( coordscomma ))
-        tellcoords(coordscomma)
+        # tellcoords(coordscomma)
 
 @asyncio.coroutine 
 def my_background_task():
@@ -336,6 +375,7 @@ def handle_bgtask():
         yield from my_background_task()
     except Exception:
         print("Uhoh!")
+        client.close()
         sys.exit(1)
 
 def handle_updateTopic():
@@ -343,6 +383,7 @@ def handle_updateTopic():
         yield from updateTopic()
     except Exception:
         print("Uhoh!")
+        client.close()
         sys.exit(1)
 
         
