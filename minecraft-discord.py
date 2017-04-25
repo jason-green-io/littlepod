@@ -76,24 +76,22 @@ def telllinks( links ):
         vanillabean.send("/tellraw @a " + showandtellraw.tojson((serverFormat + " [_Link_|{}]").format(servername, each)))
 
 
-def coordsmessage( coords ):
+def coordsmessage( reCoords, reDim ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
-    message =[]
-    for each in coords:
-        print (each, each[0], each[1], each[2])
+    
+    for each in reCoords:
+        print (each[0], each[1], each[2])
+        message = "Map: {} {}{}{}\n http://{}/map/#/{}/{}/{}/-3/{}/0".format(worlddict[reDim][0], each[0], each[1], each[2], URL, each[0].strip(','), each[1].strip(',') if each[1] else "64", each[2], worlddict[reDim][1] )
+        #message.append( "Map: " + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] + "\nhttp://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0" )
+    
+    return message
 
-        message.append( "Map: " + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] + "\nhttp://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0" )
 
-    return " ".join( message )
-
-
-def tellcoords( coords ):
+def tellcoords( reCoords, reDim ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
-
-    for each in coords:
-        print (each, each[0], each[1], each[2])
-
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _" + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] +  "_|http://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0]"))
+    for each in reCoords:
+        
+        vanillabean.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _{} {}{}{}_|http://{}/map/#/{}/{}/{}/-3/{}/0]".format(worlddict[reDim][0], each[0], each[1], each[2], URL, each[0].strip(','), each[1].strip(',') if each[1] else "64" , each[2], worlddict[reDim][1])))
 
 
 
@@ -156,13 +154,33 @@ def on_message(message):
         return
     # print(message.author.display_name, message.clean_content.encode("utf-8"), message.attachments)
 
-    if message.channel.is_private:
-        coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
+    if client.user in message.mentions:
+        print("mentioned")
+        reCoords =  re.findall( "(-?\d+,) ?(\d+,)? ?(-?\d+)", message.content)
         
-        if coordscomma:
-            
-            yield from client.send_message(channelobject, coordsmessage( coordscomma ))
-            # tellcoords(coordscomma)
+        print(reCoords)
+        if reCoords:
+            reDim = re.findall("nether|end|over| o | e | n ", message.content)
+            print(reDim)
+            if reDim:
+    
+                if reDim[0] in ["over", " o "]:
+                    dim = "o"
+                elif reDim[0] in ["nether", " n "]:
+                    dim = "n"
+                elif reDim[0] in ["end", " e "]:
+                    dim = "e"
+            else:
+                dim = "o"
+
+                
+            yield from client.send_message(message.channel, coordsmessage( reCoords, dim ))
+            tellcoords(reCoords, dim)
+
+
+
+    
+    if message.channel.is_private:
 
         if message.content.startswith("/"):
             command = message.content[1:].split(" ", 1)[0]
@@ -373,7 +391,7 @@ def eventLeft(data):
 
 @asyncio.coroutine 
 def eventChat(data):
-    coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", data[2])
+
     links = re.findall('<(https?://\S+)>', data[2])
 
     player = data[1]
@@ -401,9 +419,28 @@ def eventChat(data):
         # print(repr(finalmessage))
         yield from client.send_message(channelobject, finalmessage)
 
-    if coordscomma:
-        yield from client.send_message(channelobject, coordsmessage( coordscomma ))
-        # tellcoords(coordscomma)
+
+    reCoords =  re.findall( "(-?\d+,) ?(\d+,)? ?(-?\d+)", message)
+        
+    print(reCoords)
+    if reCoords:
+        reDim = re.findall("nether|end|over| o | e | n ", message)
+        print(reDim)
+        if reDim:
+    
+            if reDim[0] in ["over", " o "]:
+                dim = "o"
+            elif reDim[0] in ["nether", " n "]:
+                dim = "n"
+            elif reDim[0] in ["end", " e "]:
+                dim = "e"
+        else:
+            dim = "o"
+
+                
+        yield from client.send_message(channelobject, coordsmessage( reCoords, dim ))
+        tellcoords(reCoords, dim)
+
 
 @asyncio.coroutine 
 def my_background_task():
