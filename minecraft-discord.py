@@ -100,27 +100,47 @@ def tellcoords( coords ):
 def updateTopic():
     yield from client.wait_until_ready()
     print("Updating topic")
-    conn = sqlite3.connect(dbfile)
-    cur = conn.cursor()
-    while True:
-        players = dbQuery(dbfile, 30, ('select name from playeractivity natural join playerUUID where datetime > datetime("now", "-2 minutes") group by name',))
 
-    
+    worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
+    while True:
+        players = dbQuery(dbfile, 100, ('SELECT name FROM playeractivity NATURAL JOIN playerUUID WHERE datetime > datetime("now", "-2 minutes") GROUP BY name',))
+
+        notifymaildrops = dbQuery(dbfile, 100, ('SELECT * FROM maildrop WHERE notified = 0 AND datetime > datetime("now", "-1 day")', ()))
+
+        maildropPlayers = dbQuery(dbfile, 100, ('SELECT name, discordID FROM players', ()))
+        playersDict = dict([p for p in maildropPlayers])
+        
+        for drop in notifymaildrops:
+
+            dimcoords, boxname, desc, slots, hidden, inverted, notified, datetime = drop
+            if (slots > 0 and inverted == 0) or (slots == 0 and inverted == 1):
+                dim, coords = dimcoords.split(",", 1)
+                        
+                URLcoords = coords.replace(",", "/")           
+
+                toplayer = ':package: {} {} http://{}/map/#/{}/-1/{}/0\n'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), "has {} items".format(slots) if slots else "is empty", URL, URLcoords, worlddict[dim][1])
+                if playersDict.get(boxname, ""):
+                    server =  client.get_server("140194383118073856")
+                    member = server.get_member(playersDict.get(boxname, ""))
+                    yield from client.send_message(member, toplayer)            
+
+                    print(toplayer)
+        dbQuery(dbfile, 100, ('UPDATE maildrop SET notified = 1 WHERE notified = 0', ()))
 
         formattedplayers = ["{}".format(a[0]) for a in players]
         channel = client.get_channel(discordChannel)
         currentTopic = channel.topic
         currentName = channel.name
         topicLineList = currentTopic.split('\n')
-        topicLine = [line for line in enumerate(topicLineList) if line[1].startswith(name)][0][0]
+        #topicLine = [line for line in enumerate(topicLineList) if line[1].startswith(name)][0][0]
 
-        topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
-
-        yield from client.edit_channel(channel, position=1, name=currentName, topic="\n".join(topicLineList))
+        #topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
+        yield from client.change_presence(game=discord.Game(name=" ".join(formattedplayers))) 
+        #yield from client.edit_channel(channel, position=1, name=currentName, topic="\n".join(topicLineList))
                                                  
         yield from  asyncio.sleep(60)
 
-    conn.close()
+
 
 @client.async_event
 def on_status(member, old_game, old_status):
@@ -130,10 +150,11 @@ def on_status(member, old_game, old_status):
 
 @client.async_event
 def on_message(message):
+    worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     # we do not want the bot to reply to itself
     if message.author == client.user:
         return
-    print(message.author.display_name, message.clean_content.encode("utf-8"), message.attachments)
+    # print(message.author.display_name, message.clean_content.encode("utf-8"), message.attachments)
 
     if message.channel.is_private:
         coordscomma =  re.findall( "^([EONeon]) (-?\d+), ?(-?\d+)", message.content)
@@ -142,21 +163,59 @@ def on_message(message):
             
             yield from client.send_message(channelobject, coordsmessage( coordscomma ))
             # tellcoords(coordscomma)
-            
-        if message.content.startswith("/verify"):
-            verifytoken = message.content.split()[-1]
-            verify = dbQuery(dbfile, 30, ('SELECT * from discordverify WHERE token = ?',(verifytoken,)))
-            print(verify)
-            if verify:
-                nickname = verify[0][0]
+
+        if message.content.startswith("/"):
+            command = message.content[1:].split(" ", 1)[0]
+            args = message.content[1:].split(" ", 1)[1:]
+            print(command, args)
+            name = dbQuery(dbfile, 100, ('SELECT name FROM players WHERE discordID = ?', (message.author.id,)))
+            if name:
+                name = name[0][0]
+                print(name, command, args)
+
+
+
+            if command == "link":
+                ign = args[0]
                 server =  client.get_server("140194383118073856")
                 member = server.get_member(message.author.id)
-                verifyrole = [x for x in server.roles if x.name == "verified"][0]
-                print(verifyrole)
-                yield from client.add_roles(member, verifyrole)
-                yield from client.change_nickname(member, nickname)
-                yield from client.send_message(message.channel, "You have been verified with IGN {}.".format(nickname))
-        
+                yield from client.send_message(message.channel, "You have 10 seconds to connect to the server with  {}. If you are already connected, please disconnect and reconnect. You will receive a message when you are successful".format(ign))            
+                dbQuery(dbfile, 100, ('INSERT INTO verify (name, discordID) VALUES (?, ?)', (ign, message.author.id)))
+
+
+
+            if command == "mute":
+                
+                if "on" in args:
+                    print("yup")
+                    vanillabean.send("/scoreboard teams join mute {}".format(name))
+                    vanillabean.send("/tell {} Muting Discord".format(name))
+                elif "off" in args:
+                    vanillabean.send("/scoreboard teams leave mute {}".format(name))
+                    vanillabean.send("/tell {} Un-Muting Discord".format(name))
+
+
+
+
+
+            if command == "maildrop":
+                print("Printing maildrops")
+                maildrop = dbQuery(dbfile, 30, ("SELECT coords, name, desc, slots, hidden, inverted FROM maildrop WHERE name = ? COLLATE NOCASE", (name,)))
+                print(maildrop)
+
+                if maildrop:
+                    toplayer = "Showing maildrops for {}\n".format(name)
+                    for mail in maildrop:
+                        dimcoords, boxname, desc, slots, hidden, inverted = mail
+                        dim, coords = dimcoords.split(",", 1)
+
+                        URLcoords = coords.replace(",", "/")           
+
+                        toplayer += ':package: {} {} http://{}/map/#/{}/-1/{}/0\n'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), "has {} items".format(slots) if slots else "is empty", URL, URLcoords, worlddict[dim][1])
+                    yield from client.send_message(message.channel, toplayer)            
+
+
+
 
     if message.channel.id == discordChannel:
         links = re.findall('(https?://\S+)', message.content)
@@ -258,16 +317,52 @@ def eventLogged(data):
     yield from client.send_message(channelobject, "`{}`  joined the server".format(player))
 
     ip = data[2].split(':')[0]
+
     message = "joined"
     try:
         hostaddr = socket.gethostbyaddr( ip )[0]
     except:
         hostaddr = "none"
     ipinfo = getgeo( ip )
-    ipstat= u" ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+    cc = ipinfo["countryCode"]
+    ipstat= u" ".join( [ip, hostaddr, cc, str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+    dbQuery(dbfile, 100, ('UPDATE players SET lastIP=?, country=? WHERE name=?', (ip, cc, player)))
     yield from client.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
 
 
+@asyncio.coroutine 
+def eventUUID(data):
+    player = data[1]
+
+    UUID = data[2]
+    dbQuery(dbfile, 100, ('UPDATE players SET name=? WHERE UUID=?', (player, UUID)))
+    dbQuery(dbfile, 100, ('INSERT OR IGNORE INTO players (name, UUID) VALUES (?, ?)',(player, UUID)))
+
+    link = dbQuery(dbfile, 100, ('SELECT * from verify WHERE name = ? AND datetime >= datetime("now", "-10 seconds")', (player,)))
+    if link:
+        link = link[-1]
+        print(link)
+        linkdiscordID = link[2]
+        linkname = link[1]
+        server =  client.get_server("140194383118073856")
+        member = server.get_member(linkdiscordID)
+        exsists = dbQuery(dbfile, 100, ('SELECT * FROM players WHERE discordID = ?', (linkdiscordID)))
+        if not exsists:
+            dbQuery(dbfile, 100, ('UPDATE players SET discordID=? WHERE name=?', (linkdiscordID, linkname)))
+        
+        
+            verifyrole = [x for x in server.roles if x.name == "linked"][0]
+            print(verifyrole)
+            yield from client.add_roles(member, verifyrole)
+            yield from client.change_nickname(member, linkname)
+        
+            yield from client.send_message(member, "Your Minecraft account {} has been linked.".format(linkname))
+        else:
+            yield from client.send_message(member, "Your Minecraft account {} has already been linked.".format(linkname))
+        # yield from client.send_message(privchannelobject, "`{}` {}".format(player, UUID))
+
+
+    
 @asyncio.coroutine 
 def eventLeft(data):
     player = data[1]
@@ -289,12 +384,12 @@ def eventChat(data):
     
     for each in re.findall("@\S+", message):
         memberfrommc = each.lstrip("@")
-        print(memberfrommc)
+        # print(memberfrommc)
         member = discord.utils.find(lambda m: m.name == memberfrommc, client.get_all_members())
         if member:
             membermention = member.mention
             message = message.replace( each, membermention)
-        print(message)
+        # print(message)
     
     
     if links:
@@ -303,7 +398,7 @@ def eventChat(data):
     if not player.startswith("?7"):
         player = re.sub(r"\?\d(.*)\?r",r"\1", player)
         finalmessage = "`<{}>` {}".format(player, message)
-        print(repr(finalmessage))
+        # print(repr(finalmessage))
         yield from client.send_message(channelobject, finalmessage)
 
     if coordscomma:
@@ -345,8 +440,11 @@ def my_background_task():
             if eventData:
                 # print(eventData)
                 event, data = eventData
-                print(event, data)
-            
+                # print(event, data)
+
+            if event == "UUID":
+                yield from eventUUID(data)
+                
             if event == "chat":
                 yield from eventChat(data)
 
