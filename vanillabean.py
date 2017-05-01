@@ -144,6 +144,8 @@ def genEvent(line):
                                  ("chat", "^\[(.*)\] \[Server thread/INFO\]: \<(.*)\> (.*)$"),
                                  ("playerList", "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$"),
                                  ("UUID", "^\[(.*)\] \[User Authenticator #.*/INFO\]: UUID of player (.*) is (.*)$"),
+                                 ("whitelistAdd", "^\[(.*)\] \[Server thread/INFO]: Added (.*) to the whitelist"),
+                                 ("whitelistRemove", "^\[(.*)\] \[Server thread/INFO]: Removed (.*) from the whitelist"),
                                  ("achievement", "^\[(.*)\] \[Server thread/INFO\]: (\w*) has just earned the achievement \[(.*)\]$"),
                                  ("lag", "^\[(.*)\] \[Server thread/WARN\]: Can't keep up! Did the system time change, or is the server overloaded\? Running (\d*)ms behind, skipping (\d*) tick\(s\)$")])
 

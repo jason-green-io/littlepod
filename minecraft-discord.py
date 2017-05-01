@@ -139,7 +139,21 @@ def updateTopic():
         yield from  asyncio.sleep(60)
 
 
+@client.async_event
+def on_member_update(before, after):
 
+    beforeRoles = [role.name for role in before.roles]
+    afterRoles = [role.name for role in after.roles]
+    print(beforeRoles, afterRoles)
+    player = before.nick if before.nick else before.name
+    if "whitelisted" in beforeRoles and "whitelisted" not in afterRoles:
+        print("Unwhitelisting")
+        vanillabean.send("/whitelist remove {}".format(player))
+    elif "whitelisted" not in beforeRoles and "whitelisted" in afterRoles:
+        print("Whitelisting")
+        vanillabean.send("/whitelist add {}".format(player))
+
+        
 @client.async_event
 def on_status(member, old_game, old_status):
     print(old_status)
@@ -347,7 +361,21 @@ def eventLogged(data):
     dbQuery(dbfile, 100, ('UPDATE players SET lastIP=?, country=? WHERE name=?', (ip, cc, player)))
     yield from client.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
 
+@asyncio.coroutine
+def eventWhitelistAdd(data):
+    player = data[1]
+    yield from client.send_message(privchannelobject, "`{}` {}".format(player, "added to whitelist"))
 
+@asyncio.coroutine
+def eventWhitelistRemove(data):
+    player = data[1]
+    yield from client.send_message(privchannelobject, "`{}` {}".format(player, "removed from whitelist"))
+
+    
+    
+    
+
+    
 @asyncio.coroutine 
 def eventUUID(data):
     player = data[1]
@@ -499,6 +527,12 @@ def my_background_task():
 
             elif event.startswith("death"):
                 yield from eventDeath1(data)
+                
+            elif event.startswith("whitelistAdd"):
+                yield from eventWhitelistAdd(data)
+                
+            elif event.startswith("whitelistRemove"):
+                yield from eventWhitelistRemove(data)
                 
             if event == "left":
                 yield from eventLeft(data)
