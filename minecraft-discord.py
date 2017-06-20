@@ -348,7 +348,7 @@ def eventDeath3(data):
 def eventLogged(data):
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-    yield from client.send_message(channelobject, "`{}`  joined the server".format(player))
+    yield from client.send_message(channelobject, "`{}` joined the server".format(player))
 
     ip = data[2].split(':')[0]
 
