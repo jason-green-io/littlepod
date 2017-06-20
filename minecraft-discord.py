@@ -55,10 +55,12 @@ def dbQuery(db, timeout, query):
                 cur = conn.cursor()
                 cur.execute(*query)
                 results = cur.fetchall()
-        except sqlite3.OperationalError:
-            print("Try {} - Locked".format(x))
+        except sqlite3.OperationalError as e:
+            logging.info(query)
+            logging.info("Try {} - {}".format(x, e))
             time.sleep(random.random())
-            pass
+                                                
+
         finally:
             break
     else:
