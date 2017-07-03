@@ -155,9 +155,9 @@ def bye():
     dbQuery(dbfile, timeout, ('ALTER TABLE temppois RENAME TO pois',))
     dbQuery(dbfile, timeout, ('CREATE TABLE temppois (coords primary key, type, text1, text2, text3)',))
             
-    dbQuery(dbfile, timeout, ('DROP TABLE IF EXISTS maildrop',))
-    dbQuery(dbfile, timeout, ('ALTER TABLE tempmaildrop RENAME TO maildrop',))
-    dbQuery(dbfile, timeout, ('CREATE TABLE tempmaildrop (coords primary key, name, desc, slots, hidden, inverted)',))
+    #dbQuery(dbfile, timeout, ('DROP TABLE IF EXISTS maildrop',))
+    #dbQuery(dbfile, timeout, ('ALTER TABLE tempmaildrop RENAME TO maildrop',))
+    #dbQuery(dbfile, timeout, ('CREATE TABLE maildrop (coords primary key, name, desc, slots, hidden, inverted, datetime)',))
 
     dbQuery(dbfile, timeout, ('DROP TABLE IF EXISTS polylines',))
     dbQuery(dbfile, timeout, ('ALTER TABLE temppolylines RENAME TO polylines',))
@@ -185,7 +185,7 @@ def bye():
 markersOverworld = [] 
 markersEnd = []
 markersNether = []
-
+markersUpper = []
 
 manualpoisover = []
 manualpoisend = []
@@ -292,8 +292,18 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
 
     ]
 
+    # ========== end resources ========
 
-
+    def endShulkerAndElytra(poi):
+        if poi["id"] == "minecraft:shulker":
+            poi["icon"] = "icons/endShulker.png"
+            return "Shulker"
+        elif poi["id"] == "minecraft:item_frame":
+            if poi.has_key("Item"):
+                if poi["Item"]["id"] == "minecraft:elytra":
+                    logging.info(poi)
+                    poi["icon"] = "icons/endElytra.png"
+                    return "Elytra"
     # =============== pois ===============
 
     def poi2text(poi, dim):
@@ -442,7 +452,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
                 flightLevel = distance / 10+ 10 + int(y2) - int(y1)
                 duration = distance / 30
                 poly = dict(text = "*flyway*\n{0}\n{1}\n\nfrom {2} to {3}:\nBearing:  {4:.2f}\nFlight level: {5:.0f}\nDuration: {6:.0f}".format(route[4], route[5], route[0], route[1],bearing, flightLevel, duration ),
-                            id = "transpo",
+                            id = "flyway",
                             color = "skyblue",
                             dim = d, 
                             x = x1,
@@ -464,7 +474,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
                         polyline.append({"x": x, "y": y,  "z": z})
 
                     poly = dict(text = "",
-                                id = "transpo",
+                                id = "nethertrans",
                                 color = lines[color],
                                 dim = d, 
                                 x = 0,
@@ -481,18 +491,6 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
 
 
 
-    # Overworld
-    def FilterOverTranspo( poi ):
-        return FilterUniversalTranspo(poi, "o")
-    
-    
-    # Nether
-    def FilterNetherTranspo( poi ):
-        return FilterUniversalTranspo(poi, "n")
-    
-    # End
-    def FilterEndTranspo( poi ):
-        return FilterUniversalTranspo(poi, "e")
     
     global fixText
     def fixText(poi):
@@ -507,15 +505,13 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
             poi[each] = poi[each].replace(u"\uf701","").replace(u"\uf700","")
                 # print(poi)
         return poi
-    
-    global FilterUniversalTranspo
-    def FilterUniversalTranspo(poi, dim):
-        if poi["id"] == "transpo" and poi["dim"] == dim:
+
+    global FilterUniversalFlyway
+    def FilterUniversalFlyway(poi, dim):
+        if poi["id"] == "flyway" and poi["dim"] == dim:
             # print poi
             return poi
 
-        global poi2text
-        lines = {"*purpleline*":"icons/purple/highway.png", "*redline*":"icons/red/highway.png", "*greenline*":"icons/green/highway.png", "*blueline*":"icons/blue/highway.png", "*yellowline*":"icons/yellow/highway.png"}
         if poi['id'] in ['Sign', "minecraft:sign"]:
             poi = fixText(poi)
             if "*flyway*" in poi['Text1']:
@@ -533,9 +529,18 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
                         poi["icon"] = "icons/skyblue/airport.png"
                         return poi2text(poi, dim)
             
-                
-            
-
+        
+        
+    global FilterUniversalNethertrans
+    def FilterUniversalNethertrans(poi, dim):
+        if poi["id"] == "nethertrans" and poi["dim"] == dim:
+            # print poi
+            return poi
+        
+        global poi2text
+        lines = {"*purpleline*":"icons/purple/highway.png", "*redline*":"icons/red/highway.png", "*greenline*":"icons/green/highway.png", "*blueline*":"icons/blue/highway.png", "*yellowline*":"icons/yellow/highway.png"}
+        if poi['id'] in ['Sign', "minecraft:sign"]:
+            poi = fixText(poi)
             if poi["Text1"] in lines.keys():
                 # print(poi)
                 poi["icon"] = lines[poi["Text1"]]
@@ -552,13 +557,34 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
                     
                     return poi2text(poi, dim)
 
+    # Overworld
+    def FilterOverNethertrans( poi ):
+        return FilterUniversalNethertrans(poi, "o")
+    def FilterOverFlyway( poi ):
+        return FilterUniversalFlyway(poi, "o")
+    
+    
+    # Nether
+    def FilterNetherNethertrans( poi ):
+        return FilterUniversalNethertrans(poi, "n")
+    def FilterNetherFlyway( poi ):
+        return FilterUniversalFlyway(poi, "n")
+    
+    # End
+    def FilterEndNethertrans( poi ):
+        return FilterUniversalNethertrans(poi, "e")
+    def FilterEndFlyway( poi ):
+        return FilterUniversalFlyway(poi, "e")
+
+
+
     # ================ chest activity generator ===============
 
 
     def FilterUniversalChests( poi, dim ):
         if (poi['id'] in ['Chest', "minecraft:chest"]) or ("shulker_box" in poi['id']):
-            if "shulker_box" in poi['id']:
-                logging.info(poi)
+            # if "shulker_box" in poi['id']:
+                #logging.info(poi)
             x = poi["x"]
             y = poi["y"]
             z = poi["z"]
@@ -611,7 +637,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
         if poi['id'] in ['Chest', "minecraft:chest"]:
             if poi.has_key('CustomName'):
                 rawplayer = poi['CustomName']
-                
+                numslots = len(poi['Items'])
                 inverted = rawplayer[0] == "!" 
                 hidden = rawplayer[0] in [".", "!"]
                 playerdesc = rawplayer.lstrip(".").lstrip('!').split(" ", 1)
@@ -628,8 +654,8 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
                         # cur.execute('insert into maildrop values (?,?,?,?,?)', (dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z']), player, False, len(poi['Items']), hidden))
                         coords = dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z'])
                         # logging.info(poi)
-                        dbQuery(dbfile, timeout, ('INSERT OR REPLACE INTO tempmaildrop (coords, name, desc, slots, hidden, inverted ) VALUES (?, ?, ?, ? ,?, ?)', (coords, player, desc, len(poi['Items']), hidden, inverted)))
-                        
+                        dbQuery(dbfile, timeout, ('INSERT OR IGNORE INTO maildrop (coords, name, desc, slots, hidden, inverted, datetime ) VALUES (?, ?, ?, ? ,?, ?, ?)', (coords, player, desc, numslots, hidden, inverted, now)))
+                        dbQuery(dbfile, timeout, ('UPDATE maildrop SET name = ?, desc = ?, slots = ?, hidden = ?, inverted = ? , datetime = ?, notified = CASE WHEN slots <> ? THEN 0 ELSE notified END WHERE coords = ?', (player, desc, numslots, hidden, inverted, now, numslots, coords)))
                         
                         
                         if not (hidden or inverted):
@@ -743,7 +769,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
     markersEndChestactivity = [ dict(name="Chest Activity", icon="icons/black/chest.png", filterFunction=FilterEndChestactivity, createInfoWindow=True, checked=True)]
 
     mcafile = [ dict(name="mca file", icon="", filterFunction=mcafilter, createInfoWindow=True, checked=False) ]
-
+    endResources = [ dict(name="Shulkers and Elytras", filterFunction=endShulkerAndElytra, checked=False) ]
     spawnchunks =  [ dict(name="Spawn Chunks", icon="", filterFunction=spawnfilter, createInfoWindow=True, checked=False) ]
     
     LocationsOver = [ dict(name="Locations Overworld", icon="icons/black/star-3.png", filterFunction=signFilterLocationsOver, createInfoWindow=True, checked=True) ]
@@ -762,11 +788,18 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
     ShopNether =  [ dict(name="Shops Nether", icon="icons/black/supermarket.png", filterFunction=signFilterShopNether, createInfoWindow=True, checked=True) ]
     ShopEnd =  [ dict(name="Shops End", icon="icons/black/supermarket.png", filterFunction=signFilterShopEnd, createInfoWindow=True, checked=True) ]
 
-    markersOverTranspo = [ dict(name="Transpo over", filterFunction=FilterOverTranspo, createInfoWindow=True, checked=True)]
-    markersNetherTranspo = [ dict(name="Transpo nether", filterFunction=FilterNetherTranspo, createInfoWindow=True, checked=True)]
-    markersEndTranspo = [ dict(name="Transpo end", filterFunction=FilterEndTranspo, createInfoWindow=True, checked=True)]
+    markersOverNethertrans = [ dict(name="nethertrans over", filterFunction=FilterOverNethertrans, createInfoWindow=True, checked=True)]
+    markersNetherNethertrans = [ dict(name="nethertrans nether", filterFunction=FilterNetherNethertrans, createInfoWindow=True, checked=True)]
+    markersEndNethertrans = [ dict(name="nethertrans end", filterFunction=FilterEndNethertrans, createInfoWindow=True, checked=True)]
+    markersUpperNethertrans = [ dict(name="nethertrans nether", filterFunction=FilterNetherNethertrans, createInfoWindow=True, checked=False)]
 
 
+    markersOverFlyway = [ dict(name="flyway over", filterFunction=FilterOverFlyway, createInfoWindow=True, checked=True)]
+    markersNetherFlyway = [ dict(name="flyway nether", filterFunction=FilterNetherFlyway, createInfoWindow=True, checked=False)]
+    markersEndFlyway = [ dict(name="flyway end", filterFunction=FilterEndFlyway, createInfoWindow=True, checked=True)]
+    markersUpperFlyway = [ dict(name="flyway nether", filterFunction=FilterNetherFlyway, createInfoWindow=True, checked=True)]
+    
+    
     markersOverChests = [ dict(name="Chest Activity generator over", filterFunction=FilterOverChests, checked=False) ]
     markersNetherChests = [ dict(name="Chest Activity generator nether", filterFunction=FilterNetherChests, checked=False) ]
     markersEndChests = [ dict(name="Chest Activity generator end", filterFunction=FilterEndChests, checked=False) ]
@@ -788,10 +821,11 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
         markersEnd += markersEndChestactivity + markersEndPlayers
     elif mode == "general":
 
-        markersEnd += LocationsEnd + GrinderEnd + ShopEnd + markersEndMaildrop + markersEndTranspo + markersEndChests
-        markersNether += LocationsNether + GrinderNether + ShopNether + markersNetherMaildrop + markersNetherTranspo + markersNetherChests
-        markersOverworld += spawnchunks + LocationsOver + GrinderOver + ShopOver + markersOverMaildrop + markersOverTranspo + markersOverChests + mcafile
+        markersUpper += markersNether + LocationsNether + GrinderNether + ShopNether + markersNetherMaildrop + markersUpperFlyway + markersUpperNethertrans + markersNetherChests
 
+        markersEnd += LocationsEnd + GrinderEnd + ShopEnd + markersEndMaildrop + markersEndFlyway + markersEndNethertrans + markersEndChests + endResources
+        markersNether += LocationsNether + GrinderNether + ShopNether + markersNetherMaildrop + markersNetherFlyway + markersNetherNethertrans + markersNetherChests
+        markersOverworld += spawnchunks + LocationsOver + GrinderOver + ShopOver + markersOverMaildrop + markersOverFlyway + markersOverNethertrans + markersOverChests + mcafile
     # ======== manual markers =====
     if mode == "admin":
         logging.info("Loading admin markers")
@@ -808,7 +842,8 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
 
 
 end_smooth_lighting = [Base(), EdgeLines(), SmoothLighting(strength=0.5)]
-
+bottom_nether = [Base(), Depth(max=127), EdgeLines(), Nether()]
+top_nether = [Base(), Depth(min=127), EdgeLines()]
 
 defaultzoom = 9
 showlocationmarker = False
@@ -822,6 +857,7 @@ cropAreas=[(-7689, -7227, 8311, 8773)] # + parsedCoords
 #    mcversion = versionfile.readline().strip()
 
 texturepath = "/minecraft/host/mcdata/"+mcversion+".jar"
+
 # logging.info(texturepath)
 processes = 4
 
@@ -836,8 +872,10 @@ customwebassets = "/minecraft/host/webdata/map/template"
 title = "North"
 
 worlds[name] = '/minecraft/host/otherdata/mcbackup/world'
-renders["north"] = {
+
+renders["overworld"] = {
     "world": name,
+    "title": "Overworld",
     "rendermode" : smooth_lighting,
     'dimension' : 'overworld',
     "northdirection" : "upper-left",
@@ -847,7 +885,7 @@ renders["north"] = {
 }
 renders["end"] = {
     "world": name,
-    "title": "North",
+    "title": "End",
     "northdirection" : "upper-left",
     'markers': markersEnd ,
     'rendermode' : end_smooth_lighting,
@@ -856,10 +894,19 @@ renders["end"] = {
 }
 renders["nether"] = {
     "world": name,
-    "title": "North",
+    "title": "Nether",
     "northdirection" : "upper-left",
     'markers': markersNether ,
-    'rendermode' : nether,
+    'rendermode' : bottom_nether,
+    'dimension' : 'nether',
+    'manualpois' : manualpoisnether
+}
+renders["upper"] = {
+    "world": name,
+    "title": "Upper",
+    "northdirection" : "upper-left",
+    'markers': markersUpper ,
+    'rendermode' : top_nether,
     'dimension' : 'nether',
     'manualpois' : manualpoisnether
 }
