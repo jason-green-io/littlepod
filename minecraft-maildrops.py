@@ -27,7 +27,7 @@ def updatePois():
     cur.execute("SELECT * FROM pois order by type")
     pois = cur.fetchall()
 
-    cur.execute("SELECT * FROM maildrop WHERE inverted = 0 and hidden = 0 ORDER BY name COLLATE NOCASE")
+    cur.execute("SELECT coords, name, desc, slots, hidden, inverted FROM maildrop WHERE inverted = 0 and hidden = 0 ORDER BY name COLLATE NOCASE")
     maildrops = cur.fetchall()
 
 
@@ -102,5 +102,5 @@ def sendMaildrops():
     conn.close()
 
 
-sendMaildrops()
+#sendMaildrops()
 updatePois()

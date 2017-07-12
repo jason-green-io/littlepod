@@ -14,7 +14,7 @@ import random
 import atexit
 import logging
 sys.path.append('/minecraft/')
-import overviewer_utils
+import littlepod_utils
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -32,15 +32,15 @@ URL = config["URL"]
 logging.basicConfig(level=logging.DEBUG)
 
 
-global overviewer_utils
+global littlepod_utils
 
 global now
 global dbQuery
 
-logging.info(overviewer_utils.now)
+logging.info(littlepod_utils.now)
 
-now = overviewer_utils.now
-dbQuery = overviewer_utils.dbQuery
+now = littlepod_utils.now
+dbQuery = littlepod_utils.dbQuery
 global timeout
 timeout = 120
 
@@ -591,7 +591,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
             content = json.dumps(poi.get("Items", []))
             #filetime = time.strftime("%Y%m%d%H%M")
 
-            dbQuery(dbfile, timeout, ('INSERT INTO tempchestactivity VALUES (?, ?, ?, ?, ?, ?)', (overviewer_utils.now, dim, x, y, z, content)))
+            dbQuery(dbfile, timeout, ('INSERT INTO tempchestactivity VALUES (?, ?, ?, ?, ?, ?)', (littlepod_utils.now, dim, x, y, z, content)))
 
             #chestfile = otherdata + '/chests/latest' + "." + dim + '.json'
 
