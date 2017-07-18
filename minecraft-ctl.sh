@@ -44,11 +44,16 @@ start)
 ;;
 
 stop)
-
+    PID=$(cat /minecraft/minecraft-ctl.sh.pid)
     echo $(date) "Stopping minecraft server"
     echo "/say server restarting in 10 seconds" >> $CONTROL
     sleep 10
     echo "/stop" >> $CONTROL
+    
+
+    
+    sleep 30
+    kill -s 0 $PID && kill -s 9 $PID 
 ;;
 
 
@@ -71,7 +76,8 @@ sync)
     sleep 10
 
     echo "/save-on" >> $CONTROL 
-
+    
+    
     echo $(date) "sync done"
 ;;
 esac
