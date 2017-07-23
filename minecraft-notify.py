@@ -244,7 +244,7 @@ def eventCommand(data):
         q.put(('INSERT OR IGNORE INTO status (status, name) VALUES(?, ?)', (status, name)))
         q.put(('UPDATE status SET status = ? WHERE name = ?', (status, name)))
 
-
+    """
     if command == "maildrop":
 
         def maildropPage(page):
@@ -254,7 +254,7 @@ def eventCommand(data):
 
             
                 vanillabean.send("/tellraw {} ".format(name) + showandtellraw.tojson("{} <yellow^--- {} maildrop(s) - page {} of {} - \(!maildrop \<page\>\) --->".format(serverName, total, page, totalPages)))
-                for mail in maildrop:
+                for mail in maildrop
                     dimcoords, boxname, desc, slots, hidden, inverted = mail
                     dim, coords = dimcoords.split(",",1)
                 
@@ -290,7 +290,7 @@ def eventCommand(data):
             maildropPage(page)
     
 
-    
+    """
 
 
 
@@ -306,7 +306,7 @@ def eventLogged(data):
     #print response
 
     token = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
-
+    
     try:
         for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
@@ -317,7 +317,7 @@ def eventLogged(data):
         pass
 
 
-
+    '''
     maildrop = dbQuery(dbfile, 30, ("SELECT * FROM maildrop WHERE inverted = 0 and slots > 0 and name = ? COLLATE NOCASE", (name,)))
     
 
@@ -339,9 +339,10 @@ def eventLogged(data):
         toserver = '/tellraw ' + boxname + ' ' + showandtellraw.tojson(serverName + ' {{Maildrop [_{}_|http://{}/map/#/{}/-1/{}/0]~{} {}}} {}'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), URL, URLcoords, worldnum, worlddict[dim][0], coords, "has {} items".format(slots) if slots else "is empty") )
         vanillabean.send( toserver )
         print(toserver)
+    '''
     q.put(('INSERT INTO joins VALUES (?,?,?,?)', (datetime.datetime.now(), name, UUID.get(name, "Unknown"), ip)))
     q.put(('REPLACE INTO discordverify (name, token) VALUES (?, ?)', (name, token)))
-
+    
    
    
 

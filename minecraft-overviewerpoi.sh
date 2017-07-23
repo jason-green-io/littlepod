@@ -20,4 +20,4 @@ sqlite3 $DBFILE -init <(echo .timeout 20000) "UPDATE process SET end = CURRENT_T
 
 #/minecraft/minecraft-overviewerpoiadmin.sh
 
-) 9>/tmp/overviewer.lock
+) 9>/tmp/overviewerpoi.lock

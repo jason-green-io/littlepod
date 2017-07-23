@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from bokeh.plotting import figure, output_file, show
 from bokeh.resources import INLINE
 from bokeh.embed import file_html
@@ -31,11 +32,16 @@ def getData():
 def graphData():
     names, x, y, ticks = getData()
 
+    milperhour = 60 * 60 * 1000
+
+    latest = x[0].timestamp() * 1000
+
     p = figure(title="Player activity",
                plot_width=800,
                plot_height=20 * len(names),
                x_axis_type="datetime",
                x_axis_location="above",
+               x_range=(latest - 14 * 24 * milperhour, latest + 6 * milperhour),
                y_range=names,
                tools="xpan,xwheel_zoom,box_zoom,reset")
 
@@ -46,14 +52,14 @@ def graphData():
         
     colors = [Inferno256[clamp(int(x/281.25), 0, 255)] for x in ticks]
 
-    milperhour = 60 * 60 * 1000
     
     p.rect(x,
            y,
            milperhour,
            0.5,
            color=colors,
-           alpha=0.5)
+           alpha=0.5,
+           )
 
     html = file_html(p, INLINE, littlepod_utils.name + " player activity")
 

@@ -42,24 +42,29 @@ def updatePois():
         file.write("""#map index\n""")
 
         
-        for poiType, poiList in groupby(pois, lambda x: x[1].strip("*")):
+        for poiType, poiList in groupby(pois, lambda x: x[1]):
             # print(repr(poiType.strip().strip("*")))
             file.write("""## {}
 |name|
 |:-|
-""".format(poiType.strip("*")))
+""".format(poiType.replace("*", "\*").replace("_", "\_")))
 
             for poi in poiList:
-                coords = poi[0].split(",")
-                dim = worlddict[coords.pop(0)][1]
-                link = "http://{}/map/#/{}/{}/{}/-2/{}/0".format(URL, coords[0], coords[1], coords[2], dim)
-                webline = u"|[{}]({})|\n".format(" ".join([ poi[2], poi[3], poi[4]]), link)
+                dim, coords = poi[0].split(",",1)
+            
+                URLcoords = coords.replace(",", "/")
+            
+                link = "http://{}/map/#/{}/-2/{}/0".format(URL, URLcoords, worlddict[dim][1])
+                lines = " ".join([ poi[2], poi[3], poi[4]]).strip()
+                text = lines if lines else "{} {}".format(worlddict[dim][0], coords)
+                print(repr(text))
+                webline = u"|[{}]({})|\n".format(text, link)
                 file.write(webline)
             
         file.write("""## {}
 |player|name|
 |:-|:-|
-""".format("maildrops"))
+""".format("old style maildrops"))
 
         for mail in maildrops:
             dimcoords, boxname, desc, slots, hidden, inverted = mail

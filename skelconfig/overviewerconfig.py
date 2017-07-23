@@ -44,6 +44,8 @@ dbQuery = littlepod_utils.dbQuery
 global timeout
 timeout = 120
 
+
+
 '''
 global reduceItem
 def reduceItem( item ):
@@ -198,6 +200,11 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
     logging.info("Running in genPOI mode, lets load all the things")
 
 
+    activePlayers = dbQuery(dbfile, timeout, ('select name, ((strftime("%s", date) - strftime("%s", datetime("now", "-112 days"))) / 1209600) from (select * from joins group by name order by date desc) where date >= datetime("now", "-112 days");',) )
+
+    activePlayersLower = {player[0].lower(): player[1] for player in activePlayers}
+
+
     global cx, cy, cz, r, start, end
     cx = cy = cz = r = start = end = ""
 
@@ -301,7 +308,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
         elif poi["id"] == "minecraft:item_frame":
             if poi.has_key("Item"):
                 if poi["Item"]["id"] == "minecraft:elytra":
-                    logging.info(poi)
+                    # logging.info(poi)
                     poi["icon"] = "icons/endElytra.png"
                     return "Elytra"
     # =============== pois ===============
@@ -314,7 +321,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
 
         for each in text:
             try:
-                poi[each] = json.loads(poi[each]).get("text")
+                poi[each] = json.loads(poi[each]).get("text").strip().strip(u"\uf700")
                 
             except:
                 pass
@@ -323,7 +330,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
             
         coords = dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z'])
             
-        dbQuery(dbfile, timeout, ('INSERT OR REPLACE INTO temppois (coords, type, text1, text2, text3 ) VALUES (?, ?, ?, ? , ?)', (coords, poi["Text1"].strip().strip(u"\uf700"), poi["Text2"], poi["Text3"], poi["Text4"])))
+        dbQuery(dbfile, timeout, ('INSERT OR REPLACE INTO temppois (coords, type, text1, text2, text3 ) VALUES (?, ?, ?, ? , ?)', (coords, poi["Text1"].lower(), poi["Text2"], poi["Text3"], poi["Text4"])))
             
             
             
@@ -333,7 +340,14 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
         return u"\n".join([poi["Text1"], poi["Text2"], poi["Text3"], poi["Text4"], str(poi['x']) + " " + str(poi['y']) + " " + str(poi['z'])])
         
         
-        
+    def signFilterPlayer(poi, dim, poi2text=poi2text):
+        global logging
+        if poi['id'] in ['Sign', "minecraft:sign"]:
+            player = poi['Text1'].lower().strip().strip(u'\uf700')
+            # logging.info(player)
+            if player in activePlayersLower:
+                poi['icon'] = "https://minotar.net/avatar/"+ player +"/24"
+                return poi2text(poi, dim)
         
     def signFilterLocations(poi, dim, poi2text=poi2text):
         if poi['id'] in ['Sign', "minecraft:sign"] and "*map*" in poi['Text1']:
@@ -356,6 +370,17 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
             poi["Text1"] = "*farm*"
             return poi2text(poi, dim)
 
+    def signFilterPlayerOver(poi, poi2text=poi2text, signFilterPlayer=signFilterPlayer):
+        return signFilterPlayer(poi, "o")
+
+
+    def signFilterPlayerNether(poi, poi2text=poi2text, signFilterPlayer=signFilterPlayer):
+        return signFilterPlayer(poi, "n")
+
+
+    def signFilterPlayerEnd(poi, poi2text=poi2text, signFilterPlayer=signFilterPlayer):
+        return signFilterPlayer(poi, "e")
+        
 
     def signFilterLocationsOver(poi, poi2text=poi2text, signFilterLocations=signFilterLocations):
         return signFilterLocations(poi, "o")
@@ -622,9 +647,6 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
     # =============== maildrops ===============
 
 
-    activePlayersMaildrop = dbQuery(dbfile, timeout, ('select name, ((strftime("%s", date) - strftime("%s", datetime("now", "-112 days"))) / 1209600) from (select * from joins group by name order by date) where date >= datetime("now", "-112 days");',) )
-
-    playersMaildrop = {player[0].lower(): player[1] for player in activePlayersMaildrop}
 
 
 
@@ -632,10 +654,31 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
 
 
     def FilterUniversalMaildrop( poi, dim ):
-        global playersMaildrop
+        global activePlayersLower
         global logging
         if poi['id'] in ['Chest', "minecraft:chest"]:
+            watchingeyes = [x["tag"]["display"]["Name"] for x in poi.get("Items", []) if (x.get("id","") == "minecraft:ender_eye" and x.get("tag",{}).get("display",{}).get("Name",''))]
+            
+            if watchingeyes:
+                numeyes = len(watchingeyes)
+                for eyes in watchingeyes:
+                    logging.info(eyes)
+                    inverted = eyes[0] == "!"
+                    numslots = len(poi['Items']) - numeyes
+                    playerdesc = eyes.lstrip('!').split(" ", 1)
+                    player = playerdesc[0]
+                    hidden = True
+                    desc = playerdesc[1] if len(playerdesc) > 1 else ""
+
+                    if player.lower() in activePlayersLower:
+                        coords = dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z'])
+
+                        # dbQuery(dbfile, timeout, ('INSERT OR IGNORE INTO maildrop (coords, name, desc, slots, hidden, inverted, datetime ) VALUES (?, ?, ?, ? ,?, ?, ?)', (coords, player, desc, numslots, hidden, inverted, now)))
+                        dbQuery(dbfile, timeout, ('UPDATE maildrop SET name = ?, desc = ?, slots = ?, hidden = ?, inverted = ? , datetime = ?, notified = CASE WHEN slots <> ? THEN 0 ELSE notified END WHERE coords = ?', (player, desc, numslots, hidden, inverted, now, numslots, coords)))
+
+                        
             if poi.has_key('CustomName'):
+
                 rawplayer = poi['CustomName']
                 numslots = len(poi['Items'])
                 inverted = rawplayer[0] == "!" 
@@ -647,8 +690,8 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
                 
                 iconList = [12, 25, 38, 50, 63, 75, 88, 100] 
                 
-                if player.lower() in playersMaildrop:
-                    weeks = playersMaildrop[player.lower()]
+                if player.lower() in activePlayersLower:
+                    weeks = activePlayersLower[player.lower()]
                     
                     if weeks >= 6:
                         # cur.execute('insert into maildrop values (?,?,?,?,?)', (dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z']), player, False, len(poi['Items']), hidden))
@@ -658,9 +701,10 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
                         dbQuery(dbfile, timeout, ('UPDATE maildrop SET name = ?, desc = ?, slots = ?, hidden = ?, inverted = ? , datetime = ?, notified = CASE WHEN slots <> ? THEN 0 ELSE notified END WHERE coords = ?', (player, desc, numslots, hidden, inverted, now, numslots, coords)))
                         
                         
-                        if not (hidden or inverted):
-                            poi["icon"] = "icons/orange/{}.png".format(iconList[weeks])
-                            return "{} maildrop\n{}\nPlayer last seen approximately {} weeks ago".format(player, desc, 16 - weeks * 2)
+                    if not (hidden or inverted):
+                        poi['icon'] = "https://minotar.net/avatar/"+ player.lower() +"/24"
+                        # poi["icon"] = "icons/orange/{}.png".format(iconList[weeks])
+                        return "{} maildrop\n{}\n".format(player, desc)
                         
 
     def FilterOverworldMaildrop(poi):
@@ -772,6 +816,10 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
     endResources = [ dict(name="Shulkers and Elytras", filterFunction=endShulkerAndElytra, checked=False) ]
     spawnchunks =  [ dict(name="Spawn Chunks", icon="", filterFunction=spawnfilter, createInfoWindow=True, checked=False) ]
     
+    PlayerOver = [ dict(name="Player Landmark Overworld", filterFunction=signFilterPlayerOver, createInfoWindow=True, checked=True) ]
+    PlayerNether= [ dict(name="Player Landmark Nether", filterFunction=signFilterPlayerNether, createInfoWindow=True, checked=True) ]
+    PlayerEnd = [ dict(name="Player Landmark End", filterFunction=signFilterPlayerEnd, createInfoWindow=True, checked=True) ]
+
     LocationsOver = [ dict(name="Locations Overworld", icon="icons/black/star-3.png", filterFunction=signFilterLocationsOver, createInfoWindow=True, checked=True) ]
     LocationsNether = [ dict(name="Locations Nether", icon="icons/black/star-3.png", filterFunction=signFilterLocationsNether, createInfoWindow=True, checked=True) ]
     LocationsEnd = [ dict(name="Locations End", icon="icons/black/star-3.png", filterFunction=signFilterLocationsEnd, createInfoWindow=True, checked=True) ]
@@ -804,9 +852,9 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
     markersNetherChests = [ dict(name="Chest Activity generator nether", filterFunction=FilterNetherChests, checked=False) ]
     markersEndChests = [ dict(name="Chest Activity generator end", filterFunction=FilterEndChests, checked=False) ]
 
-    markersNetherMaildrop = [ dict(name="maildrops", icon="icons/orange/temple_ruins.png", filterFunction=FilterNetherMaildrop, checked=True)]
-    markersOverMaildrop = [ dict(name="maildrops", icon="icons/orange/temple_ruins.png", filterFunction=FilterOverworldMaildrop, checked=True)]
-    markersEndMaildrop = [ dict(name="maildrops", icon="icons/ornage/temple_ruins.png", filterFunction=FilterEndMaildrop, checked=True)]
+    markersNetherMaildrop = [ dict(name="Watched Chests nether", icon="icons/orange/temple_ruins.png", filterFunction=FilterNetherMaildrop, checked=True)]
+    markersOverMaildrop = [ dict(name="Watched Chests over", icon="icons/orange/temple_ruins.png", filterFunction=FilterOverworldMaildrop, checked=True)]
+    markersEndMaildrop = [ dict(name="Watched Chests end", icon="icons/ornage/temple_ruins.png", filterFunction=FilterEndMaildrop, checked=True)]
 
 
 
@@ -821,11 +869,11 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
         markersEnd += markersEndChestactivity + markersEndPlayers
     elif mode == "general":
 
-        markersUpper += markersNether + LocationsNether + GrinderNether + ShopNether + markersNetherMaildrop + markersUpperFlyway + markersUpperNethertrans + markersNetherChests
+        markersUpper += markersNether + LocationsNether + GrinderNether + ShopNether + PlayerNether + markersNetherMaildrop + markersUpperFlyway + markersUpperNethertrans + markersNetherChests
 
-        markersEnd += LocationsEnd + GrinderEnd + ShopEnd + markersEndMaildrop + markersEndFlyway + markersEndNethertrans + markersEndChests + endResources
-        markersNether += LocationsNether + GrinderNether + ShopNether + markersNetherMaildrop + markersNetherFlyway + markersNetherNethertrans + markersNetherChests
-        markersOverworld += spawnchunks + LocationsOver + GrinderOver + ShopOver + markersOverMaildrop + markersOverFlyway + markersOverNethertrans + markersOverChests + mcafile
+        markersEnd += LocationsEnd + GrinderEnd + ShopEnd + PlayerEnd + markersEndMaildrop + markersEndFlyway + markersEndNethertrans + markersEndChests + endResources
+        markersNether += LocationsNether + GrinderNether + ShopNether + PlayerNether + markersNetherMaildrop + markersNetherFlyway + markersNetherNethertrans + markersNetherChests
+        markersOverworld += spawnchunks + LocationsOver + GrinderOver + ShopOver + PlayerOver + markersOverMaildrop + markersOverFlyway + markersOverNethertrans + markersOverChests + mcafile
     # ======== manual markers =====
     if mode == "admin":
         logging.info("Loading admin markers")
@@ -859,7 +907,7 @@ cropAreas=[(-7689, -7227, 8311, 8773)] # + parsedCoords
 texturepath = "/minecraft/host/mcdata/"+mcversion+".jar"
 
 # logging.info(texturepath)
-processes = 4
+processes = 1
 
 if mode == "admin":
     outputdir = "/minecraft/host/webdata/map/" + mapadminsecret + "/test"
