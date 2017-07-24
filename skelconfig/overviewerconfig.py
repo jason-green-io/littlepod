@@ -673,7 +673,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
                     if player.lower() in activePlayersLower:
                         coords = dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z'])
 
-                        # dbQuery(dbfile, timeout, ('INSERT OR IGNORE INTO maildrop (coords, name, desc, slots, hidden, inverted, datetime ) VALUES (?, ?, ?, ? ,?, ?, ?)', (coords, player, desc, numslots, hidden, inverted, now)))
+                        dbQuery(dbfile, timeout, ('INSERT OR IGNORE INTO maildrop (coords, name, desc, slots, hidden, inverted, datetime ) VALUES (?, ?, ?, ? ,?, ?, ?)', (coords, player, desc, numslots, hidden, inverted, now)))
                         dbQuery(dbfile, timeout, ('UPDATE maildrop SET name = ?, desc = ?, slots = ?, hidden = ?, inverted = ? , datetime = ?, notified = CASE WHEN slots <> ? THEN 0 ELSE notified END WHERE coords = ?', (player, desc, numslots, hidden, inverted, now, numslots, coords)))
 
                         
@@ -697,7 +697,7 @@ if sys.argv[-1].split(",")[0] in ["general", "admin"]:
                         # cur.execute('insert into maildrop values (?,?,?,?,?)', (dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z']), player, False, len(poi['Items']), hidden))
                         coords = dim + "," + str(poi['x']) + "," + str(poi['y']) + "," + str(poi['z'])
                         # logging.info(poi)
-                        dbQuery(dbfile, timeout, ('INSERT OR IGNORE INTO maildrop (coords, name, desc, slots, hidden, inverted, datetime ) VALUES (?, ?, ?, ? ,?, ?, ?)', (coords, player, desc, numslots, hidden, inverted, now)))
+                        # dbQuery(dbfile, timeout, ('INSERT OR IGNORE INTO maildrop (coords, name, desc, slots, hidden, inverted, datetime ) VALUES (?, ?, ?, ? ,?, ?, ?)', (coords, player, desc, numslots, hidden, inverted, now)))
                         dbQuery(dbfile, timeout, ('UPDATE maildrop SET name = ?, desc = ?, slots = ?, hidden = ?, inverted = ? , datetime = ?, notified = CASE WHEN slots <> ? THEN 0 ELSE notified END WHERE coords = ?', (player, desc, numslots, hidden, inverted, now, numslots, coords)))
                         
                         
