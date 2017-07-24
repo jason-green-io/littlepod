@@ -23,23 +23,13 @@
 SHELL=/bin/bash
 LOGS=/minecraft/host/otherdata/logs
 
-
-
-# 0 0 * * * /minecraft/minecraft-whitelistupdate.py &>> $LOGS/minecraft-whitelistupdate.log
-
 0 12 * * * /minecraft/minecraft-ctl.sh stop
 
-*/1 * * * * echo "/list" > /minecraft/vanillabean
-*/1 * * * * echo "/scoreboard teams list mute" > /minecraft/vanillabean
+0 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> $LOGS/minecraft-overviewer.log
 
-10 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> $LOGS/minecraft-overviewer.log
+30 */1 * * * /minecraft/minecraft-overviewerpoi.sh &> $LOGS/minecraft-overviewerpoi.log
 
-15-59/20 * * * * /minecraft/minecraft-overviewerpoi.sh &> $LOGS/minecraft-overviewerpoi.log
+*/15 * * * * /minecraft/minecraft-status.py &> $LOGS/minecraft-status.log
 
-*/5 * * * * /minecraft/minecraft-status.py &> $LOGS/minecraft-status.log
+*/30 * * * * /minecraft/minecraft-activity.py &> $LOGS/minecraft-activity.log
 
-*/5 * * * * /minecraft/minecraft-graphs.py &> $LOGS/minecraft-graphs.log
-
-*/1 * * * * echo "/save-all" > /minecraft/vanillabean
-
-50 0 */1 * * /minecraft/minecraft-overviewerpoiadmin.sh yesterday &> $LOGS/minecraft-overviewerpoiadmin.log
