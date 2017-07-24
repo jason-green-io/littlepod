@@ -13,7 +13,7 @@ if [[ ! -d /minecraft/host/otherdata ]]; then
     mkdir -p /minecraft/host/otherdata/stats
     mkdir -p /minecraft/host/otherdata/chests
     mkdir -p /minecraft/host/otherdata/items
-
+    mkdir -p /minecraft/host/otherdata/logs
 else
     echo "Found otherdata folder"
 fi
