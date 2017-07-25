@@ -20,7 +20,7 @@ fi
 
 if [[ ! -f /minecraft/host/otherdata/littlepod.db ]]; then
     echo "Database not found, creating"
-    sqlite3 /minecraft/host/otherdata/littlepod.db < /minecraft/create-database.sql
+    sqlite3 /minecraft/host/otherdata/littlepod.db < /minecraft/skelconfig/dbschema.sql
 else
     echo "Found database"
 fi
