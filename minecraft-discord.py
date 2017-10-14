@@ -135,10 +135,13 @@ def updateTopic():
         #topicLine = [line for line in enumerate(topicLineList) if line[1].startswith(name)][0][0]
 
         #topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
-        yield from client.change_presence(game=discord.Game(name=" ".join(formattedplayers))) 
+
+        playerList = " ".join(formattedplayers) if formattedplayers else "*None*"
+        print(playerList)
+        yield from client.change_presence(game=discord.Game(name=playerList)) 
         #yield from client.edit_channel(channel, position=1, name=currentName, topic="\n".join(topicLineList))
-                                                 
-        yield from  asyncio.sleep(60)
+        print("waiting for 60 seconds")
+        yield from asyncio.sleep(60)
 
 
 @client.async_event
@@ -543,17 +546,20 @@ def my_background_task():
 
 def handle_bgtask():
     try:
+        print("Starting main background task")
         yield from my_background_task()
     except Exception:
-        print("Uhoh!")
+        print("Main background task exception")
         client.close()
         sys.exit(1)
 
 def handle_updateTopic():
+
     try:
+        print("Starting update topic handler")
         yield from updateTopic()
     except Exception:
-        print("Uhoh!")
+        print("Topic handler exception")
         client.close()
         sys.exit(1)
 
