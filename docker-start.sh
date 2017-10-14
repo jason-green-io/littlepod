@@ -13,14 +13,14 @@ if [[ ! -d /minecraft/host/otherdata ]]; then
     mkdir -p /minecraft/host/otherdata/stats
     mkdir -p /minecraft/host/otherdata/chests
     mkdir -p /minecraft/host/otherdata/items
-
+    mkdir -p /minecraft/host/otherdata/logs
 else
     echo "Found otherdata folder"
 fi
 
 if [[ ! -f /minecraft/host/otherdata/littlepod.db ]]; then
     echo "Database not found, creating"
-    sqlite3 /minecraft/host/otherdata/littlepod.db < /minecraft/create-database.sql
+    sqlite3 /minecraft/host/otherdata/littlepod.db < /minecraft/skelconfig/dbschema.sql
 else
     echo "Found database"
 fi

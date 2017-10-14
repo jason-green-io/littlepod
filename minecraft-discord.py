@@ -316,7 +316,10 @@ def eventIp(data):
         hostaddr = "none"
 
     ipinfo = getgeo( ip )
-    ipstat = " ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+    if not ipinfo["status"] == fail:
+        ipstat = " ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+    else:
+        ipstat = " ".join([ip, hastaddr])
     yield from client.send_message(privchannelobject, "`{}` !!!DENIED!!! {}".format(name, ipstat))
 
 
