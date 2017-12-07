@@ -1,4 +1,4 @@
-dd#!/usr/bin/python3 -u
+#!/usr/bin/python3 -u
 import json
 import sqlite3
 import asyncio
@@ -403,7 +403,7 @@ def eventIp(data):
 
     ipinfo = getgeo( ip )
     if not ipinfo["status"] == "fail":
-        ipstat = " ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+        ipstat = " ".join( [ip, hostaddr, ipinfo.get("countryCode", "??"), str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
     else:
         ipstat = " ".join([ip, hastaddr])
     yield from client.send_message(privchannelobject, "`{}` !!!DENIED!!! {}".format(name, ipstat))
@@ -451,8 +451,8 @@ def eventLogged(data):
     except:
         hostaddr = "none"
     ipinfo = getgeo( ip )
-    cc = ipinfo["countryCode"]
-    ipstat= u" ".join( [ip, hostaddr, cc, str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
+    cc = ipinfo.get("countryCode", "XX")
+    ipstat= u" ".join( [ip, hostaddr, cc, str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
     dbQuery(dbfile, 100, ('UPDATE players SET lastIP=?, country=? WHERE name=?', (ip, cc, player)))
     yield from client.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
 
