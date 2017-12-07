@@ -1,5 +1,6 @@
 #!/usr/bin/python -u
 import paho.mqtt.client as paho
+import requests
 import socket
 import ssl
 import threading
@@ -95,7 +96,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     ''' publish a message to a topic  '''
     print(msg.topic+" "+str(msg.payload))
-
+"""
 # set some paho stuff
 mqttc = paho.Client()
 mqttc.on_connect = on_connect
@@ -117,7 +118,7 @@ mqttc.connect(awshost, awsport, keepalive=60)
 # start the thread to publish
 mqttc.loop_start()
 
-
+"""
 
 class LevelHandler(PatternMatchingEventHandler):
 #class FileHandler(FileSystemEventHandler):
@@ -137,10 +138,11 @@ class LevelHandler(PatternMatchingEventHandler):
             # letus know something happened
             print("Moved", event.src_path, event.dest_path)
             # go get the server total ticks, and modulo 24000 to get days and ticks in the day
-            servertime = divmod(level["Data"]["DayTime"], 24000)
+            serverDayTime = divmod(level["Data"]["DayTime"], 24000)
             # send it to the cloud, AWS IoT
-            mqttc.publish("servertime", json.dumps(servertime), qos=1)
-            
+            print(serverDayTime)
+            r = requests.post("https://twopenny-pika-4720.dataplicity.io/mctime", params={"serverTime": serverDayTime[1], "moonPhase": divmod(serverDayTime[0], 8)[1]})
+            print(r.text)
 class ScoreboardHandler(PatternMatchingEventHandler):
     '''
     Overwrite the methods for creation, deletion, modification, and moving

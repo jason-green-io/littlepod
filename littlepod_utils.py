@@ -4,6 +4,8 @@ import random
 import time
 import logging
 import json
+import requests
+from pytz import timezone
 try: import Queue
 except ImportError:
     try: import queue as Queue
@@ -24,6 +26,40 @@ webdata = config['webdata']
 
 now = datetime.datetime.now()
 q = Queue.Queue()
+
+
+def getUserCache():
+    return {each["uuid"]: (datetime.datetime.strptime(each["expiresOn"][:19], "%Y-%m-%d %H:%M:%S") - datetime.timedelta(days=30), each["name"]) for each in json.load(open(mcfolder + "/usercache.json"))}
+
+def getWhitelist():
+    return {each["uuid"]: each["name"] for each in json.load(open(mcfolder + "/whitelist.json"))}
+
+def getWhitelistByIGN():
+    return {each["name"]: each["uuid"] for each in json.load(open(mcfolder + "/whitelist.json"))}
+
+def getNameFromAPI(uuid):
+    return requests.get('https://api.mojang.com/user/profiles/{}/names'.format(uuid.replace('-', ''))).json()[-1].get("name", "")
+
+def getPlayerStatus(whitelist=getWhitelist(), usercache=getUserCache()):
+    expired = []
+    active = []
+    for each in sorted(usercache, key=usercache.get):
+        if each in whitelist and usercache[each][0] <= datetime.datetime.now() - datetime.timedelta(days=120):
+            # print(each, usercache[each])
+            expired.append(each)
+    
+
+    for each in sorted(usercache, key=usercache.get):
+        if each in whitelist and usercache[each][0] > datetime.datetime.now() - datetime.timedelta(days=120):
+            # print(each, usercache[each])
+            active.append(each)
+    return {"active": active, "expired": expired}
+                                                
+
+
+                                        
+
+
 
 def reduceItem( item ):
     from collections import OrderedDict

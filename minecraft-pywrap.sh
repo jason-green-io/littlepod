@@ -1,6 +1,7 @@
 #!/bin/bash
 BASEDIR="/minecraft"
 LOG="$BASEDIR/host/otherdata/logs/$1.log"
+export PYTHONIOENCODING="utf-8"
 case "$2" in
     start)
 	echo "$(date) Started" >> $LOG

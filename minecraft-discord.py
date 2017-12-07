@@ -15,6 +15,8 @@ import discord
 sys.path.append('/minecraft/discord.py')
 import vanillabean
 import showandtellraw
+import uuid
+import littlepod_utils
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -24,6 +26,8 @@ dbfile = config['dbfile']
 mcfolder = config['mcdata']
 URL = config['URL']
 servername = config['name']
+updateRoles = config["updateRoles"]
+
 
 serverFormat = "<blue^\<><green^{}><blue^\>>"
 playerFormat = "<blue^\<><white^{}><blue^\>>"
@@ -41,11 +45,26 @@ if not discordToken:
 channelobject = discord.Object(id=discordChannel)
 privchannelobject = discord.Object(id=discordPrivChannel)
 
+overwrite = discord.PermissionOverwrite()
+overwrite.read_messages = True
+overwrite.send_messages = True
+overwrite.embed_links = True
+overwrite.attach_files = True
+overwrite.read_message_history = True
+overwrite.mention_everyone = True
+overwrite.external_emojis = True
+overwrite.add_reactions = True
+
 serverrestart = False
 
 client = discord.Client()
 
 
+
+dbQuery = littlepod_utils.dbQuery
+
+
+'''
 def dbQuery(db, timeout, query):
     conn = sqlite3.connect(db)
     results = ""
@@ -70,7 +89,7 @@ def dbQuery(db, timeout, query):
             results = cur.fetchall()
 
     return results
-
+'''
 
 def telllinks( links ):
     for each in links:
@@ -98,18 +117,53 @@ def tellcoords( reCoords, reDim ):
 
 
 def updateTopic():
+
     yield from client.wait_until_ready()
+    server =  client.get_server("140194383118073856")
     print("Updating topic")
 
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     while True:
+        discordWhitelistedPlayers = {}
+        for member in server.members:
+            mRolesDict = {r.name: r  for r in member.roles}
+            
+            for r in mRolesDict:
+                if len(r) == 32:
+                    # yield from client.edit_channel_permissions(channelobject, mRolesDict[r], overwrite)
+                    yield from client.edit_role(server, mRolesDict[r], colour=discord.Colour.green())
+                    discordWhitelistedPlayers[str(uuid.UUID(r))] =  member.id
+
+        
+        mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
+        mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
+        
+        add = set(discordWhitelistedPlayers) - set(mcWhitelistedPlayersUUID)
+        remove = set(mcWhitelistedPlayersUUID) - set(discordWhitelistedPlayers)
+
+        playerStatus = littlepod_utils.getPlayerStatus(whitelist=discordWhitelistedPlayers)
+        if updateRoles:
+
+            for each in playerStatus["expired"]:
+                print("Expired {} {}".format(each, mcWhitelistedPlayersUUID.get(each,"")))
+            
+
+        for each in add:
+            addIGN = littlepod_utils.getNameFromAPI(each)
+            print("Adding {} from the whitelist".format(removeIGN))
+            vanillabean.send("/whitelist add {}".format(removeIGN))
+            
+
+        for each in remove:
+            removeIGN = mcWhitelistedPlayersUUID.get(each,"")
+            print("Removing {} from the whitelist".format(removeIGN))
+            vanillabean.send("/whitelist remove {}".format(removeIGN))
+            
         players = dbQuery(dbfile, 100, ('SELECT name FROM playeractivity NATURAL JOIN playerUUID WHERE datetime > datetime("now", "-2 minutes") GROUP BY name',))
 
         notifymaildrops = dbQuery(dbfile, 100, ('SELECT * FROM maildrop WHERE notified = 0 AND datetime > datetime("now", "-1 day")', ()))
 
-        maildropPlayers = dbQuery(dbfile, 100, ('SELECT name, discordID FROM players', ()))
-        playersDict = dict([p for p in maildropPlayers])
-        
+
         for drop in notifymaildrops:
 
             dimcoords, boxname, desc, slots, hidden, inverted, notified, datetime = drop
@@ -119,12 +173,14 @@ def updateTopic():
                 URLcoords = coords.replace(",", "/")           
 
                 toplayer = ':package: {} {} http://{}/map/#/{}/-1/{}/0\n'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), "has {} items".format(slots) if slots else "is empty", URL, URLcoords, worlddict[dim][1])
-                if playersDict.get(boxname, ""):
-                    server =  client.get_server("140194383118073856")
-                    member = server.get_member(playersDict.get(boxname, ""))
-                    yield from client.send_message(member, toplayer)            
+          
+                memberID = discordWhitelistedPlayers.get(mcWhitelistedPlayersIGN.get(boxname, ""), "")
+                
+                member = server.get_member(memberID)
+                yield from client.send_message(member, toplayer)            
 
-                    print(toplayer)
+                print(toplayer)
+
         dbQuery(dbfile, 100, ('UPDATE maildrop SET notified = 1 WHERE notified = 0', ()))
 
         formattedplayers = ["{}".format(a[0]) for a in players]
@@ -137,19 +193,19 @@ def updateTopic():
         #topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
 
         playerList = " ".join(formattedplayers) if formattedplayers else "*None*"
-        print(playerList)
+        # print(playerList)
         yield from client.change_presence(game=discord.Game(name=playerList)) 
         #yield from client.edit_channel(channel, position=1, name=currentName, topic="\n".join(topicLineList))
         print("waiting for 60 seconds")
         yield from asyncio.sleep(60)
 
-
+'''
 @client.async_event
 def on_member_update(before, after):
 
     beforeRoles = [role.name for role in before.roles]
     afterRoles = [role.name for role in after.roles]
-    print(beforeRoles, afterRoles)
+    # print(beforeRoles, afterRoles)
     player = before.nick if before.nick else before.name
     if "whitelisted" in beforeRoles and "whitelisted" not in afterRoles:
         print("Unwhitelisting")
@@ -157,7 +213,7 @@ def on_member_update(before, after):
     elif "whitelisted" not in beforeRoles and "whitelisted" in afterRoles:
         print("Whitelisting")
         vanillabean.send("/whitelist add {}".format(player))
-
+'''
         
 @client.async_event
 def on_status(member, old_game, old_status):
@@ -167,6 +223,7 @@ def on_status(member, old_game, old_status):
 
 @client.async_event
 def on_message(message):
+    server =  client.get_server("140194383118073856")
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     # we do not want the bot to reply to itself
     if message.author == client.user:
@@ -211,15 +268,16 @@ def on_message(message):
                 print(name, command, args)
 
 
-
+            '''
             if command == "link":
-                ign = args[0]
-                server =  client.get_server("140194383118073856")
-                member = server.get_member(message.author.id)
-                yield from client.send_message(message.channel, "You have 10 seconds to connect to the server with  {}. If you are already connected, please disconnect and reconnect. You will receive a message when you are successful".format(ign))            
-                dbQuery(dbfile, 100, ('INSERT INTO verify (name, discordID) VALUES (?, ?)', (ign, message.author.id)))
+                if args:
+                    ign = args[0]
 
+                    member = server.get_member(message.author.id)
+                    yield from client.send_message(message.channel, "You have 10 seconds to connect to the server with  {}. If you are already connected, please disconnect and reconnect. You will receive a message when you are successful".format(ign))            
+                    dbQuery(dbfile, 100, ('INSERT INTO verify (name, discordID) VALUES (?, ?)', (ign, message.author.id)))
 
+            '''
 
             if command == "mute":
                 
@@ -286,7 +344,33 @@ def on_message(message):
            telllinks( links )
 
     if message.channel.id == discordPrivChannel and not message.author.bot:
-        yield from client.send_message(privchannelobject, vanillabean.send(message.content))
+        if message.content.startswith("/"):
+            command, args = message.content.split(' ', 1)
+            command = command.strip('/')
+            # print(command, args)
+            if command == "link":
+                manualLinkDiscordID, manualLinkIGN = args.split()
+                # print(manualLinkDiscordID, manualLinkIGN)
+                r = requests.get('https://api.mojang.com/users/profiles/minecraft/{}'.format(manualLinkIGN))
+                rDict = r.json()
+                UUID = rDict["id"]
+                newNickname = rDict["name"]
+                print(rDict)
+
+                member = server.get_member(manualLinkDiscordID)
+
+                yield from client.change_nickname(member, newNickname)
+                currentRoles = {role.name: role for role in server.roles}
+                if UUID not in currentRoles:
+                    
+                    newRole = yield from client.create_role(server, name=UUID)
+                else:
+                    newRole = currentRoles[UUID]
+
+                
+                yield from client.edit_channel_permissions(channelobject, newRole, overwrite)
+                yield from client.add_roles(member, newRole)
+                yield from client.send_message(privchannelobject, rDict)
         
 
 @client.async_event
@@ -295,6 +379,8 @@ def on_ready():
     print((client.user.name))
     print((client.user.id))
     print('------')
+    global server
+
     yield from client.send_message(discord.Object(id=discordPrivChannel),"I crashed, but I'm back now.") 
 
 def getgeo(ip):
@@ -303,7 +389,7 @@ def getgeo(ip):
 
     response = requests.get(url)
     response.raise_for_status()
-    print( response)
+    # print(response.json)
     return response.json()
 
 @asyncio.coroutine 
@@ -316,7 +402,7 @@ def eventIp(data):
         hostaddr = "none"
 
     ipinfo = getgeo( ip )
-    if not ipinfo["status"] == fail:
+    if not ipinfo["status"] == "fail":
         ipstat = " ".join( [ip, hostaddr, ipinfo["countryCode"], str(ipinfo["regionName"]), str(ipinfo["city"]), str(ipinfo["as"]) ] )
     else:
         ipstat = " ".join([ip, hastaddr])
@@ -352,6 +438,7 @@ def eventDeath3(data):
 
 @asyncio.coroutine 
 def eventLogged(data):
+    server =  client.get_server("140194383118073856")
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     yield from client.send_message(channelobject, "`{}` joined the server".format(player))
@@ -386,35 +473,12 @@ def eventWhitelistRemove(data):
     
 @asyncio.coroutine 
 def eventUUID(data):
+    server =  client.get_server("140194383118073856")
     player = data[1]
 
     UUID = data[2]
     dbQuery(dbfile, 100, ('UPDATE players SET name=? WHERE UUID=?', (player, UUID)))
     dbQuery(dbfile, 100, ('INSERT OR IGNORE INTO players (name, UUID) VALUES (?, ?)',(player, UUID)))
-
-    link = dbQuery(dbfile, 100, ('SELECT * from verify WHERE name = ? AND datetime >= datetime("now", "-10 seconds")', (player,)))
-    if link:
-        link = link[-1]
-        print(link)
-        linkdiscordID = link[2]
-        linkname = link[1]
-        server =  client.get_server("140194383118073856")
-        member = server.get_member(linkdiscordID)
-        exsists = dbQuery(dbfile, 100, ('SELECT * FROM players WHERE discordID = ?', (linkdiscordID)))
-        if not exsists:
-            dbQuery(dbfile, 100, ('UPDATE players SET discordID=? WHERE name=?', (linkdiscordID, linkname)))
-        
-        
-            verifyrole = [x for x in server.roles if x.name == "linked"][0]
-            print(verifyrole)
-            yield from client.add_roles(member, verifyrole)
-            yield from client.change_nickname(member, linkname)
-        
-            yield from client.send_message(member, "Your Minecraft account {} has been linked.".format(linkname))
-        else:
-            yield from client.send_message(member, "Your Minecraft account {} has already been linked.".format(linkname))
-        # yield from client.send_message(privchannelobject, "`{}` {}".format(player, UUID))
-
 
     
 @asyncio.coroutine 

@@ -213,7 +213,7 @@ def eventCommand(data):
             vanillabean.send("/tell {} Un-Muting Discord".format(name))
     
 
-    
+    '''    
     if command == "social":    
 
 
@@ -243,7 +243,7 @@ def eventCommand(data):
 
         q.put(('INSERT OR IGNORE INTO status (status, name) VALUES(?, ?)', (status, name)))
         q.put(('UPDATE status SET status = ? WHERE name = ?', (status, name)))
-
+    '''
     """
     if command == "maildrop":
 

@@ -76,7 +76,7 @@ def tweetbook():
         # print(repr(fav))
         tweettext = h.unescape(fav.get("text")).replace("\n", r'\n')
         tweettext = tweettext.replace(r'"', r'\\\"')
-        tweets.append( r'"[\"\",{\"text\":\"' + tweettext + r'\n\n\",\"color\":\"blue\"},{\"text\":\"' + "- @" + fav.get("user").get("screen_name") + r'\",\"color\":\"dark_aqua\"}]"')
+        tweets.append( r'"[\"\",{\"text\":\"' + tweettext + r'\\n\\n\",\"color\":\"blue\"},{\"text\":\"' + "- @" + fav.get("user").get("screen_name") + r'\",\"color\":\"dark_aqua\"}]"')
 
     bookline = r'/give greener_ca minecraft:written_book 1 0 {title:"Tweets",author:"The Internet",pages:[' + ",".join(tweets) + ']}'
     #logging.debug(bookline)
