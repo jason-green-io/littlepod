@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -u
+dd#!/usr/bin/python3 -u
 import json
 import sqlite3
 import asyncio
@@ -150,8 +150,8 @@ def updateTopic():
 
         for each in add:
             addIGN = littlepod_utils.getNameFromAPI(each)
-            print("Adding {} from the whitelist".format(removeIGN))
-            vanillabean.send("/whitelist add {}".format(removeIGN))
+            print("Adding {} from the whitelist".format(addIGN))
+            vanillabean.send("/whitelist add {}".format(addIGN))
             
 
         for each in remove:
