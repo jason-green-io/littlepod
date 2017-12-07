@@ -5,7 +5,7 @@ import time
 import logging
 import json
 import requests
-from pytz import timezone
+
 try: import Queue
 except ImportError:
     try: import queue as Queue
@@ -35,7 +35,7 @@ def getWhitelist():
     return {each["uuid"]: each["name"] for each in json.load(open(mcfolder + "/whitelist.json"))}
 
 def getWhitelistByIGN():
-    return {each["name"]: each["uuid"] for each in json.load(open(mcfolder + "/whitelist.json"))}
+    return {each["name"].lower(): each["uuid"] for each in json.load(open(mcfolder + "/whitelist.json"))}
 
 def getNameFromAPI(uuid):
     return requests.get('https://api.mojang.com/user/profiles/{}/names'.format(uuid.replace('-', ''))).json()[-1].get("name", "")
