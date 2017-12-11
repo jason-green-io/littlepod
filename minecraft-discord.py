@@ -177,7 +177,8 @@ def updateTopic():
                 memberID = discordWhitelistedPlayers.get(mcWhitelistedPlayersIGN.get(boxname, ""), "")
                 
                 member = server.get_member(memberID)
-                yield from client.send_message(member, toplayer)            
+                print(member)
+                # yield from client.send_message(member, toplayer)            
 
                 print(toplayer)
 
