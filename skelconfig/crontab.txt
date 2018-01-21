@@ -25,11 +25,13 @@ LOGS=/minecraft/host/otherdata/logs
 
 0 12 * * * /minecraft/minecraft-ctl.sh stop
 
-0 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> $LOGS/minecraft-overviewer.log
+*/10 * * * * /minecraft/papyri/papyri.py --mcdata /minecraft/host/mcdata/world --output /minecraft/host/webdata/papyri --poi &> $LOGS/papyri.py.log
 
-30 */1 * * * /minecraft/minecraft-overviewerpoi.sh &> $LOGS/minecraft-overviewerpoi.log
+# 0 1,5,9,13,17,21 * * * /minecraft/minecraft-overviewer.sh &> $LOGS/minecraft-overviewer.log
 
-*/15 * * * * /minecraft/minecraft-status.py &> $LOGS/minecraft-status.log
+# 30 */1 * * * /minecraft/minecraft-overviewerpoi.sh &> $LOGS/minecraft-overviewerpoi.log
 
-*/30 * * * * /minecraft/minecraft-activity.py &> $LOGS/minecraft-activity.log
+# */15 * * * * /minecraft/minecraft-status.py &> $LOGS/minecraft-status.log
+
+# */30 * * * * /minecraft/minecraft-activity.py &> $LOGS/minecraft-activity.log
 
