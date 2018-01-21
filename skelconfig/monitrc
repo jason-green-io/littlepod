@@ -50,8 +50,4 @@ check process minecraft-notify pidfile /minecraft/minecraft-notify.py.pid
       start program = "/minecraft/minecraft-pywrap.sh minecraft-notify.py start" as uid "minecraft"
       stop program = "/minecraft/minecraft-pywrap.sh minecraft-notify.py stop" as uid "minecraft"
 
-check process minecraft-nginx pidfile /minecraft/minecraft-nginx.sh.pid
-      start program = "/minecraft/minecraft-nginx.sh start"
-      stop program = "/minecraft/minecraft-nginx.sh stop"
-
 
