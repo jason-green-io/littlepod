@@ -37,7 +37,6 @@ check process minecraft-ctl pidfile /minecraft/minecraft-ctl.sh.pid
     start program = "/minecraft/minecraft-ctl.sh start" as uid "minecraft"
     stop program = "/minecraft/minecraft-ctl.sh stop" as uid "minecraft"
 
-
 check process minecraft-playeractivity pidfile /minecraft/minecraft-playeractivity.py.pid
       start program = "/minecraft/minecraft-pywrap.sh minecraft-playeractivity.py start" as uid "minecraft"
       stop program = "/minecraft/minecraft-pywrap.sh minecraft-playeractivity.py stop" as uid "minecraft"
@@ -45,9 +44,4 @@ check process minecraft-playeractivity pidfile /minecraft/minecraft-playeractivi
 check process minecraft-discord pidfile /minecraft/minecraft-discord.py.pid
       start program = "/minecraft/minecraft-pywrap.sh minecraft-discord.py start" as uid "minecraft"
       stop program = "/minecraft/minecraft-pywrap.sh minecraft-discord.py stop" as uid "minecraft"
-
-check process minecraft-notify pidfile /minecraft/minecraft-notify.py.pid
-      start program = "/minecraft/minecraft-pywrap.sh minecraft-notify.py start" as uid "minecraft"
-      stop program = "/minecraft/minecraft-pywrap.sh minecraft-notify.py stop" as uid "minecraft"
-
 
