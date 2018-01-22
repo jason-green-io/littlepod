@@ -442,8 +442,17 @@ def eventLogged(data):
     server =  client.get_server("140194383118073856")
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
+    
     yield from client.send_message(channelobject, "`{}` joined the server".format(player))
+    
+    try:
+        for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
+            time.sleep(1)
+            message = "/tellraw " + player + " " + showandtellraw.tojson( each.strip() )
+            vanillabean.send( message )
+    except:
+        pass
     ip = data[2].split(':')[0]
 
     message = "joined"
