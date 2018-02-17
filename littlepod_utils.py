@@ -5,6 +5,8 @@ import time
 import logging
 import json
 import requests
+import os
+import glob
 
 try: import Queue
 except ImportError:
@@ -24,8 +26,13 @@ mcfolder = config['mcdata']
 URL = config['URL']
 webdata = config['webdata']
 
-now = datetime.datetime.now()
 q = Queue.Queue()
+
+def getOnlinePlayers():
+    playerFiles = glob.glob(os.path.join(mcfolder, "world/playerdata/*.dat"))
+    playerUUIDTime = [os.path.basename(f).rsplit(".")[0]  for f in playerFiles if os.path.getmtime(f) > time.time() - 300]
+    whitelist = getWhitelist()
+    return [whitelist[p] for p in playerUUIDTime]
 
 
 def getUserCache():

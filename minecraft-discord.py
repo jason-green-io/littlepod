@@ -159,7 +159,7 @@ def updateTopic():
             print("Removing {} from the whitelist".format(removeIGN))
             vanillabean.send("/whitelist remove {}".format(removeIGN))
             
-        players = dbQuery(dbfile, 100, ('SELECT name FROM playeractivity NATURAL JOIN playerUUID WHERE datetime > datetime("now", "-2 minutes") GROUP BY name',))
+        players = littlepod_utils.getOnlinePlayers()
 
         notifymaildrops = dbQuery(dbfile, 100, ('SELECT * FROM maildrop WHERE notified = 0 AND datetime > datetime("now", "-1 day")', ()))
 
@@ -184,7 +184,7 @@ def updateTopic():
 
         dbQuery(dbfile, 100, ('UPDATE maildrop SET notified = 1 WHERE notified = 0', ()))
 
-        formattedplayers = ["{}".format(a[0]) for a in players]
+        
         channel = client.get_channel(discordChannel)
         currentTopic = channel.topic
         currentName = channel.name
@@ -193,7 +193,7 @@ def updateTopic():
 
         #topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
 
-        playerList = " ".join(formattedplayers) if formattedplayers else "*None*"
+        playerList = " ".join(players) if players else "*None*"
         # print(playerList)
         yield from client.change_presence(game=discord.Game(name=playerList)) 
         #yield from client.edit_channel(channel, position=1, name=currentName, topic="\n".join(topicLineList))
@@ -349,30 +349,31 @@ def on_message(message):
             command, args = message.content.split(' ', 1)
             command = command.strip('/')
             # print(command, args)
-            if command == "link":
-                manualLinkDiscordID, manualLinkIGN = args.split()
-                # print(manualLinkDiscordID, manualLinkIGN)
-                r = requests.get('https://api.mojang.com/users/profiles/minecraft/{}'.format(manualLinkIGN))
-                rDict = r.json()
-                UUID = rDict["id"]
-                newNickname = rDict["name"]
-                print(rDict)
+            if updateRoles:
+                if command == "link":
+                    manualLinkDiscordID, manualLinkIGN = args.split()
+                    # print(manualLinkDiscordID, manualLinkIGN)
+                    r = requests.get('https://api.mojang.com/users/profiles/minecraft/{}'.format(manualLinkIGN))
+                    rDict = r.json()
+                    UUID = rDict["id"]
+                    newNickname = rDict["name"]
+                    print(rDict)
 
-                member = server.get_member(manualLinkDiscordID)
+                    member = server.get_member(manualLinkDiscordID)
 
-                yield from client.change_nickname(member, newNickname)
-                currentRoles = {role.name: role for role in server.roles}
-                if UUID not in currentRoles:
+                    yield from client.change_nickname(member, newNickname)
+                    currentRoles = {role.name: role for role in server.roles}
+                    if UUID not in currentRoles:
+
+                        newRole = yield from client.create_role(server, name=UUID)
+                    else:
+                        newRole = currentRoles[UUID]
+
+
+                    yield from client.edit_channel_permissions(channelobject, newRole, overwrite)
+                    yield from client.add_roles(member, newRole)
+                    yield from client.send_message(privchannelobject, rDict)
                     
-                    newRole = yield from client.create_role(server, name=UUID)
-                else:
-                    newRole = currentRoles[UUID]
-
-                
-                yield from client.edit_channel_permissions(channelobject, newRole, overwrite)
-                yield from client.add_roles(member, newRole)
-                yield from client.send_message(privchannelobject, rDict)
-        
 
 @client.async_event
 def on_ready():
@@ -442,17 +443,8 @@ def eventLogged(data):
     server =  client.get_server("140194383118073856")
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-    
     yield from client.send_message(channelobject, "`{}` joined the server".format(player))
-    
-    try:
-        for each in open( otherdata + "/motd.txt", "r" ).readlines():
 
-            time.sleep(1)
-            message = "/tellraw " + player + " " + showandtellraw.tojson( each.strip() )
-            vanillabean.send( message )
-    except:
-        pass
     ip = data[2].split(':')[0]
 
     message = "joined"
