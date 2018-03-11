@@ -10,7 +10,7 @@
       slots 100                     # optionally limit the queue size
 
 SET MAILSERVER smtp.gmail.com PORT 587
-    username "$GMAILUSER" password "$GMAILPASSWORD" using tlsv1
+    username $GMAILUSER password $GMAILPASSWORD using tlsv1
     with timeout 30 seconds
 
 set alert trigger@applet.ifttt.com                       # receive all alerts
