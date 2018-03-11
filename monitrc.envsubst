@@ -1,0 +1,43 @@
+  set daemon 30
+
+
+  set logfile /minecraft/host/otherdata/logs/monit.log
+  set idfile /minecraft/host/otherdata/monitid
+  set statefile /minecraft/host/otherdata/monitstate
+
+  set eventqueue
+      basedir /minecraft/host/otherdata/monitevents # set the base directory where events will be stored
+      slots 100                     # optionally limit the queue size
+
+SET MAILSERVER smtp.gmail.com PORT 587
+    username "$GMAILUSER" password "$GMAILPASSWORD" using tlsv1
+    with timeout 30 seconds
+
+set alert trigger@applet.ifttt.com                       # receive all alerts
+
+
+set mail-format {
+    from: monit@$HOST
+    subject: $HOST $EVENT $SERVICE $ACTION $DESCRIPTION <@140194230168453120>
+    message: $EVENT Service $SERVICE
+                   Date:        $DATE
+                   Action:      $ACTION
+                   Description: $DESCRIPTION
+   }
+
+
+set httpd port 2812 and
+     use address localhost  # only accept connection from localhost
+     allow localhost        # allow localhost to connect to the server and
+
+check process minecraft-ctl MATCHING minecraft_server
+    start program = "/minecraft/minecraft-ctl.sh"
+    stop program = "/usr/bin/pkill minecraft-ctl"
+    
+check process minecraft-playeractivity pidfile /minecraft/minecraft-playeractivity.py.pid
+      start program = "/minecraft/minecraft-pywrap.sh minecraft-playeractivity.py start"
+      stop program = "/minecraft/minecraft-pywrap.sh minecraft-playeractivity.py stop"
+
+check process minecraft-discord pidfile /minecraft/minecraft-discord.py.pid
+      start program = "/minecraft/minecraft-pywrap.sh minecraft-discord.py start"
+      stop program = "/minecraft/minecraft-pywrap.sh minecraft-discord.py stop"
