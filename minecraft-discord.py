@@ -2,7 +2,6 @@
 import json
 import sqlite3
 import asyncio
-import yaml
 import os
 import codecs
 import stat
@@ -18,24 +17,19 @@ import showandtellraw
 import uuid
 import littlepod_utils
 
-with open('/minecraft/host/config/server.yaml', 'r') as configfile:
-    config = yaml.load(configfile)
+mcfolder = os.environ.get('MCDATA', "/minecraft/host/mcdata")
+URL = os.environ.get('SERVERURL', "https://localhost/")
+servername = os.environ.get('SERVERNAME', "Littlepod")
+updateRoles = os.environ.get("UPDATEROLES", False)
 
-name = config['name']
-dbfile = config['dbfile']
-mcfolder = config['mcdata']
-URL = config['URL']
-servername = config['name']
-updateRoles = config["updateRoles"]
+discordChannel = os.environ.get("DISCORDCHANNEL", "")
+discordPrivChannel = os.environ.get("DISCORDPRIVCHANNEL", "")
+discordToken = os.environ.get("DISCORDTOKEN", "")
 
 
 serverFormat = "<blue^\<><green^{}><blue^\>>"
 playerFormat = "<blue^\<><white^{}><blue^\>>"
 patronFormat = "<blue^\<><red^{}><blue^\>>"
-
-discordChannel = config["discordChannel"]
-discordPrivChannel = config["discordPrivChannel"]
-discordToken = config["discordToken"]
 
 if not discordToken:
     print("Discord token not set")
@@ -161,30 +155,6 @@ def updateTopic():
             
         players = littlepod_utils.getOnlinePlayers()
 
-        notifymaildrops = dbQuery(dbfile, 100, ('SELECT * FROM maildrop WHERE notified = 0 AND datetime > datetime("now", "-1 day")', ()))
-
-
-        for drop in notifymaildrops:
-
-            dimcoords, boxname, desc, slots, hidden, inverted, notified, datetime = drop
-            if (slots > 0 and inverted == 0) or (slots == 0 and inverted == 1):
-                dim, coords = dimcoords.split(",", 1)
-                        
-                URLcoords = coords.replace(",", "/")           
-
-                toplayer = ':package: {} {} http://{}/map/#/{}/-1/{}/0\n'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), "has {} items".format(slots) if slots else "is empty", URL, URLcoords, worlddict[dim][1])
-          
-                memberID = discordWhitelistedPlayers.get(mcWhitelistedPlayersIGN.get(boxname, ""), "")
-                
-                member = server.get_member(memberID)
-                print(member)
-                # yield from client.send_message(member, toplayer)            
-
-                print(toplayer)
-
-        dbQuery(dbfile, 100, ('UPDATE maildrop SET notified = 1 WHERE notified = 0', ()))
-
-        
         channel = client.get_channel(discordChannel)
         currentTopic = channel.topic
         currentName = channel.name
@@ -257,61 +227,6 @@ def on_message(message):
 
 
     
-    if message.channel.is_private:
-
-        if message.content.startswith("/"):
-            command = message.content[1:].split(" ", 1)[0]
-            args = message.content[1:].split(" ", 1)[1:]
-            print(command, args)
-            name = dbQuery(dbfile, 100, ('SELECT name FROM players WHERE discordID = ?', (message.author.id,)))
-            if name:
-                name = name[0][0]
-                print(name, command, args)
-
-
-            '''
-            if command == "link":
-                if args:
-                    ign = args[0]
-
-                    member = server.get_member(message.author.id)
-                    yield from client.send_message(message.channel, "You have 10 seconds to connect to the server with  {}. If you are already connected, please disconnect and reconnect. You will receive a message when you are successful".format(ign))            
-                    dbQuery(dbfile, 100, ('INSERT INTO verify (name, discordID) VALUES (?, ?)', (ign, message.author.id)))
-
-            '''
-
-            if command == "mute":
-                
-                if "on" in args:
-                    print("yup")
-                    vanillabean.send("/scoreboard teams join mute {}".format(name))
-                    vanillabean.send("/tell {} Muting Discord".format(name))
-                elif "off" in args:
-                    vanillabean.send("/scoreboard teams leave mute {}".format(name))
-                    vanillabean.send("/tell {} Un-Muting Discord".format(name))
-
-
-
-
-
-            if command == "maildrop":
-                print("Printing maildrops")
-                maildrop = dbQuery(dbfile, 30, ("SELECT coords, name, desc, slots, hidden, inverted FROM maildrop WHERE name = ? COLLATE NOCASE", (name,)))
-                print(maildrop)
-
-                if maildrop:
-                    toplayer = "Showing maildrops for {}\n".format(name)
-                    for mail in maildrop:
-                        dimcoords, boxname, desc, slots, hidden, inverted = mail
-                        dim, coords = dimcoords.split(",", 1)
-
-                        URLcoords = coords.replace(",", "/")           
-
-                        toplayer += ':package: {} {} http://{}/map/#/{}/-1/{}/0\n'.format(desc if desc else "{} {}".format(worlddict[dim][0], coords), "has {} items".format(slots) if slots else "is empty", URL, URLcoords, worlddict[dim][1])
-                    yield from client.send_message(message.channel, toplayer)            
-
-
-
 
     if message.channel.id == discordChannel:
         links = re.findall('(https?://\S+)', message.content)
@@ -455,7 +370,7 @@ def eventLogged(data):
     ipinfo = getgeo( ip )
     cc = ipinfo.get("countryCode", "XX")
     ipstat= u" ".join( [ip, hostaddr, cc, str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
-    dbQuery(dbfile, 100, ('UPDATE players SET lastIP=?, country=? WHERE name=?', (ip, cc, player)))
+
     yield from client.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
 
 @asyncio.coroutine
@@ -479,8 +394,6 @@ def eventUUID(data):
     player = data[1]
 
     UUID = data[2]
-    dbQuery(dbfile, 100, ('UPDATE players SET name=? WHERE UUID=?', (player, UUID)))
-    dbQuery(dbfile, 100, ('INSERT OR IGNORE INTO players (name, UUID) VALUES (?, ?)',(player, UUID)))
 
     
 @asyncio.coroutine 

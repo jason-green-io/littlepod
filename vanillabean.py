@@ -10,6 +10,7 @@ import yaml
 import urllib.parse
 import oauth2 as oauth
 from collections import OrderedDict
+import socket
 
 with open('/minecraft/host/config/server.yaml', 'r') as configfile:
     config = yaml.load(configfile)
@@ -75,11 +76,19 @@ mobList = ["Bat",
             "Vindicator"]
 
 
-def send(command):
-    with open("/minecraft/vanillabean", "a", encoding='utf-8') as file:
-        # print(command)
-        final = command + u"\n"
-        file.write(final)
+
+def send(command, host="localhost", port=7777):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, int(port)))
+    command += "\n"
+    s.sendall(command.encode())
+    s.shutdown(socket.SHUT_WR)
+    while True:
+        data = s.recv(4096)
+        if not data:
+            break
+        print(repr(data))
+    s.close()
 
 def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=None ):
     consumer = oauth.Consumer( key=ConsumerKey , secret=ConsumerSecret )
