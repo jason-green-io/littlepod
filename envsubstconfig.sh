@@ -1,4 +1,4 @@
 #!/bin/bash
 
-envsubst < /minecraft/server.properties.envsubst > /minecraft/mcdata/server.properties
-envsubst < /minecraft/monit.envsubst > /minecraft/.monitrc
+envsubst < /minecraft/server.properties.envsubst > /minecraft/host/mcdata/server.properties
+envsubst < /minecraft/monitrc.envsubst > /minecraft/.monitrc
