@@ -6,23 +6,21 @@ import sys
 import time
 sys.path.append('/minecraft')
 import json
-import yaml
 import urllib.parse
 import oauth2 as oauth
 from collections import OrderedDict
 import socket
-
-with open('/minecraft/host/config/server.yaml', 'r') as configfile:
-    config = yaml.load(configfile)
+import os
 
 
-mcfolder = config['mcdata']
+
+mcfolder = os.environ.get('MCDATA', "/minecraft/host/mcdata")
+'''
 ConsumerKey = config['ConsumerKey']
 ConsumerSecret = config['ConsumerSecret']
 AccessToken = config['AccessToken']
 AccessTokenSecret = config['AccessTokenSecret']
-
-config = '/minecraft/host/config'
+'''
 
 mobList = ["Bat",
             "Blaze",
