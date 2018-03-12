@@ -1,32 +1,192 @@
 import datetime
-import sqlite3
-import random
-import time
-import logging
-import json
 import requests
 import os
 import glob
-
-try: import Queue
-except ImportError:
-    try: import queue as Queue
-    except:
-        print("Bad news")
-import threading
-import yaml
-
-with open('/minecraft/host/config/server.yaml', 'r') as configfile:
-    config = yaml.load(configfile)
+import re
+import io
+import sys
+import urllib.parse
+import oauth2 as oauth
+from collections import OrderedDict
+import socket
 
 
-name = config['name']
-dbfile = config['dbfile']
-mcfolder = config['mcdata']
-URL = config['URL']
-webdata = config['webdata']
+mcfolder = os.environ.get('MCDATA', "/minecraft/host/mcdata")
 
-q = Queue.Queue()
+'''
+ConsumerKey = config['ConsumerKey']
+ConsumerSecret = config['ConsumerSecret']
+AccessToken = config['AccessToken']
+AccessTokenSecret = config['AccessTokenSecret']
+'''
+
+mobList = ["Bat",
+            "Blaze",
+            "Cave Spider",
+            "Chicken",
+            "Chicken Jockey",
+            "Cow",
+            "Creeper",
+            "Donkey",
+            "Elder Guardian",
+            "Ender Dragon",
+            "Enderman",
+            "Endermite",
+            "Ghast",
+            "Giant",
+            "Guardian",
+            "Horse",
+            "Husk",
+            "Iron Golem",
+            "Killer Bunny",
+            "Magma Cube",
+            "Mooshroom",
+            "Mule",
+            "Ocelot",
+            "Pig",
+            "Polar Bear",
+            "Rabbit",
+            "Sheep",
+            "Shulker",
+            "Silverfish",
+            "Skeleton",
+            "Skeleton Horse",
+            "Skeleton Horseman",
+            "Slime",
+            "Snow Golem",
+            "Spider",
+            "Spider Jockey",
+            "Squid",
+            "Stray",
+            "Villager",
+            "Witch",
+            "Wither",
+            "Wither Skeleton",
+            "Wolf",
+            "Zombie",
+            "Zombie Horse",
+            "Zombie Pigman",
+            "Zombie Villager",
+            "Vex",
+            "Evoker",
+            "Vindicator"]
+
+
+
+def send(command, host="localhost", port=7777):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, int(port)))
+    command += "\n"
+    s.sendall(command.encode())
+    s.shutdown(socket.SHUT_WR)
+    while True:
+        data = s.recv(4096)
+        if not data:
+            break
+        print(repr(data))
+    s.close()
+
+def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=None ):
+    consumer = oauth.Consumer( key=ConsumerKey , secret=ConsumerSecret )
+    token = oauth.Token( key=key, secret=secret )
+    client = oauth.Client( consumer, token )
+    (resp,content) = client.request( url, method=http_method, body=post_body, headers=http_headers )
+    return content
+
+def genEvent(line):
+	parseDict = OrderedDict([("deathFloorLava", "^\[(.*)\] \[Server thread/INFO\]: (.*) (discovered floor was lava)$"),
+                                 ("deathSquashAnvil", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was squashed by a falling anvil)$"),
+                                 ("deathSquashBlock", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was squashed by a falling block)$"),
+                                 ("deathFlames", "^\[(.*)\] \[Server thread/INFO\]: (.*) (went up in flames)$"),
+                                 ("deathBurned", "^\[(.*)\] \[Server thread/INFO\]: (.*) (burned to death)$"),
+                                 ("deathShot", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was shot by arrow)$"),
+                                 ("deathWithered", "^\[(.*)\] \[Server thread/INFO\]: (.*) (withered away)$"),
+                                 ("deathPricked", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was pricked to death)$"),
+                                 ("deathDrowned", "^\[(.*)\] \[Server thread/INFO\]: (.*) (drowned)$"),
+                                 ("deathKinetic", "^\[(.*)\] \[Server thread/INFO\]: (.*) (experienced kinetic energy)$"),
+                                 ("deathElytra", "^\[(.*)\] \[Server thread/INFO\]: (.*) (removed an elytra while flying)$"),
+                                 ("deathBlewUp", "^\[(.*)\] \[Server thread/INFO\]: (.*) (blew up)$"),
+                                 ("deathHitGround", "^\[(.*)\] \[Server thread/INFO\]: (.*) (hit the ground too hard)$"),
+                                 ("deathHighPlace", "^\[(.*)\] \[Server thread/INFO\]: (.*) (fell from a high place)$"),
+                                 ("deathLadder", "^\[(.*)\] \[Server thread/INFO\]: (.*) (fell off a ladder)$"),
+                                 ("deathVines", "^\[(.*)\] \[Server thread/INFO\]: (.*) (fell off some vines)$"),
+                                 ("deathWater", "^\[(.*)\] \[Server thread/INFO\]: (.*) (fell out of the water)$"),
+                                 ("deathIntoFire", "^\[(.*)\] \[Server thread/INFO\]: (.*) (fell into a patch of fire)$"),
+                                 ("deathIntoCactus", "^\[(.*)\] \[Server thread/INFO\]: (.*) (fell into a patch of cacti)$"),
+                                 ("deathLava", "^\[(.*)\] \[Server thread/INFO\]: (.*) (tried to swim in lava)$"),
+                                 ("deathLightning", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was struck by lightning)$"),
+                                 ("deathStarved", "^\[(.*)\] \[Server thread/INFO\]: (.*) (starved to death)$"),
+                                 ("deathSuffocated", "^\[(.*)\] \[Server thread/INFO\]: (.*) (suffocated in a wall)$"),
+                                 ("deathSquish", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was squished too much)$"),
+                                 ("deathVoid", "^\[(.*)\] \[Server thread/INFO\]: (.*) (fell out of the world)$"),
+                                 ("deathHighVoid", "^\[(.*)\] \[Server thread/INFO\]: (.*) (fell from a high place and fell out of the world)$"),
+                                 ("deathMagic", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was killed by magic)$"),
+                                 ("deathWeaponSlain", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was slain by) (.*)( using )(.*)$"),
+                                 ("deathWeaponShot", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was shot by )(.*)( using )(.*)$"),
+                                 ("deathWeaponFinished", "^\[(.*)\] \[Server thread/INFO\]: (.*) (got finished off by )(.*)( using )(.*)$"),
+                                 ("deathEnemyFloorLava", "^\[(.*)\] \[Server thread/INFO\]: (.*) (walked into danger zone due to )(.*)$"),
+                                 ("deathEnemyBlewUp", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was blown up by )(.*)$"),
+                                 ("deathEnemyDrowned", "^\[(.*)\] \[Server thread/INFO\]: (.*) (drowned whilst trying to escape )(.*)$"),
+                                 ("deathEnemyIntoCactus", "^\[(.*)\] \[Server thread/INFO\]: (.*) (walked into a cactus while trying to escape )(.*)$"),
+                                 ("deathEnemyShot", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was shot by )(.*)$"),
+                                 ("deathEnemyDoomed", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was doomed to fall by )(.*)$"),
+                                 ("deathEnemyVines", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was shot off some vines by )(.*)$"),
+                                 ("deathEnemyLadder", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was shot off a ladder by )(.*)$"),
+                                 ("deathEnemyBlewUpHigh", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was blown from a high place by )(.*)$"),
+                                 ("deathEnemyBurnt", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was burnt to a crisp whilst fighting )(.*)$"),
+                                 ("deathEnemyFire", "^\[(.*)\] \[Server thread/INFO\]: (.*) (walked into a fire whilst fighting )(.*)$"),
+                                 ("deathEnemyDrowned", "^\[(.*)\] \[Server thread/INFO\]: (.*) (tried to swim in lava while trying to escape )(.*)$"),
+                                 ("deathEnemySlain", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was slain by )(.*)$"),
+                                 ("deathEnemyFinished", "^\[(.*)\] \[Server thread/INFO\]: (.*) (got finished off by )(.*)$"),
+                                 ("deathEnemyFireballed", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was fireballed by )(.*)$"),
+                                 ("deathEnemyMagic", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was killed by )(.*)( using magic)$"),
+                                 ("deathEnemyHurt", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was killed while trying to hurt )(.*)$"),
+                                 ("deathEnemyPummeled", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was pummeled by )(.*)$"),
+                                 ("joined", "^\[(.*)\] \[Server thread/INFO\]: (.*) joined the game$"),
+                                 ("left", "^\[(.*)\] \[Server thread/INFO\]: (.*) left the game$"),
+                                 ("lost", "^\[(.*)\] \[Server thread/INFO\]: (.*) lost.*"),
+                                 ("logged", "^\[(.*)\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$"),
+                                 ("ip", "^\[(.*)\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$"),
+                                 ("command", "^\[(.*)\] \[Server thread/INFO\]: \<(.*)\> !(.*)$"),
+                                 ("chat", "^\[(.*)\] \[Server thread/INFO\]: \<(.*)\> (.*)$"),
+                                 ("playerList", "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$"),
+                                 ("UUID", "^\[(.*)\] \[User Authenticator #.*/INFO\]: UUID of player (.*) is (.*)$"),
+                                 ("whitelistAdd", "^\[(.*)\] \[Server thread/INFO]: Added (.*) to the whitelist"),
+                                 ("whitelistRemove", "^\[(.*)\] \[Server thread/INFO]: Removed (.*) from the whitelist"),
+                                 ("achievement", "^\[(.*)\] \[Server thread/INFO\]: (\w*) has just earned the achievement \[(.*)\]$"),
+                                 ("lag", "^\[(.*)\] \[Server thread/WARN\]: Can't keep up! Did the system time change, or is the server overloaded\? Running (\d*)ms behind, skipping (\d*) tick\(s\)$")])
+
+
+	for pattern in parseDict.items():
+		match = re.match(pattern[1], line)
+		if match:
+			return pattern[0], match.groups()
+
+def tweet( string ):
+    tweetmessage = urllib.parse.urlencode({"status": string})
+    response = json.loads(oauth_req( "https://api.twitter.com/1.1/statuses/update.json?" + tweetmessage, AccessToken, AccessTokenSecret, http_method="POST").decode("utf-8") )
+    print( response)
+
+
+"""
+def slack(string):
+    
+    token = config["SLACK_TOKEN"]
+    slack = Slacker( token )
+    chanID = slack.im.open("U056203SZ").body["channel"]["id"]
+    slack.chat.post_message(chanID, string, as_user=True)
+"""
+
+def getplayers():
+    players = []
+    with open(mcfolder + '/whitelist.json', 'r') as infile:
+        players = [ player[ 'name' ].lower() for player in json.load( infile ) ]
+    return players
+
+
+
+
+
 
 def getOnlinePlayers():
     playerFiles = glob.glob(os.path.join(mcfolder, "world/playerdata/*.dat"))
@@ -115,57 +275,10 @@ def getStat(stats, stat):
             if type(evalStats) is dict:
                 return evalStats.get(stat, 0)
 
-            
-            
 
 
+if __name__ == "__main__":
+    send(sys.argv[1])
 
-def dbQuery(db, timeout, query):
-    conn = sqlite3.connect(db, detect_types=sqlite3.PARSE_COLNAMES)
-    conn.create_function("diffChest", 2, diffChest)
-    conn.create_function("inSphere", 7, inSphere)
-    conn.create_function("getStat", 2, getStat)
-    results = []
-    for x in range(0, timeout):
-        try:
-            with conn:
-                cur = conn.cursor()
-
-                cur.execute(*query)
-                # logging.info(query)
-                conn.commit()
-    
-                results = cur.fetchall()
-
-        except sqlite3.OperationalError as e:
-            logging.info(query)
-            logging.info("Try {} - {}".format(x, e))
-            time.sleep(random.random())
-            
         
-        else:
-            break
-    else:
-        with conn:
-            cur = conn.cursor()
 
-            cur.execute(*query)
-            # logging.info(query)
-            conn.commit()
-            results = cur.fetchall()
-
-    return results
-
-
-def writeToDB(queue):
-    logging.info("Setting up writeToDB for config")
-
-
-    while True:
-        dbQuery(dbfile, 30, queue.get())
-        q.task_done()
-
-
-threadDBWriter = threading.Thread(target=writeToDB, args=(q,))
-threadDBWriter.setDaemon(True)
-threadDBWriter.start()

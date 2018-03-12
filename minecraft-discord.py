@@ -12,7 +12,6 @@ import requests
 import sys
 import discord
 sys.path.append('/minecraft/discord.py')
-import vanillabean
 import showandtellraw
 import uuid
 import littlepod_utils
@@ -88,7 +87,7 @@ def dbQuery(db, timeout, query):
 def telllinks( links ):
     for each in links:
         print( each)
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson((serverFormat + " [_Link_|{}]").format(servername, each)))
+        littlepod_utils.send("/tellraw @a " + showandtellraw.tojson((serverFormat + " [_Link_|{}]").format(servername, each)))
 
 
 def coordsmessage( reCoords, reDim ):
@@ -106,7 +105,7 @@ def tellcoords( reCoords, reDim ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     for each in reCoords:
         
-        vanillabean.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _{} {}{}{}_|http://{}/map/#/{}/{}/{}/-3/{}/0]".format(worlddict[reDim][0], each[0], each[1], each[2], URL, each[0].strip(','), each[1].strip(',') if each[1] else "64" , each[2], worlddict[reDim][1])))
+        littlepod_utils.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _{} {}{}{}_|http://{}/map/#/{}/{}/{}/-3/{}/0]".format(worlddict[reDim][0], each[0], each[1], each[2], URL, each[0].strip(','), each[1].strip(',') if each[1] else "64" , each[2], worlddict[reDim][1])))
 
 
 
@@ -145,13 +144,13 @@ def updateTopic():
         for each in add:
             addIGN = littlepod_utils.getNameFromAPI(each)
             print("Adding {} from the whitelist".format(addIGN))
-            vanillabean.send("/whitelist add {}".format(addIGN))
+            littlepod_utils.send("/whitelist add {}".format(addIGN))
             
 
         for each in remove:
             removeIGN = mcWhitelistedPlayersUUID.get(each,"")
             print("Removing {} from the whitelist".format(removeIGN))
-            vanillabean.send("/whitelist remove {}".format(removeIGN))
+            littlepod_utils.send("/whitelist remove {}".format(removeIGN))
             
         players = littlepod_utils.getOnlinePlayers()
 
@@ -253,7 +252,7 @@ def on_message(message):
         tellrawText =  nameFormat.format(display_name.replace("_", "\_").replace("~",""), discordName.replace("_", "\_").replace("@","\@").replace("~",""))
         finalline = '/tellraw @a[team=!mute] ' + showandtellraw.tojson(tellrawText, noparse=messagetext)
 
-        vanillabean.send(finalline)
+        littlepod_utils.send(finalline)
 
 
         if links:
@@ -485,7 +484,7 @@ def my_background_task():
                 yield from asyncio.sleep(1)
                 f.seek(pos)
         else:
-            eventData = vanillabean.genEvent(line)
+            eventData = littlepod_utils.genEvent(line)
             event = ""
             data = ()
             
