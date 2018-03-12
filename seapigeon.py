@@ -9,28 +9,22 @@ import sys
 import datetime
 import time
 import os
-import yaml
 import json
 from collections import OrderedDict
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import FileSystemEventHandler
-sys.path.append("/minecraft/NBT")
 import nbt
 from nbt.nbt import NBTFile, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
 
-with open('/minecraft/host/config/server.yaml', 'r') as configfile:
-    config = yaml.load(configfile)
 
-mcfolder = config['mcdata']
-otherdata = config["otherdata"]
-
-
+mcfolder = os.environ.get('MCDATA')
+otherdata = os.environ.get("OTHERDATA")
 
 
 def unpack_nbt(tag):
-    """                                                                                                                                                                                                          
-    Unpack an NBT tag into a native Python data structure.                                                                                                                                                       
+"""
+    Unpack an NBT tag into a native Python data structure.
     """
 
     if isinstance(tag, TAG_List):
@@ -39,7 +33,6 @@ def unpack_nbt(tag):
         return dict((i.name, unpack_nbt(i)) for i in tag.tags)
     else:
         return tag.value
-                    
 
 
 def getnbt(filename):
