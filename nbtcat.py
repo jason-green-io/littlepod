@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from nbt.nbt import NBTFile, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
 import pprint
 import sys
