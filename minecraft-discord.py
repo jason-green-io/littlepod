@@ -54,35 +54,7 @@ client = discord.Client()
 
 
 
-dbQuery = littlepod_utils.dbQuery
 
-
-'''
-def dbQuery(db, timeout, query):
-    conn = sqlite3.connect(db)
-    results = ""
-    for x in range(0, timeout):
-        try:
-            with conn:
-                cur = conn.cursor()
-                cur.execute(*query)
-                results = cur.fetchall()
-        except sqlite3.OperationalError as e:
-            logging.info(query)
-            logging.info("Try {} - {}".format(x, e))
-            time.sleep(random.random())
-                                                
-
-        finally:
-            break
-    else:
-        with conn:
-            cur = conn.cursor()
-            cur.execute(*query)
-            results = cur.fetchall()
-
-    return results
-'''
 
 def telllinks( links ):
     for each in links:
