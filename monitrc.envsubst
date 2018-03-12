@@ -34,9 +34,9 @@ check process minecraft-ctl MATCHING minecraft_server
     start program = "/minecraft/minecraft-ctl.sh"
     stop program = "/usr/bin/pkill minecraft-ctl"
     
-check process minecraft-playeractivity pidfile /minecraft/minecraft-playeractivity.py.pid
-      start program = "/minecraft/minecraft-pywrap.sh minecraft-playeractivity.py start"
-      stop program = "/minecraft/minecraft-pywrap.sh minecraft-playeractivity.py stop"
+check process seapigeon pidfile /minecraft/seapigeon.py.pid
+      start program = "/minecraft/minecraft-pywrap.sh seapigeon.py start"
+      stop program = "/minecraft/minecraft-pywrap.sh seapigeon.py stop"
 
 check process minecraft-discord pidfile /minecraft/minecraft-discord.py.pid
       start program = "/minecraft/minecraft-pywrap.sh minecraft-discord.py start"
