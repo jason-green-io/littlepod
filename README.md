@@ -4,18 +4,34 @@
 
 `littlepod` is a set of scripts, Python modules and config files that wrap vanilla minecraft. They are used in conjunction with Docker to create servers.
 
-## spin-o-lapse.py
+## commandblock.sh
 
-Chunky wrapper that auto generates chunky time lapses.
+Launches minecraft server, downloads the jar of the specified version in `mcversion`. Wraps it with a ncat coproc allowing to access the console and piping commands to it. 
 
-How it works.
+## seapigeon.py
 
-The Barlynaland server uses the zfs file system which allows it to copy the entire world every 20 minutes without taking up an entire world's worth of space on disk. zfs snapshots only store the changes. So what? That means we can use chunky on any given world snapshot, like a slice in time. Do this to multiple slices and you have a time lapse!
+Writes out the player `.dat` files in json every time they change. Allows for a tool like `jq` to parse the data.
 
-Let's take it one step further. Chunky renders using a camera set at one spot. Let's move the camera a bit, in a circle, for every snapshot from above. When you put them all together, you're rotating around a spot as the time lapse happens.
+## turtlesin.py
 
-Kick it up a notch. Chunky allows you to render using a special 360 camera that captures everything around you. Combine this with tools from Google and put it on YouTube and you have an immersive rotating view of your world as it moves through time.
+Generates stats on activity based on the minecraft_server log files.
 
-One more thing. Let's make the sun rise and set to show the passage of time. Just because.
+## pywrap.sh
 
-That's a spin-o-lapse
+A wrapper for the python moduels so that monit can monitor them.
+
+## chatterbox.py
+
+Discord connectivity and whitelist management based on roles.
+
+## littlepod_utils.py
+
+Helper functions.
+
+## showandtellraw.py
+
+Kinda markdown parser to `/tellraw` json text.
+
+## copypaste.sh
+
+Backup the world to a local folder.
