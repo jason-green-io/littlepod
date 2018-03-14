@@ -35,9 +35,9 @@ check process commandblock MATCHING minecraft_server
     stop program = "/usr/bin/pkill commandblock"
     
 check process seapigeon pidfile /minecraft/seapigeon.py.pid
-      start program = "/minecraft/minecraft-pywrap.sh seapigeon.py start"
-      stop program = "/minecraft/minecraft-pywrap.sh seapigeon.py stop"
+      start program = "/minecraft/pywrap.sh seapigeon.py start"
+      stop program = "/minecraft/pywrap.sh seapigeon.py stop"
 
 check process chatterbox pidfile /minecraft/chatterbox.py.pid
-      start program = "/minecraft/minecraft-pywrap.sh chatterbox.py start"
-      stop program = "/minecraft/minecraft-pywrap.sh chatterbox.py stop"
+      start program = "/minecraft/pywrap.sh chatterbox.py start"
+      stop program = "/minecraft/pywrap.sh chatterbox.py stop"
