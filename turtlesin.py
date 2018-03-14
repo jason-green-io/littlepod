@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import gzip
 import glob
 import collections

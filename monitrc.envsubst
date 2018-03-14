@@ -30,14 +30,14 @@ set httpd port 2812 and
      use address localhost  # only accept connection from localhost
      allow localhost        # allow localhost to connect to the server and
 
-check process minecraft-ctl MATCHING minecraft_server
-    start program = "/minecraft/minecraft-ctl.sh"
-    stop program = "/usr/bin/pkill minecraft-ctl"
+check process commandblock MATCHING minecraft_server
+    start program = "/minecraft/commandblock.sh"
+    stop program = "/usr/bin/pkill commandblock"
     
 check process seapigeon pidfile /minecraft/seapigeon.py.pid
       start program = "/minecraft/minecraft-pywrap.sh seapigeon.py start"
       stop program = "/minecraft/minecraft-pywrap.sh seapigeon.py stop"
 
-check process minecraft-discord pidfile /minecraft/minecraft-discord.py.pid
-      start program = "/minecraft/minecraft-pywrap.sh minecraft-discord.py start"
-      stop program = "/minecraft/minecraft-pywrap.sh minecraft-discord.py stop"
+check process chatterbox pidfile /minecraft/chatterbox.py.pid
+      start program = "/minecraft/minecraft-pywrap.sh chatterbox.py start"
+      stop program = "/minecraft/minecraft-pywrap.sh chatterbox.py stop"

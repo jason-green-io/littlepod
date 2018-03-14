@@ -21,11 +21,13 @@
 # 
 # m h  dom mon dow   command
 SHELL=/bin/bash
-LOGS=/minecraft/host/otherdata/logs
-
-@reboot /usr/bin/monit
+LOGS=$OTHERDATA/logs
 
 0 12 * * * echo "/stop" | ncat localhost 7777
 
-0 */1 * * * /minecraft/minecraft-sync
+0 */1 * * * /minecraft/copypaste.sh
+
+0 */1 * * * /minecraft/turtlesin.py --output $WEBDATA
+
+*/10 * * * * /minecraft/papyri/papyri.py --mcdata $MCDATA --output $WEBDATA --poi
 
