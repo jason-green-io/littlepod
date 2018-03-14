@@ -23,7 +23,7 @@ otherdata = os.environ.get("OTHERDATA")
 
 
 def unpack_nbt(tag):
-"""
+    """
     Unpack an NBT tag into a native Python data structure.
     """
 
