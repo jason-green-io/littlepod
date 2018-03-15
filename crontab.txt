@@ -27,7 +27,7 @@ LOGS=$OTHERDATA/logs
 
 0 */1 * * * /minecraft/copypaste.sh
 
-0 */1 * * * /minecraft/turtlesin.py --output $WEBDATA
+0 */1 * * * /minecraft/turtlesin.py > $WEBDATA/activity.md
 
 */10 * * * * /minecraft/papyri/papyri.py --mcdata $MCDATA --output $WEBDATA --poi
 
