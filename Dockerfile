@@ -2,48 +2,39 @@ FROM   ubuntu:16.04
 
 ENV    DEBIAN_FRONTEND noninteractive
 
-
 MAINTAINER Jason Green <jason@green.io>
 
+RUN    apt-get --yes update; \
+       apt-get --yes install software-properties-common; \ 
+       apt-add-repository --yes ppa:webupd8team/java; \
+       apt-get --yes update; \
+       echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections  && \
+       echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections  && \
+       apt-get --yes install curl oracle-java8-installer libvips gettext-base nmap locales monit python3-pip libffi-dev sudo wget software-properties-common libxft-dev libfreetype6-dev tmux man git build-essential vim htop; \
+       apt-get clean
 
-RUN    apt-get update --yes; \
-       apt-get --yes install locales monit nginx python-pip python3-pip phantomjs libffi-dev sudo python3-numpy npm wget software-properties-common libxft-dev libfreetype6-dev tmux man git build-essential emacs sqlite3 uuid-runtime htop
-
-RUN    pip3 install bokeh schedule nbt oauth2 watchdog requests python-daemon pyyaml discord.py
-
-RUN    pip install pyyaml oauth2
+RUN    pip3 install schedule nbt oauth2 watchdog requests python-daemon discord.py pyvips Pillow
 
 RUN    locale-gen en_US.UTF-8  
 ENV    LANG en_US.UTF-8  
 ENV    LANGUAGE en_US:en  
 ENV    LC_ALL en_US.UTF-8  
 
-
-RUN    echo "deb http://overviewer.org/debian ./" >> /etc/apt/sources.list; wget -O - http://overviewer.org/debian/overviewer.gpg.asc | apt-key add -; \
-       apt-get --yes update; \
-       apt-get --yes install minecraft-overviewer
-
-RUN    apt-add-repository --yes ppa:webupd8team/java; \
-       apt-get --yes update
-
-RUN    echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections  && \
-       echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections  && \
-       apt-get --yes install curl oracle-java8-installer; \
-       apt-get clean
-
-
 RUN git clone https://github.com/jason-green-io/littlepod.git /minecraft
 
-RUN chmod 755 /minecraft/docker-start.sh
+RUN git clone https://github.com/jason-green-io/papyri.git /minecraft/papyri
+
+RUN git clone https://github.com/jason-green-io/minecraftmap.git /minecraft/minecraftmap; \
+    cd /minecraft/minecraftmap; \
+    python3 setup.py build; \
+    python3 setup.py install
+
+RUN chown 1000:1000 -R /minecraft
 
 RUN adduser --disabled-password --gecos '' --home /minecraft --shell /bin/bash minecraft
-
-RUN chown minecraft:minecraft -R /minecraft
 
 RUN echo "minecraft ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers
 
 USER minecraft
 
-RUN crontab /minecraft/skelconfig/crontab.txt
-
-CMD /minecraft/docker-start.sh
+ENTRYPOINT /minecraft/init.sh
