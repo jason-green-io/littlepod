@@ -1,13 +1,13 @@
-  set daemon 30
+set daemon 30
 
 
-  set logfile /minecraft/host/otherdata/logs/monit.log
-  set idfile /minecraft/host/otherdata/monitid
-  set statefile /minecraft/host/otherdata/monitstate
+set logfile /minecraft/host/otherdata/logs/monit.log
+set idfile /minecraft/host/otherdata/monitid
+set statefile /minecraft/host/otherdata/monitstate
 
-  set eventqueue
-      basedir /minecraft/host/otherdata/monitevents # set the base directory where events will be stored
-      slots 100                     # optionally limit the queue size
+set eventqueue
+    basedir /minecraft/host/otherdata/monitevents # set the base directory where events will be stored
+    slots 100                     # optionally limit the queue size
 
 SET MAILSERVER smtp.gmail.com PORT 587
     username "$GMAILUSER" password "$GMAILPASSWORD" using tlsv1
@@ -35,11 +35,31 @@ check process commandblock MATCHING "/usr/bin/java -jar /minecraft/host/mcdata/m
     stop program = "/usr/bin/pkill commandblock"
     
 check process seapigeon pidfile /minecraft/seapigeon.py.pid
-      start program = "/minecraft/pywrap.sh seapigeon.py start"
-      stop program = "/minecraft/pywrap.sh seapigeon.py stop"
-      depends on commandblock
+    start program = "/minecraft/pywrap.sh seapigeon.py start"
+    stop program = "/minecraft/pywrap.sh seapigeon.py stop"
+    depends on commandblock
 
 check process chatterbox pidfile /minecraft/chatterbox.py.pid
-      start program = "/minecraft/pywrap.sh chatterbox.py start"
-      stop program = "/minecraft/pywrap.sh chatterbox.py stop"
-      depends on commandblock
+    start program = "/minecraft/pywrap.sh chatterbox.py start"
+    stop program = "/minecraft/pywrap.sh chatterbox.py stop"
+    depends on commandblock
+
+check program restart
+    with path "/bin/bash -c 'echo "/stop" | ncat localhost 7777 > $LOGS'
+    every "0 12 * * *"
+    if status != 0 then alert
+
+check program sync
+    with path '/bin/bash -c '/minecraft/copypaste.sh > $LOGS''
+    every "0 * * * *"
+    if status != 0 then alert
+
+check program turtlesin
+    with path "bash -c '/minecraft/turtlesin > $WEBDATA/activity.md'"
+    every "0 * * * *"
+    if status != 0 then alert
+
+check program papyri
+    with path "bash -c '/minecraft/papyri/papyri.py --mcdata $MCDATA --output $WEBDATA --poi; cat $WEBDATA/header.md $WEBDATA/papyri.md $WEBDATA/activity.md > $WEBDATA/index.md'"
+    every "5,15,25,35,45,55 * * * *"
+    if status != 0 then alert
