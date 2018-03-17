@@ -45,21 +45,21 @@ check process chatterbox pidfile /minecraft/chatterbox.py.pid
     depends on commandblock
 
 check program restart
-    with path "/bin/bash -c 'echo "/stop" | ncat localhost 7777 > $LOGS'
+    with path "/bin/bash -c 'echo /stop | ncat localhost 7777'"
     every "0 12 * * *"
     if status != 0 then alert
 
 check program sync
-    with path '/bin/bash -c '/minecraft/copypaste.sh > $LOGS''
+    with path "/bin/bash -c '/minecraft/copypaste.sh'"
     every "0 * * * *"
     if status != 0 then alert
 
 check program turtlesin
-    with path "bash -c '/minecraft/turtlesin > $WEBDATA/activity.md'"
+    with path "/bin/bash -c '/minecraft/turtlesin.py > $WEBDATA/activity.md'"
     every "0 * * * *"
     if status != 0 then alert
 
 check program papyri
-    with path "bash -c '/minecraft/papyri/papyri.py --mcdata $MCDATA --output $WEBDATA --poi; cat $WEBDATA/header.md $WEBDATA/papyri.md $WEBDATA/activity.md > $WEBDATA/index.md'"
+    with path "/bin/bash -c '/minecraft/papyri/papyri.py --mcdata $MCDATA --output $WEBDATA --poi; cat $WEBDATA/header.md $WEBDATA/papyri.md $WEBDATA/activity.md > $WEBDATA/index.md'"
     every "5,15,25,35,45,55 * * * *"
     if status != 0 then alert
