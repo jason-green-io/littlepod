@@ -23,11 +23,10 @@
 SHELL=/bin/bash
 LOGS=$OTHERDATA/logs
 
-0 12 * * * echo "/stop" | ncat localhost 7777
+0 12 * * * echo "/stop" | ncat localhost 7777 > $LOGS
 
-0 */1 * * * /minecraft/copypaste.sh
+0 */1 * * * /minecraft/copypaste.sh > $LOGS
 
 0 */1 * * * /minecraft/turtlesin.py > $WEBDATA/activity.md
 
-*/10 * * * * /minecraft/papyri/papyri.py --mcdata $MCDATA --output $WEBDATA --poi
-
+*/10 * * * * /minecraft/papyri/papyri.py --mcdata $MCDATA --output $WEBDATA --poi; cat $WEBDATA/header.md $WEBDATA/papyri.md $WEBDATA/activity.md > $WEBDATA/index.md
