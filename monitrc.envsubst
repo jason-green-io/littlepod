@@ -61,5 +61,5 @@ check program turtlesin
 
 check program papyri
     with path "/bin/bash -c '/minecraft/papyri/papyri.py --mcdata $MCDATA/world --output $WEBDATA --poi; cat $WEBDATA/header.md $WEBDATA/papyri.md $WEBDATA/activity.md > $WEBDATA/index.md'"
-    every "5,15,25,35,45,55 * * * *"
+    every "5,15,25,35,45,55 * * * *" timeout 600 seconds
     if status != 0 then alert
