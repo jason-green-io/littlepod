@@ -60,6 +60,6 @@ check program turtlesin
     if status != 0 then alert
 
 check program papyri
-    with path "/bin/bash -c '/minecraft/papyri/papyri.py --mcdata $MCDATA/world --output $WEBDATA --poi 2>&1 | tee -a $OTHERDATA/logs/papyri.py.log; cat $WEBDATA/header.md $WEBDATA/papyri.md $WEBDATA/activity.md > $WEBDATA/index.md'" timeout 1200 seconds
+    with path "/bin/bash -c '/minecraft/papyri/papyri.py --mcdata $MCDATA/world --output $WEBDATA --banners --poi 2>&1 | tee -a $OTHERDATA/logs/papyri.py.log; cat $WEBDATA/header.md $WEBDATA/papyri.md $WEBDATA/activity.md > $WEBDATA/index.md'" timeout 1200 seconds
     every "5,15,25,35,45,55 * * * *" 
     if status != 0 then alert
