@@ -67,8 +67,8 @@ def coordsmessage( reCoords, reDim ):
     
     for each in reCoords:
         print (each[0], each[1], each[2])
-        message = "Map: {} {}{}{}\n http://{}/map/#/{}/{}/{}/-3/{}/0".format(worlddict[reDim][0], each[0], each[1], each[2], URL, each[0].strip(','), each[1].strip(',') if each[1] else "64", each[2], worlddict[reDim][1] )
-        #message.append( "Map: " + worlddict[ each[0].lower() ][0] + " " + each[1] + ', ' + each[2] + "\nhttp://" + URL + "/map/#/" + each[1] + "/64/" + each[2] + "/-3/" + worlddict[ each[0].lower() ][1]  + "/0" )
+        x, y, z = each
+        message = "Map: {dim} {x}, {z}\n{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}".format(dim=worlddict[reDim][0], x=each[0], z=each[2], URL=URL)
     
     return message
 
@@ -77,7 +77,7 @@ def tellcoords( reCoords, reDim ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     for each in reCoords:
         
-        littlepod_utils.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _{} {}{}{}_|http://{}/map/#/{}/{}/{}/-3/{}/0]".format(worlddict[reDim][0], each[0], each[1], each[2], URL, each[0].strip(','), each[1].strip(',') if each[1] else "64" , each[2], worlddict[reDim][1])))
+        littlepod_utils.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _{dim} {x}, {z}_|{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=each[0], z=each[2], URL=URL)))
 
 
 
