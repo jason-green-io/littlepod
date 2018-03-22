@@ -66,8 +66,8 @@ def coordsmessage( reCoords, reDim ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     
     for each in reCoords:
-        print (each[0], each[1], each[2])
-        x, y, z = each
+        print (each[0], each[1])
+        x, z = each
         message = "Map: {dim} {x}, {z}\n{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}".format(dim=worlddict[reDim][0], x=each[0], z=each[2], URL=URL)
     
     return message
@@ -174,7 +174,7 @@ def on_message(message):
 
     if client.user in message.mentions:
         print("mentioned")
-        reCoords =  re.findall( "(-?\d+,) ?(\d+,)? ?(-?\d+)", message.content)
+        reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message.content)
         
         print(reCoords)
         if reCoords:
