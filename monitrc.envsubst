@@ -31,7 +31,7 @@ set httpd port 2812 and
      allow localhost        # allow localhost to connect to the server and
 
 check process commandblock MATCHING "/usr/bin/java -jar /minecraft/host/mcdata/minecraft_server"
-    start program = "/minecraft/commandblock.sh"
+    start program = "/minecraft/commandblock.sh $MCVERSION"
     stop program = "/usr/bin/pkill commandblock"
     
 check process seapigeon pidfile /minecraft/seapigeon.py.pid
