@@ -30,7 +30,7 @@ set httpd port 2812 and
      use address localhost  # only accept connection from localhost
      allow localhost        # allow localhost to connect to the server and
 
-check process commandblock MATCHING "/usr/bin/java -jar /minecraft/host/mcdata/minecraft_server"
+check process commandblock MATCHING "/usr/bin/java -jar /minecraft/host/mcdata"
     start program = "/minecraft/commandblock.sh $MCVERSION"
     stop program = "/usr/bin/pkill commandblock"
     
