@@ -24,7 +24,7 @@
     MCVERSION=$1
 
 
-    if [[ ! -f /minecraft/host/mcdata/$MCVERSION.jar ]]; then
+    if [[ ! -f /minecraft/host/mcdata/server_$MCVERSION.jar ]]; then
         echo $(date) "Downloading server version $MCVERSION"
         curl -o server_$MCVERSION.jar $(curl $(curl https://launchermeta.mojang.com/mc/game/version_manifest.json | jq --arg ver $MCVERSION -r '.versions[] | select(.id == $ver).url') | jq -r '.downloads.server.url')
     fi
