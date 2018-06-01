@@ -26,13 +26,13 @@
 
     if [[ ! -f /minecraft/host/mcdata/$MCVERSION.jar ]]; then
         echo $(date) "Downloading server version $MCVERSION"
-        curl -o $MCVERSION.jar $(curl $(curl https://launchermeta.mojang.com/mc/game/version_manifest.json | jq --arg ver $MCVERSION -r '.versions[] | select(.id == $ver).url') | jq -r '.downloads.server.url')
+        curl -o server_$MCVERSION.jar $(curl $(curl https://launchermeta.mojang.com/mc/game/version_manifest.json | jq --arg ver $MCVERSION -r '.versions[] | select(.id == $ver).url') | jq -r '.downloads.server.url')
     fi
 
     echo $(date) "Starting server version $MCVERSION"
 
     coproc ncat -lkp 7777
-    /usr/bin/java -jar /minecraft/host/mcdata/$MCVERSION.jar nogui <&${COPROC[0]} >&${COPROC[1]} 2>&1
+    /usr/bin/java -jar /minecraft/host/mcdata/server_$MCVERSION.jar nogui <&${COPROC[0]} >&${COPROC[1]} 2>&1
     echo $(date) "Server has stopped"
 
 
