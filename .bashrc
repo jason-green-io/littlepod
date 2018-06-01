@@ -22,5 +22,6 @@ function update ()
     MCVERSION=$1
     /usr/bin/envsubst '$GMAILPASSWORD $GMAILUSER $MCVERSION' < /minecraft/monitrc.envsubst > /minecraft/.monitrc
     monit reload
+    sleep 2 
     monit restart commandblock
 }
