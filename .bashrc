@@ -25,3 +25,5 @@ function update ()
     sleep 2 
     monit restart commandblock
 }
+
+TERM=screen-256color
