@@ -125,6 +125,7 @@ def updateTopic():
             littlepod_utils.send("/whitelist remove {}".format(removeIGN))
             
         players = littlepod_utils.getOnlinePlayers()
+        version = littlepod_utils.getVersion()
 
         channel = client.get_channel(discordChannel)
         currentTopic = channel.topic
@@ -134,9 +135,12 @@ def updateTopic():
 
         #topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
 
-        playerList = " ".join(players) if players else "*None*"
+        playerList = " ".join(players) if players else "*Nobody*"
+        
+        topicLine = "{} w/ {}".format(version, playerList)
+        
         # print(playerList)
-        yield from client.change_presence(game=discord.Game(name=playerList)) 
+        yield from client.change_presence(game=discord.Game(name=topicLine)) 
         #yield from client.edit_channel(channel, position=1, name=currentName, topic="\n".join(topicLineList))
         print("waiting for 60 seconds")
         yield from asyncio.sleep(60)

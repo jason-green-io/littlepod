@@ -11,6 +11,7 @@ import urllib.parse
 import oauth2 as oauth
 from collections import OrderedDict
 import socket
+from nbt.nbt import NBTFile, TAG_Long_Array, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
 
 
 mcfolder = os.environ.get('MCDATA', "/minecraft/host/mcdata")
@@ -187,8 +188,22 @@ def getplayers():
 
 
 
+def unpack_nbt(tag):
+    """
+    Unpack an NBT tag into a native Python data structure.
+    """
 
+    if isinstance(tag, TAG_List):
+        return [unpack_nbt(i) for i in tag.tags]
+    elif isinstance(tag, TAG_Compound):
+        return dict((i.name, unpack_nbt(i)) for i in tag.tags)
+    else:
+        return tag.value
 
+def getVersion():
+    nbtData = NBTFile(os.path.join(mcfolder, "world", "level.dat"))
+    Obj = unpack_nbt(nbtData)
+    return Obj["Data"]["Version"]["Name"]
 
 def getOnlinePlayers():
     playerFiles = glob.glob(os.path.join(mcfolder, "world/playerdata/*.dat"))

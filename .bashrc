@@ -27,3 +27,4 @@ function update ()
 }
 
 TERM=screen-256color
+PATH=$HOME:$PATH
