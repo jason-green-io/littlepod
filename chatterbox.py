@@ -68,7 +68,7 @@ def coordsmessage( reCoords, reDim ):
     for each in reCoords:
         print (each[0], each[1])
         x, z = each
-        message = "Map: {dim} {x}, {z}\n{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL)
+        message = "Map: {dim} {x}, {z}\nhttps://{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL)
     
     return message
 
@@ -76,8 +76,8 @@ def coordsmessage( reCoords, reDim ):
 def tellcoords( reCoords, reDim ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     for each in reCoords:
-        
-        littlepod_utils.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _{dim} {x}, {z}_|{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL)))
+        x, z = each
+        littlepod_utils.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _{dim} {x}, {z}_|https://{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL)))
 
 
 
@@ -410,7 +410,7 @@ def eventChat(data):
         yield from client.send_message(channelobject, finalmessage)
 
 
-    reCoords =  re.findall( "(-?\d+,) ?(\d+,)? ?(-?\d+)", message)
+    reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message)
         
     print(reCoords)
     if reCoords:
