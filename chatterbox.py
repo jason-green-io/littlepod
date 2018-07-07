@@ -135,7 +135,7 @@ def updateTopic():
 
         #topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
 
-        playerList = " ".join(players) if players else "*Nobody*"
+        playerList = " ".join(players) if players else ""
         
         topicLine = "{} w/ {}".format(version, playerList)
         
