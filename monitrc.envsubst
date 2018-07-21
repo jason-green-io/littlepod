@@ -45,7 +45,7 @@ check process chatterbox pidfile /minecraft/chatterbox.py.pid
     depends on commandblock
 
 check program restart
-    with path "/bin/bash -c 'echo /stop | ncat localhost 7777 2>&1 | tee -a $OTHERDATA/logs/restart.log'"
+    with path "/bin/bash -c 'echo "/say Server restarting in 10s" | ncat localhost 7777; sleep 10; echo /stop | ncat localhost 7777 2>&1 | tee -a $OTHERDATA/logs/restart.log'"
     every "0 12 * * *"
     if status != 0 then alert
 
