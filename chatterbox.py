@@ -20,11 +20,12 @@ mcfolder = os.environ.get('MCDATA', "/minecraft/host/mcdata")
 URL = os.environ.get('SERVERURL', "https://localhost/")
 servername = os.environ.get('SERVERNAME', "Littlepod")
 updateRoles = os.environ.get("UPDATEROLES", False)
+webfolder = os.environ.get('WEBDATA', "/minecraft/shared/web/www/Littlepod")
 
 discordChannel = os.environ.get("DISCORDCHANNEL", "")
 discordPrivChannel = os.environ.get("DISCORDPRIVCHANNEL", "")
 discordToken = os.environ.get("DISCORDTOKEN", "")
-
+discordBannerChannel = os.environ.get("DISCORDBANNERCHANNEL", "")
 
 serverFormat = "<blue^\<><green^{}><blue^\>>"
 playerFormat = "<blue^\<><white^{}><blue^\>>"
@@ -52,8 +53,22 @@ serverrestart = False
 
 client = discord.Client()
 
+brailleOrds = [chr(58)] + [chr(x) for x in range(10241, 10241 + 255)]
 
+#print(brailleOrds) 
 
+def toBraille( inputuuid ):
+    uuidBytes = uuid.UUID("{{{}}}".format(inputuuid)) 
+    ords = [ord(brailleOrds[x]) for x in uuidBytes.bytes]
+    #print(ords)
+    return "".join([chr(x) for x in ords])
+
+def fromBraille( braille ):
+    ords = [brailleOrds.index(x) for x in braille]
+    #print(ords)
+    uuidBytes = bytes(ords)
+    # print(uuidBytes)
+    return str(uuid.UUID(bytes=uuidBytes))
 
 
 def telllinks( links ):
@@ -81,23 +96,41 @@ def tellcoords( reCoords, reDim ):
 
 
 
-def updateTopic():
+async def updateTopic():
 
-    yield from client.wait_until_ready()
+    await client.wait_until_ready()
     server =  client.get_server("140194383118073856")
     print("Updating topic")
-
+    emojis = {e.name: e for e in client.get_all_emojis()}
+    print(emojis)
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
+    
+    allroles = [r for r in server.roles if len(r.name) == 32]
+
+    allmembers = list(client.get_all_members())
+    '''
+    for r in allroles:
+        for m in allmembers:
+            if r in m.roles:
+                if m.nick:
+                    if len(m.nick) < 17:
+                        print(m.nick + toBraille(r.name))
+                        await client.change_nickname(m, m.nick + toBraille(r.name))
+                elif len(m.name) < 17:
+                    print(m.name + toBraille(r.name))
+                    await client.change_nickname(m, m.name + toBraille(r.name))
+    '''
     while True:
         discordWhitelistedPlayers = {}
         for member in server.members:
-            mRolesDict = {r.name: r  for r in member.roles}
+            if "whitelisted" in [role.name for role in member.roles]:
+                brailleUUID = member.nick[-16:]
+                #print(member.nick, brailleUUID)
+                memberUUID = fromBraille(brailleUUID)
+                #print(memberUUID)
             
-            for r in mRolesDict:
-                if len(r) == 32:
-                    # yield from client.edit_channel_permissions(channelobject, mRolesDict[r], overwrite)
-                    yield from client.edit_role(server, mRolesDict[r], colour=discord.Colour.green())
-                    discordWhitelistedPlayers[str(uuid.UUID(r))] =  member.id
+                
+                discordWhitelistedPlayers[memberUUID] =  member.id
 
         
         mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
@@ -127,23 +160,48 @@ def updateTopic():
         players = littlepod_utils.getOnlinePlayers()
         version = littlepod_utils.getVersion()
 
-        channel = client.get_channel(discordChannel)
-        currentTopic = channel.topic
-        currentName = channel.name
-        topicLineList = currentTopic.split('\n')
-        #topicLine = [line for line in enumerate(topicLineList) if line[1].startswith(name)][0][0]
+        bannerChannel = client.get_channel(discordBannerChannel)
+        try: 
+            with open(os.path.join(webfolder, "papyri.json"), "r") as bannerFile:
+                papyriBanners = {"{} {}, {}".format(b["dim"], b["x"], b["z"]): b for b in json.load(bannerFile)} 
+        except:
+            papyriBanners = {}
+        
+        print(papyriBanners)    
+        
+        channelBanners = {message.content.split("\n")[1]: message async for message in client.logs_from(bannerChannel, limit=200, after=None) if message.author == client.user}
 
-        #topicLineList[topicLine] = "{} - {}/20 - `({})`".format(name, len(formattedplayers), " ".join(formattedplayers))
-
+        print(channelBanners)
+        
+        addBanners = set(papyriBanners) - set(channelBanners)
+        removeBanners = set(channelBanners) - set(papyriBanners)
+        print("add {}".format(addBanners))
+        print("remove {}".format(removeBanners))
+        
+        for each in addBanners:
+            b = papyriBanners[each]
+            message = "{} {}\n{} {}, {}\n{}/{}".format(str(emojis[b["color"] + "banner"]), b["title"], b["dim"], b["x"], b["z"], URL, b["maplink"])
+            await client.send_message(bannerChannel, message)
+        
+        for each in removeBanners:
+            await client.delete_message(channelBanners[each])
+        
         playerList = " ".join(players) if players else ""
         
         topicLine = "{} w/ {}".format(version, playerList)
         
         # print(playerList)
-        yield from client.change_presence(game=discord.Game(name=topicLine)) 
-        #yield from client.edit_channel(channel, position=1, name=currentName, topic="\n".join(topicLineList))
+        await client.change_presence(game=discord.Game(name=topicLine)) 
+        
+        
+        
+        
+        
+        
+        
+        
         print("waiting for 60 seconds")
-        yield from asyncio.sleep(60)
+        await asyncio.sleep(60)
 
 '''
 @client.async_event
@@ -175,9 +233,37 @@ def on_message(message):
     if message.author == client.user:
         return
     # print(message.author.display_name, message.clean_content.encode("utf-8"), message.attachments)
-
+    
+    print("mentioned", message.author)
     if client.user in message.mentions:
-        print("mentioned")
+        adminRole = [role for role in server.roles if role.name == "admin"][0]
+        if adminRole in message.author.roles and not message.author.bot:
+            print("admin mention" + message.content)
+            adds = re.findall( "<@!?\d*> add <@!?(\d*)> (.*)", message.content)
+            print(adds)
+            if adds:
+                
+                addDiscordID, addIGN = adds[0]
+                r = requests.get('https://api.mojang.com/users/profiles/minecraft/{}'.format(addIGN))
+                rDict = r.json()
+                UUID = rDict["id"]
+                UUIDBraille = toBraille(UUID)
+                newNickname = rDict["name"] + UUIDBraille
+                print(rDict, newNickname)
+
+                member = server.get_member(addDiscordID)
+
+                yield from client.change_nickname(member, newNickname)
+                
+                whitelistedRole = [role for role in server.roles if role.name == "whitelisted"][0]
+                
+                memberRoles = {role for role in member.roles}
+                if whitelistedRole not in memberRoles:
+
+                    yield from client.add_roles(member, whitelistedRole)
+                    yield from client.send_message(privchannelobject, str(rDict) + newNickname)
+
+
         reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message.content)
         
         print(reCoords)
@@ -234,35 +320,6 @@ def on_message(message):
         if links:
            telllinks( links )
 
-    if message.channel.id == discordPrivChannel and not message.author.bot:
-        if message.content.startswith("/"):
-            command, args = message.content.split(' ', 1)
-            command = command.strip('/')
-            # print(command, args)
-            if updateRoles:
-                if command == "link":
-                    manualLinkDiscordID, manualLinkIGN = args.split()
-                    # print(manualLinkDiscordID, manualLinkIGN)
-                    r = requests.get('https://api.mojang.com/users/profiles/minecraft/{}'.format(manualLinkIGN))
-                    rDict = r.json()
-                    UUID = rDict["id"]
-                    newNickname = rDict["name"]
-                    print(rDict)
-
-                    member = server.get_member(manualLinkDiscordID)
-
-                    yield from client.change_nickname(member, newNickname)
-                    currentRoles = {role.name: role for role in server.roles}
-                    if UUID not in currentRoles:
-
-                        newRole = yield from client.create_role(server, name=UUID)
-                    else:
-                        newRole = currentRoles[UUID]
-
-
-                    yield from client.edit_channel_permissions(channelobject, newRole, overwrite)
-                    yield from client.add_roles(member, newRole)
-                    yield from client.send_message(privchannelobject, rDict)
                     
 
 @client.async_event
@@ -510,23 +567,10 @@ def handle_bgtask():
         client.close()
         sys.exit(1)
 
-def handle_updateTopic():
-
-    try:
-        print("Starting update topic handler")
-        yield from updateTopic()
-    except Exception:
-        print("Topic handler exception")
-        client.close()
-        sys.exit(1)
-
-        
-loop = asyncio.get_event_loop()
-
 try:
 
     client.loop.create_task(handle_bgtask())
-    client.loop.create_task(handle_updateTopic())
+    client.loop.create_task(updateTopic())
     client.run(discordToken)   
    
 except Exception:
