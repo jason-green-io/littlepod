@@ -57,6 +57,15 @@ brailleOrds = [chr(58)] + [chr(x) for x in range(10241, 10241 + 255)]
 
 #print(brailleOrds) 
 
+
+def custom_exception_handler(loop, context):
+    # first, handle with default handler
+    loop.default_exception_handler(context)
+    exception = context.get('exception')
+    print(context)
+    loop.stop()
+
+
 def toBraille( inputuuid ):
     uuidBytes = uuid.UUID("{{{}}}".format(inputuuid)) 
     ords = [ord(brailleOrds[x]) for x in uuidBytes.bytes]
@@ -568,7 +577,7 @@ def handle_bgtask():
         sys.exit(1)
 
 try:
-
+    client.loop.set_exception_handler(custom_exception_handler)
     client.loop.create_task(handle_bgtask())
     client.loop.create_task(updateTopic())
     client.run(discordToken)   
