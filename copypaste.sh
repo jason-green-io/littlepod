@@ -9,9 +9,7 @@ sleep 10
 
 echo $(date) "Syncing world to backup"
 
-rsync -av --inplace --delete /minecraft/host/mcdata/world /minecraft/host/otherdata/mcbackup
-#echo "$(date) Creating snapshot"
-# sudo zfs snapshot main/minecraft/world@$(date +%Y%m%d%H%M)
+rsync --rsh "ssh -i $RSYNCKEY" -av --inplace --delete /minecraft/host/mcdata/world $RSYNCDEST:$SERVERNAME
 
 sleep 10
 {
