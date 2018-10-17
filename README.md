@@ -34,4 +34,4 @@ Kinda markdown parser to `/tellraw` json text.
 
 ## copypaste.sh
 
-Backup the world to a local folder.
+Backup the world to a local folder or backup service.
