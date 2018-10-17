@@ -1,4 +1,4 @@
-FROM   ubuntu:17.10
+FROM   ubuntu:18.04
 
 ENV    DEBIAN_FRONTEND noninteractive
 
