@@ -142,6 +142,11 @@ async def discordMain():
     '''
     while True:
         discordWhitelistedPlayers = {}
+        discordWhitelistedPlayersIGN = {}
+        
+        mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
+        mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
+        
         for member in server.members:
             if "whitelisted" in [role.name for role in member.roles]:
                 brailleUUID = member.nick[-16:]
@@ -151,7 +156,8 @@ async def discordMain():
 
 
                 discordWhitelistedPlayers[memberUUID] =  member.id
-
+                discordWhitelistedPlayersIGN[mcWhitelistedPlayersUUID.get(memberUUID, "").lower()] = member
+        print(discordWhitelistedPlayersIGN["greener_ca"])
 
         mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
         mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
@@ -183,7 +189,7 @@ async def discordMain():
         bannerChannel = client.get_channel(discordBannerChannel)
         try: 
             with open(os.path.join(webfolder, "papyri.json"), "r") as bannerFile:
-                papyriBanners = {"{} {} {}, {} {}".format(b["color"], b["title"], b["x"], b["z"], dimColors[b["dim"]]): b for b in json.load(bannerFile)}
+                papyriBanners = {"{}, {}".format(b["x"], b["z"]): b for b in json.load(bannerFile)}
         except:
             papyriBanners = {}
 
@@ -196,12 +202,11 @@ async def discordMain():
         for each in allChannelBanners:
             if each.embeds:
                 embed = each.embeds[0]
-                # print(embed)
+                #print(embed)
 
-                desc = re.sub("<:([a-z_]*)banner:\d*>", r"\1", embed["description"])
-                desc = re.sub("\[([0-9 \-,]*)\]\(.*\)", r"\1", desc)
-                colour = '{:02X}'.format(embed["color"])
-                channelBanners.update({desc + " " + colour: each})
+                match = re.search("\[([0-9 \-,]*)\]", embed["description"])
+                coords = match.group(1)
+                channelBanners.update({coords: each})
 
         # print("channel: ", channelBanners)
          
@@ -210,12 +215,18 @@ async def discordMain():
         addBanners = set(papyriBanners) - set(channelBanners)
         removeBanners = set(channelBanners) - set(papyriBanners)
 
+        def IGNtoMention( match ):
+            return discordWhitelistedPlayersIGN[match.group(1).lower()].mention
+
         for each in addBanners:
             logging.info("adding banner %s", each)
             b = papyriBanners[each]
-            description = "{} {} [{}, {}]({}/{})".format(str(emojis[b["color"] + "banner"]), b["title"], b["x"], b["z"], URL, b["maplink"])
+            title = b["title"]
+            title = re.sub("@([a-zA-Z0-9_]*)", IGNtoMention, title) 
+            description = "{} {} [{}, {}]({}/{})".format(str(emojis[b["color"] + "banner"]), title, b["x"], b["z"], URL, b["maplink"])
             colour = int(dimColors[b["dim"]], 16)
             embed = discord.Embed(description=description, colour=colour)
+            logging.info(description)
             await client.send_message(bannerChannel, embed=embed)
 
         for each in removeBanners:
@@ -223,7 +234,7 @@ async def discordMain():
             await client.delete_message(channelBanners[each])
 
         for each in dupes:
-            logging.info("removing dup banner %s", each)
+            logging.info("removing dup banner %s", each.embeds[0]["description"])
             await client.delete_message(each)
 
 

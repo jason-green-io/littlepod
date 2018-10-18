@@ -10,7 +10,7 @@ sleep 10
 echo $(date) "Syncing world to backup"
 
 rsync --rsh "ssh -i $RSYNCKEY" -av --inplace --delete /minecraft/host/mcdata/world $RSYNCDEST:$SERVERNAME
-
+restic backup /minecraft/host/mcdata/world
 sleep 10
 {
 echo "/save-on"
