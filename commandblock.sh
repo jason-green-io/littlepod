@@ -17,9 +17,16 @@
     echo "eula=true" > /minecraft/host/mcdata/eula.txt
 
     echo $(date) "Creating server.properties"
-    envsubst < /minecraft/server.properties.envsubst > /minecraft/host/mcdata/server.properties
+    
+    function commands () {
+        for PROP in $(echo $SERVERPROPERTIES | tr '|' ' '); do
+            TARGET_KEY=$(echo $PROP | cut -d '=' -f1)
+            REPLACEMENT_VALUE=$(echo $prop | cut -d '=' -f2)
+            echo "s/\($TARGET_KEY *= *\).*/\1$REPLACEMENT_VALUE/"
+        done
+    }
 
-
+    sed -f <(commands) /minecraft/server.properties > /minecraft/host/mcdata/server.properties
 
     MCVERSION=$1
 
