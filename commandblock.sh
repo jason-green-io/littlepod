@@ -19,7 +19,8 @@
     echo $(date) "Creating server.properties"
     
     function commands () {
-        for PROP in $(echo $SERVERPROPERTIES | tr '|' ' '); do
+        IFS="|"
+        for PROP in $SERVERPROPERTIES; do
             TARGET_KEY=$(echo $PROP | cut -d '=' -f1)
             REPLACEMENT_VALUE=$(echo $prop | cut -d '=' -f2)
             echo "s/\($TARGET_KEY *= *\).*/\1$REPLACEMENT_VALUE/"
