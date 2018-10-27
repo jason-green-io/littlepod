@@ -22,7 +22,7 @@
         IFS="|"
         for PROP in $SERVERPROPERTIES; do
             TARGET_KEY=$(echo $PROP | cut -d '=' -f1)
-            REPLACEMENT_VALUE=$(echo $prop | cut -d '=' -f2)
+            REPLACEMENT_VALUE=$(echo $PROP | cut -d '=' -f2)
             echo "s/\($TARGET_KEY *= *\).*/\1$REPLACEMENT_VALUE/"
         done
     }
