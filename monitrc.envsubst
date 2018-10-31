@@ -54,12 +54,7 @@ check program sync
     every "0 * * * *"
     if status != 0 then alert
 
-check program turtlesin
-    with path "/bin/bash -c '/minecraft/turtlesin.py 2>&1 | tee $DATAFOLDER/logs/turtlesin.py.log > $WEBDATA/activity.md'"
-    every "0 * * * *"
-    if status != 0 then alert
-
 check program papyri
-    with path "/bin/bash -c '/papyri/papyri.py --mcdata $DATAFOLDER/mc/world --output $WEBDATA --banners 2>&1 | tee -a $DATAFOLDER/logs/papyri.py.log; cat $WEBDATA/header.md $WEBDATA/activity.md > $WEBDATA/index.md'" timeout 1200 seconds
+    with path "/bin/bash -c '/papyri/papyri.py --mcdata $DATAFOLDER/mc/world --output $WEBDATA --banners 2>&1 | tee -a $DATAFOLDER/logs/papyri.py.log'" timeout 1200 seconds
     every "5,15,25,35,45,55 * * * *" 
     if status != 0 then alert
