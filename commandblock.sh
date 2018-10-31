@@ -20,7 +20,7 @@
     
     function commands () {
 	 echo "$(printenv | grep MC_ | cut -d "_" -f2-)" | while read -r PROP; do
-            TARGET_KEY=$(echo $PROP | cut -d '=' -f1)
+            TARGET_KEY=$(echo $PROP | cut -d '=' -f1 | tr '_' '-')
             REPLACEMENT_VALUE=$(echo $PROP | cut -d '=' -f2)
             echo "s/\($TARGET_KEY *= *\).*/\1$REPLACEMENT_VALUE/"
         done
