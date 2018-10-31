@@ -6,7 +6,7 @@ set idfile $DATAFOLDER/state/monitid
 set statefile $DATAFOLDER/state/monitstate
 
 set eventqueue
-    basedir /minecraft/data/logs/monitevents # set the base directory where events will be stored
+    basedir $DATAFOLDER/logs/monitevents # set the base directory where events will be stored
     slots 100                     # optionally limit the queue size
 
 SET MAILSERVER smtp.gmail.com PORT 587
@@ -34,12 +34,12 @@ check process commandblock MATCHING "/usr/bin/java -jar /minecraft/data/mc/serve
     start program = "/minecraft/commandblock.sh $MCVERSION"
     stop program = "/usr/bin/pkill commandblock"
     
-check process seapigeon pidfile /minecraft/data/state/seapigeon.py.pid
+check process seapigeon pidfile $DATAFOLDER/state/seapigeon.py.pid
     start program = "/minecraft/pywrap.sh seapigeon.py start"
     stop program = "/minecraft/pywrap.sh seapigeon.py stop"
     depends on commandblock
 
-check process chatterbox pidfile /minecraft/data/state/chatterbox.py.pid
+check process chatterbox pidfile $DATAFOLDER/state/chatterbox.py.pid
     start program = "/minecraft/pywrap.sh chatterbox.py start"
     stop program = "/minecraft/pywrap.sh chatterbox.py stop"
     depends on commandblock
