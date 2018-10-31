@@ -18,7 +18,7 @@ import uuid
 import littlepod_utils
 import socket
 
-mcfolder = os.environ.get('MCDATA', "/minecraft/host/mcdata")
+mcfolder = os.path.join(os.environ.get('DATAFOLDER', "/minecraft/data/"), "mc")
 URL = os.environ.get('SERVERURL', "https://localhost/")
 servername = os.environ.get('SERVERNAME', "Littlepod")
 updateRoles = os.environ.get("UPDATEROLES", False)

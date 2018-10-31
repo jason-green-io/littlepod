@@ -18,10 +18,10 @@ import nbt
 from nbt.nbt import NBTFile, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
 
 
-mcfolder = os.environ.get('MCDATA')
-otherdata = os.environ.get("OTHERDATA")
+mcfolder = os.path.join(os.environ.get('DATAFOLDER', "/minecraft/data"), "mc")
+datafolder = os.environ.get("DATAFOLDER")
 
-os.makedirs(os.path.join(otherdata, "seapigeon"), exist_ok=True)
+os.makedirs(os.path.join(datafolder, "seapigeon"), exist_ok=True)
 
 def unpack_nbt(tag):
     """
@@ -60,7 +60,7 @@ class FileHandler(PatternMatchingEventHandler):
             
             newItems = getnbt(datFile)
             print(datFile)
-            with codecs.open(os.path.join(otherdata, "seapigeon", UUID + "." + str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))) + ".json", "w", "utf-8") as f:
+            with codecs.open(os.path.join(datafolder, "seapigeon", UUID + "." + str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))) + ".json", "w", "utf-8") as f:
                 json.dump(newItems, f)
             
 

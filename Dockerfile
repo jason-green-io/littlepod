@@ -22,14 +22,14 @@ ENV    LC_ALL en_US.UTF-8
 
 RUN git clone https://github.com/jason-green-io/littlepod.git /minecraft
 
-RUN git clone https://github.com/jason-green-io/papyri.git /minecraft/papyri
+RUN git clone https://github.com/jason-green-io/papyri.git /papyri
 
-RUN git clone https://github.com/jason-green-io/minecraftmap.git /minecraft/minecraftmap; \
-    cd /minecraft/minecraftmap; \
+RUN git clone https://github.com/jason-green-io/minecraftmap.git /tmp/minecraftmap; \
+    cd /tmp/minecraftmap; \
     python3 setup.py build; \
     python3 setup.py install
 
-RUN chown 1000:1000 -R /minecraft
+RUN chown 1000:1000 -R /minecraft /papyri
 
 RUN adduser --disabled-password --gecos '' --home /minecraft --shell /bin/bash minecraft
 

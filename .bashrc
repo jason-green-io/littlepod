@@ -17,10 +17,17 @@ function fix ()
     done
 }
 
+
+function who ()
+{
+	jq -Cc --arg x 1261 --arg y 70 --arg z -2732 --arg r 600 '{"name": input_filename, "Pos": .Pos} | select(.Pos[0] > ($x|tonumber) - ($r|tonumber) and .Pos[0] < ($x|tonumber) + ($r|tonumber) and .Pos[1] < ($y|tonumber) + ($r|tonumber) and .Pos[1] > ($y|tonumber) - ($r|tonumber) and .Pos[2] < ($z|tonumber) + ($r|tonumber) and .Pos[2] > ($z|tonumber) - ($r|tonumber))' $DATAFOLDER/seapigeon/ | less -R
+}
+
+
 function update ()
 {
     MCVERSION=$1
-    /usr/bin/envsubst '$GMAILPASSWORD $GMAILUSER $MCVERSION' < /minecraft/monitrc.envsubst > /minecraft/.monitrc
+    /usr/bin/envsubst '$WEBDATA $DATAFOLDER $GMAILPASSWORD $GMAILUSER $MCVERSION' < /minecraft/monitrc.envsubst > /minecraft/.monitrc
     monit reload
     sleep 2 
     monit restart commandblock

@@ -14,7 +14,7 @@ import socket
 from nbt.nbt import NBTFile, TAG_Long_Array, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
 
 
-mcfolder = os.environ.get('MCDATA', "/minecraft/host/mcdata")
+mcfolder = os.path.join(os.environ.get('DATAFOLDER', "/minecraft/data"), "mc")
 
 '''
 ConsumerKey = config['ConsumerKey']

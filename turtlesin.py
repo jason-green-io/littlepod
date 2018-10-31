@@ -3,8 +3,10 @@ import gzip
 import glob
 import collections
 import datetime
+import os
 
-path = "/minecraft/host/mcdata/logs/"
+
+path = os.path.join(os.environ.get("DATAFOLDER", "/minecraft/data"), "mc/logs"/)
 days = 14
 
 base = datetime.datetime.today()
