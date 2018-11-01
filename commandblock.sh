@@ -19,11 +19,13 @@
     echo $(date) "Creating server.properties"
     
     function commands () {
-	 echo "$(printenv | grep MC_ | cut -d "_" -f2-)" | while read -r PROP; do
+    echo "$(printenv | grep MC_ | cut -d "_" -f2-)" | while read -r PROP; do
+        if [ ! -z "$PROP" ]; then
             TARGET_KEY=$(echo $PROP | cut -d '=' -f1 | tr '_' '-')
             REPLACEMENT_VALUE=$(echo $PROP | cut -d '=' -f2)
             echo "s/\($TARGET_KEY *= *\).*/\1$REPLACEMENT_VALUE/"
-        done
+        fi
+    done
     }
 
     sed -f <(commands) /minecraft/server.properties > $DATAFOLDER/mc/server.properties
