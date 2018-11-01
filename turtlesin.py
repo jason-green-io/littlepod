@@ -70,7 +70,8 @@ def getActivity(days=14):
     sortedActivity.sort(reverse=True, key=lambda x: len(x[1]))
 
     activityList = []
-    activityList.append("First `-` is {}, `o` logged in, `O` made an advancement, `x` died, `X` died and made an advancement\n".format(today))
+    activityList.append("""First `-` is {} showing {} days
+`o` logged in, `O` made an advancement, `x` died, `X` died and made an advancement\n""".format(today, days))
 
     for each in sortedActivity:
 
@@ -87,9 +88,10 @@ def getActivity(days=14):
             else:
                 a += '-'
         activityList.append("`|{0}|{1}|`".format(each[0].ljust(16), a.ljust(days)))
-    
-    return "\n".join(activityList)
-
+    if activityList:    
+        return "\n".join(activityList)
+    else:
+        return "No player activity."
 
 if __name__ == "__main__":
     print(getActivity())
