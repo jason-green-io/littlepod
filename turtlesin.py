@@ -12,6 +12,7 @@ def getActivity(days=14):
     base = datetime.datetime.today()
     date_list = [base - datetime.timedelta(days=x) for x in range(0, days)]
     dateStr_list = [d.strftime("%Y-%m-%d") for d in date_list]
+    today = base.strftime("%Y-%m-%d")
 
     deathVerbs = ["was",
                  "hugged",
@@ -69,7 +70,7 @@ def getActivity(days=14):
     sortedActivity.sort(reverse=True, key=lambda x: len(x[1]))
 
     activityList = []
-    activityList.append("**Player Activity**\n\n`o` logged in, `O` made an advancement, `x` died, `X` died and made an advancement\n")
+    activityList.append("First `-` is {}, `o` logged in, `O` made an advancement, `x` died, `X` died and made an advancement\n".format(today))
 
     for each in sortedActivity:
 
