@@ -69,7 +69,7 @@ def getActivity(days=14):
     sortedActivity.sort(reverse=True, key=lambda x: len(x[1]))
 
     activityList = []
-    activityList.append("`o` logged in, `O` made an advancement, `x` died, `X` died and made an advancement\n")
+    activityList.append("**Player Activity**\n\n`o` logged in, `O` made an advancement, `x` died, `X` died and made an advancement\n")
 
     for each in sortedActivity:
 

@@ -12,13 +12,17 @@ import re
 import requests
 import sys
 import discord
-sys.path.append('/minecraft/discord.py')
 import showandtellraw
 import uuid
 import littlepod_utils
 import socket
+import turtlesin
 
-mcfolder = os.path.join(os.environ.get('DATAFOLDER', "/minecraft/data/"), "mc")
+
+
+datafolder = os.environ.get('DATAFOLDER', "/minecraft/data/")
+mcfolder = os.path.join(datafolder, "mc")
+
 URL = os.environ.get('SERVERURL', "https://localhost/")
 servername = os.environ.get('SERVERNAME', "Littlepod")
 updateRoles = os.environ.get("UPDATEROLES", False)
@@ -28,6 +32,7 @@ discordChannel = os.environ.get("DISCORDCHANNEL", "")
 discordPrivChannel = os.environ.get("DISCORDPRIVCHANNEL", "")
 discordToken = os.environ.get("DISCORDTOKEN", "")
 discordBannerChannel = os.environ.get("DISCORDBANNERCHANNEL", "")
+discordInfoChannel = os.environ.get("DISCORDINFOCHANNEL", "")
 
 serverFormat = "<blue^\<><green^{}><blue^\>>"
 playerFormat = "<blue^\<><white^{}><blue^\>>"
@@ -43,18 +48,7 @@ dimColors = {"575757": "overworld", "overworld": "575757", "3E1A19": "nether", "
 
 channelobject = discord.Object(id=discordChannel)
 privchannelobject = discord.Object(id=discordPrivChannel)
-
-overwrite = discord.PermissionOverwrite()
-overwrite.read_messages = True
-overwrite.send_messages = True
-overwrite.embed_links = True
-overwrite.attach_files = True
-overwrite.read_message_history = True
-overwrite.mention_everyone = True
-overwrite.external_emojis = True
-overwrite.add_reactions = True
-
-serverrestart = False
+infochannelobject = discord.Object(id=discordInfoChannel)
 
 client = discord.Client()
 
@@ -124,11 +118,20 @@ async def discordMain():
     
     
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
+    
+    info = open(datafolder + "/info.md", "r").read()
 
+    async for message in client.logs_from(infochannelobject, limit=200, after=None):
+        if message.author == client.user:
+            await client.delete_message(message)
+
+    activity = turtlesin.getActivity()
+
+    await client.send_message(infochannelobject, info + "\n" + activity)
+    '''
     allroles = [r for r in server.roles if len(r.name) == 32]
 
     allmembers = list(client.get_all_members())
-    '''
     for r in allroles:
         for m in allmembers:
             if r in m.roles:
@@ -244,7 +247,6 @@ async def discordMain():
 
         # print(playerList)
         await client.change_presence(game=discord.Game(name=topicLine)) 
-
 
 
 
