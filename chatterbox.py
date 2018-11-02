@@ -121,13 +121,23 @@ async def discordMain():
     
     info = open(datafolder + "/info.md", "r").read()
 
-    async for message in client.logs_from(infochannelobject, limit=200, after=None):
-        if message.author == client.user:
-            await client.delete_message(message)
-
     activity = turtlesin.getActivity()
+    
+    allMessages = [message async for message in client.logs_from(infochannelobject, limit=200, after=None) if message.author == client.user]
+    
+    infoFinal = info + "\n" + activity
 
-    await client.send_message(infochannelobject, info + "\n" + activity)
+    if not allMessages:
+        await client.send_message(infochannelobject, infoFinal)
+        
+    else:
+        keepMessage = allMessages.pop(0)
+        await client.edit_message(keepMessage, new_content=infoFinal)
+
+    for message in allMessages:
+        await client.delete_message(message)
+
+
     '''
     allroles = [r for r in server.roles if len(r.name) == 32]
 
