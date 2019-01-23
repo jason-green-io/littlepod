@@ -9,4 +9,4 @@ chmod 0700 /minecraft/.monitrc
 
 /usr/bin/monit
 
-/bin/bash
+tail -f /dev/null

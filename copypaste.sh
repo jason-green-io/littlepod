@@ -9,12 +9,12 @@ sleep 10
 
 echo $(date) "Syncing world to backup"
 
-rsync --rsh "ssh -i $RSYNCKEY" -av --inplace --delete $DATAFOLDER/mc/world $RSYNCDEST:$SERVERNAME
 restic backup $DATAFOLDER/mc/world
 sleep 10
 {
 echo "/save-on"
 sleep 1
 } | ncat localhost 7777
-
 echo $(date) "sync done"
+
+cut.py $SAVEMCA
