@@ -19,9 +19,10 @@ import socket
 import turtlesin
 
 
+logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
 datafolder = os.environ.get('DATAFOLDER', "/minecraft/data/")
-mcfolder = os.path.join(datafolder, "mc")
+serverType = os.environ.get('TYPE', "mc")
 
 URL = os.environ.get('SERVERURL', "https://localhost/")
 servername = os.environ.get('SERVERNAME', "Littlepod")
@@ -34,15 +35,27 @@ discordToken = os.environ.get("DISCORDTOKEN", "")
 discordBannerChannel = os.environ.get("DISCORDBANNERCHANNEL", "")
 discordInfoChannel = os.environ.get("DISCORDINFOCHANNEL", "")
 
-serverFormat = "<blue^\<><green^{}><blue^\>>"
-playerFormat = "<blue^\<><white^{}><blue^\>>"
-patronFormat = "<blue^\<><red^{}><blue^\>>"
+if not all(discordChannel, discordPrivChannel, discordToken, discordBannerChannel, discordInfoChannel):
+    logging.critical("Not all env variables are set")
+    sys.exit(1)
+
+
+serverFormat = "§9\<§a{}§9\>§r"
+playerFormat = "§9\<§f{}§9\>§r"
+patronFormat = "§9\<§c{}§9\>§r"
+
+mcTellraw = "tellraw {selector} {json}"
+bdsTellraw = 'tellraw {selector} {{"rawtext":{json}}}'
+
+if serverType == "mc":
+    tellrawCommand = mcTellraw
+elif serverType == "bds":
+    tellrawCommand = bdsTellraw
 
 if not discordToken:
     print("Discord token not set")
     sys.exit()
 
-logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
 dimColors = {"575757": "overworld", "overworld": "575757", "3E1A19": "nether", "nether": "3E1A19", "C2C688": "end", "end": "C2C688"}
 
@@ -82,7 +95,7 @@ def fromBraille( braille ):
 def telllinks( links ):
     for each in links:
         logging.info("Found link: %s", each)
-        littlepod_utils.send("/tellraw @a " + showandtellraw.tojson((serverFormat + " [_Link_|{}]").format(servername, each)))
+        littlepod_utils.send(tellrawCommand.format(selector="@a", json=showandtellraw.tojson((serverFormat + " [_Link_|{}]").format(servername, each))))
 
 
 def coordsmessage( reCoords, reDim ):
@@ -100,7 +113,7 @@ def tellcoords( reCoords, reDim ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     for each in reCoords:
         x, z = each
-        littlepod_utils.send("/tellraw @a " + showandtellraw.tojson(serverFormat.format(servername) + "[Map: _{dim} {x}, {z}_|{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL)))
+        littlepod_utils.send(tellrawCommand.format(selector="@a", json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dim} {x}, {z}_|{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL))))
 
 
 
@@ -367,18 +380,18 @@ def on_message(message):
 
 
         if message.author.bot:
-            nameFormat = '<blue^\<>{{<green^{}>~{}}}<blue^\>> '
+            nameFormat = '§9\<{{§a{}~{}}}§9\>§r '
             mcplayer, mcmessage = messagetext.split(" ", 1)
             messagetext = mcplayer.strip('`') + " " + mcmessage
         elif "patrons" in [a.name for a in message.author.roles]:
 
-            nameFormat = '<blue^\<>{{<red^{}>~{}}}<blue^\>> '
+            nameFormat = '§9\<{{§c{}~{}}}§9\>§r '
         else:
-            nameFormat = '<blue^\<>{{<white^{}>~{}}}<blue^\>> '
+            nameFormat = '§9\<{{§f{}~{}}}§9\>§r '
 
         #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
         tellrawText =  nameFormat.format(display_name.replace("_", "\_").replace("~",""), discordName.replace("_", "\_").replace("@","\@").replace("~",""))
-        finalline = '/tellraw @a ' + showandtellraw.tojson(tellrawText, noparse=messagetext)
+        finalline = tellrawCommand.format(selector="@a", json=showandtellraw.tojson(tellrawText, noparse=messagetext))
         logging.info(finalline)
 
         littlepod_utils.send(finalline)

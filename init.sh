@@ -8,5 +8,10 @@ rm -f $DATAFOLDER/state/*.pid
 chmod 0700 /minecraft/.monitrc
 
 /usr/bin/monit
+/usr/bin/monit unmonitor all
+
+for UNIT in $MONITMONITOR; do
+    /usr/bin/monit monitor $UNIT
+done
 
 tail -f /dev/null

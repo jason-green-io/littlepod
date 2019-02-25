@@ -53,7 +53,7 @@ def tojson( string, noparse="" ):
     jsontext = parse(string)
     if noparse:
         jsontext.append({"text": noparse })
-    return json.dumps( { "text" : "", "extra" : jsontext }, ensure_ascii=True )
+    return json.dumps( jsontext, ensure_ascii=True )
 
 
 def parse( string ):

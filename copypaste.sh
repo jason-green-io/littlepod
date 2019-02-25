@@ -17,4 +17,4 @@ sleep 1
 } | ncat localhost 7777
 echo $(date) "sync done"
 
-cut.py $SAVEMCA
+#cut.py $SAVEMCA
