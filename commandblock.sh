@@ -18,20 +18,30 @@
     }
     case $TYPE in
         bds)
+            if [[ ! -d $DATAFOLDER/bds ]]; then
+                echo $(date) "Creating folder for Minecraft world data"
+                mkdir $DATAFOLDER/bds
+
+            else
+                echo $(date) "Found Minecraft world folder"
+            fi
+
             if [[ ! -d /tmp/server_$MCVERSION ]]; then
                 echo $(date) "Downloading server version $MCVERSION"
                 curl -o /tmp/server_$MCVERSION.zip https://minecraft.azureedge.net/bin-linux/bedrock-server-$MCVERSION.zip
                 mkdir /tmp/server_$MCVERSION
-                unzip /tmp/server_$MCVERSION.zip -d /tmp/server_$MCVERSION
+                /usr/bin/unzip /tmp/server_$MCVERSION.zip -d /tmp/server_$MCVERSION
 
             fi
             cd /tmp/server_$MCVERSION
 
             for each in $DATAFOLDER/bds/*; do
+                [ -e "$each" ] || continue
                 echo $each
                 rm -r $(basename $each)
                 ln -s $each $(basename $each)
             done
+
             echo $(date) "Starting server version $MCVERSION"
 
             sed -i.bak -f <(commands) /tmp/server_$MCVERSION/server.properties
