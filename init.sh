@@ -9,6 +9,7 @@ chmod 0700 /minecraft/.monitrc
 
 /usr/bin/monit
 /usr/bin/monit unmonitor all
+/usr/bin/monit monitor $HOSTNAME
 
 for UNIT in $MONITMONITOR; do
     /usr/bin/monit monitor $UNIT

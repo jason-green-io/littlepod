@@ -23,6 +23,7 @@ logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
 datafolder = os.environ.get('DATAFOLDER', "/minecraft/data/")
 serverType = os.environ.get('TYPE', "mc")
+serverVersion = os.environ.get('MCVERSION', "Unknown")
 
 URL = os.environ.get('SERVERURL', "https://localhost/")
 servername = os.environ.get('SERVERNAME', "Littlepod")
@@ -167,114 +168,113 @@ async def discordMain():
                     await client.change_nickname(m, m.name + toBraille(r.name))
     '''
     while True:
-        discordWhitelistedPlayers = {}
-        discordWhitelistedPlayersIGN = {}
+        if serverType == "mc":
+            discordWhitelistedPlayers = {}
+            discordWhitelistedPlayersIGN = {}
 
-        mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
-        mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
+            mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
+            mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
 
-        for member in server.members:
-            if "whitelisted" in [role.name for role in member.roles]:
-                brailleUUID = member.nick[-16:]
-                #print(member.nick, brailleUUID)
-                memberUUID = fromBraille(brailleUUID)
-                #print(memberUUID)
-
-
-                discordWhitelistedPlayers[memberUUID] =  member.id
-                discordWhitelistedPlayersIGN[mcWhitelistedPlayersUUID.get(memberUUID, "").lower()] = member
-        print(discordWhitelistedPlayersIGN["greener_ca"])
-
-        mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
-        mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
-
-        add = set(discordWhitelistedPlayers) - set(mcWhitelistedPlayersUUID)
-        remove = set(mcWhitelistedPlayersUUID) - set(discordWhitelistedPlayers)
-
-        playerStatus = littlepod_utils.getPlayerStatus(whitelist=discordWhitelistedPlayers)
-        if updateRoles:
-
-            for each in playerStatus["expired"]:
-                logging.info("Expired %s %s", each, mcWhitelistedPlayersUUID.get(each,""))
+            for member in server.members:
+                if "whitelisted" in [role.name for role in member.roles]:
+                    brailleUUID = member.nick[-16:]
+                    #print(member.nick, brailleUUID)
+                    memberUUID = fromBraille(brailleUUID)
+                    #print(memberUUID)
 
 
-        for each in add:
-            addIGN = littlepod_utils.getNameFromAPI(each)
-            logging.info("Adding %s from the whitelist", addIGN)
-            littlepod_utils.send("/whitelist add {}".format(addIGN))
+                    discordWhitelistedPlayers[memberUUID] =  member.id
+                    discordWhitelistedPlayersIGN[mcWhitelistedPlayersUUID.get(memberUUID, "").lower()] = member
+
+            mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
+            mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
+
+            add = set(discordWhitelistedPlayers) - set(mcWhitelistedPlayersUUID)
+            remove = set(mcWhitelistedPlayersUUID) - set(discordWhitelistedPlayers)
+
+            playerStatus = littlepod_utils.getPlayerStatus(whitelist=discordWhitelistedPlayers)
+            if updateRoles:
+
+                for each in playerStatus["expired"]:
+                    logging.info("Expired %s %s", each, mcWhitelistedPlayersUUID.get(each,""))
 
 
-        for each in remove:
-            removeIGN = mcWhitelistedPlayersUUID.get(each,"")
-            logging.info("Removing %s from the whitelist", removeIGN)
-            littlepod_utils.send("/whitelist remove {}".format(removeIGN))
-
-        players = littlepod_utils.getOnlinePlayers()
-        version = littlepod_utils.getVersion()
-
-        bannerChannel = client.get_channel(discordBannerChannel)
-        try:
-            with open(os.path.join(webfolder, "papyri.json"), "r") as bannerFile:
-                papyriBanners = {"{}, {}".format(b["x"], b["z"]): b for b in json.load(bannerFile)}
-        except:
-            papyriBanners = {}
-
-        # print(papyriBanners)
-
-        allChannelBanners = {message async for message in client.logs_from(bannerChannel, limit=200, after=None) if message.author == client.user}
-
-        # print(channelBanners)
-        channelBanners = {}
-        for each in allChannelBanners:
-            if each.embeds:
-                embed = each.embeds[0]
-                #print(embed)
-
-                match = re.search("\[([0-9 \-,]*)\]", embed["description"])
-                coords = match.group(1)
-                channelBanners.update({coords: each})
-
-        # print("channel: ", channelBanners)
-
-        dupes = allChannelBanners - set(channelBanners.values())
-
-        addBanners = set(papyriBanners) - set(channelBanners)
-        removeBanners = set(channelBanners) - set(papyriBanners)
-
-        def IGNtoMention( match ):
-            return discordWhitelistedPlayersIGN[match.group(1).lower()].mention
-
-        for each in addBanners:
-            logging.info("adding banner %s", each)
-            b = papyriBanners[each]
-            title = b["title"]
-            title = re.sub("@([a-zA-Z0-9_]*)", IGNtoMention, title)
-            description = "{} {} [{}, {}]({}/{})".format(str(emojis[b["color"] + "banner"]), title, b["x"], b["z"], URL, b["maplink"])
-            colour = int(dimColors[b["dim"]], 16)
-            embed = discord.Embed(description=description, colour=colour)
-            logging.info(description)
-            await client.send_message(bannerChannel, embed=embed)
-
-        for each in removeBanners:
-            logging.info("removing banner %s", each)
-            await client.delete_message(channelBanners[each])
-
-        for each in dupes:
-            logging.info("removing dup banner %s", each.embeds[0]["description"])
-            await client.delete_message(each)
+            for each in add:
+                addIGN = littlepod_utils.getNameFromAPI(each)
+                logging.info("Adding %s from the whitelist", addIGN)
+                littlepod_utils.send("/whitelist add {}".format(addIGN))
 
 
-        playerList = " ".join(players) if players else ""
+            for each in remove:
+                removeIGN = mcWhitelistedPlayersUUID.get(each,"")
+                logging.info("Removing %s from the whitelist", removeIGN)
+                littlepod_utils.send("/whitelist remove {}".format(removeIGN))
 
-        topicLine = "{} w/ {}".format(version, playerList)
+            bannerChannel = client.get_channel(discordBannerChannel)
+            try:
+                with open(os.path.join(webfolder, "papyri.json"), "r") as bannerFile:
+                    papyriBanners = {"{}, {}".format(b["x"], b["z"]): b for b in json.load(bannerFile)}
+            except:
+                papyriBanners = {}
+
+            # print(papyriBanners)
+
+            allChannelBanners = {message async for message in client.logs_from(bannerChannel, limit=200, after=None) if message.author == client.user}
+
+            # print(channelBanners)
+            channelBanners = {}
+            for each in allChannelBanners:
+                if each.embeds:
+                    embed = each.embeds[0]
+                    #print(embed)
+
+                    match = re.search("\[([0-9 \-,]*)\]", embed["description"])
+                    coords = match.group(1)
+                    channelBanners.update({coords: each})
+
+            # print("channel: ", channelBanners)
+
+            dupes = allChannelBanners - set(channelBanners.values())
+
+            addBanners = set(papyriBanners) - set(channelBanners)
+            removeBanners = set(channelBanners) - set(papyriBanners)
+
+            def IGNtoMention( match ):
+                return discordWhitelistedPlayersIGN[match.group(1).lower()].mention
+
+            for each in addBanners:
+                logging.info("adding banner %s", each)
+                b = papyriBanners[each]
+                title = b["title"]
+                title = re.sub("@([a-zA-Z0-9_]*)", IGNtoMention, title)
+                description = "{} {} [{}, {}]({}/{})".format(str(emojis[b["color"] + "banner"]), title, b["x"], b["z"], URL, b["maplink"])
+                colour = int(dimColors[b["dim"]], 16)
+                embed = discord.Embed(description=description, colour=colour)
+                logging.info(description)
+                await client.send_message(bannerChannel, embed=embed)
+
+            for each in removeBanners:
+                logging.info("removing banner %s", each)
+                await client.delete_message(channelBanners[each])
+
+            for each in dupes:
+                logging.info("removing dup banner %s", each.embeds[0]["description"])
+                await client.delete_message(each)
+
+        versionDict = {"mc": "mc:je", "bds": "mc"}
+        version = versionDict[serverType] + " " + serverVersion
+
+        if serverType == "mc":
+            players = littlepod_utils.getOnlinePlayers()
+            playerList = " ".join(players) if players else ""
+            topicLine = "{} w/ {}".format(version, playerList)
+        elif serverType == "bds":
+            topicLine = version
+
+
 
         # print(playerList)
         await client.change_presence(game=discord.Game(name=topicLine))
-
-
-
-
-
 
 
         logging.info("waiting for 60 seconds")
