@@ -467,19 +467,21 @@ def eventLogged(data):
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     yield from client.send_message(channelobject, "▶️ `{}` joined the game".format(player))
-
+    
     ip = data[2].split(':')[0]
+    
+    if ip:
 
-    message = "joined"
-    try:
-        hostaddr = socket.gethostbyaddr( ip )[0]
-    except:
-        hostaddr = "none"
-    ipinfo = getgeo( ip )
-    cc = ipinfo.get("countryCode", "XX")
-    ipstat= u" ".join( [ip, hostaddr, cc, str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
+        message = "joined"
+        try:
+            hostaddr = socket.gethostbyaddr( ip )[0]
+        except:
+            hostaddr = "none"
+        ipinfo = getgeo( ip )
+        cc = ipinfo.get("countryCode", "XX")
+        ipstat= u" ".join( [ip, hostaddr, cc, str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
 
-    yield from client.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
+        yield from client.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
 
 @asyncio.coroutine
 def eventWhitelistAdd(data):
@@ -605,6 +607,7 @@ def minecraftMain():
 
                 for line in lines:
                     line = line.strip()
+                    logging.info(repr(line))
                     eventData = littlepod_utils.genEvent(line)
 
                     if eventData:
@@ -617,7 +620,7 @@ def minecraftMain():
                         if event == "chat":
                             yield from eventChat(data)
 
-                        if event == "logged":
+                        if event in ["logged", "loggedbds"]:
                             yield from eventLogged(data)
 
                         if event == "ip":
@@ -638,7 +641,7 @@ def minecraftMain():
                         elif event.startswith("whitelistRemove"):
                             yield from eventWhitelistRemove(data)
 
-                        if event in ["left", "lost"]:
+                        if event in ["left", "lost", "leftbds"]:
                             yield from eventLeft(data)
 
 

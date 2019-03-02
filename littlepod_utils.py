@@ -97,7 +97,7 @@ def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=N
     return content
 
 def genEvent(line):
-	parseDict = OrderedDict([("deathFloorLava", "^\[(.*)\] \[Server thread/INFO\]: (.*) (discovered floor was lava)$"),
+    parseDict = OrderedDict([("deathFloorLava", "^\[(.*)\] \[Server thread/INFO\]: (.*) (discovered floor was lava)$"),
                                 ("deathSquashAnvil", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was squashed by a falling anvil)$"),
                                 ("deathSquashBlock", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was squashed by a falling block)$"),
                                 ("deathFlames", "^\[(.*)\] \[Server thread/INFO\]: (.*) (went up in flames)$"),
@@ -146,7 +146,9 @@ def genEvent(line):
                                 ("deathEnemyHurt", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was killed while trying to hurt )(.*)$"),
                                 ("deathEnemyPummeled", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was pummeled by )(.*)$"),
                                 ("joined", "^\[(.*)\] \[Server thread/INFO\]: (.*) joined the game$"),
+                                ("loggedbds", "^\[(.*?) INFO\] Player connected: (.*?), xuid:(.*?)$"),
                                 ("left", "^\[(.*)\] \[Server thread/INFO\]: (.*) left the game$"),
+                                ("leftbds",   "^\[(.*?) INFO\] Player disconnected: (.*?), xuid:(.*?)$"),
                                 ("lost", "^\[(.*)\] \[Server thread/INFO\]: (.*) lost.*"),
                                 ("logged", "^\[(.*)\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$"),
                                 ("ip", "^\[(.*)\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$"),
@@ -160,10 +162,10 @@ def genEvent(line):
                                 ("lag", "^\[(.*)\] \[Server thread/WARN\]: Can't keep up! Did the system time change, or is the server overloaded\? Running (\d*)ms behind, skipping (\d*) tick\(s\)$")])
 
 
-	for pattern in parseDict.items():
-		match = re.match(pattern[1], line)
-		if match:
-			return pattern[0], match.groups()
+    for pattern in parseDict.items():
+        match = re.match(pattern[1], line)
+        if match:
+            return pattern[0], match.groups()
 
 def tweet( string ):
     tweetmessage = urllib.parse.urlencode({"status": string})
