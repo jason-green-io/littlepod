@@ -26,10 +26,13 @@ function who ()
 
 function update ()
 {
-    MCVERSION=$1
+    export MCVERSION=$1
     /usr/bin/envsubst '$WEBDATA $DATAFOLDER $GMAILPASSWORD $GMAILUSER $MCVERSION' < /minecraft/monitrc.envsubst > /minecraft/.monitrc
-    monit reload
+    monit quit
+
     sleep 2 
+    monit
+    sleep 2
     monit restart commandblock
 }
 
