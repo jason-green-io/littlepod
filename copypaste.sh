@@ -12,7 +12,7 @@ case $TYPE in
 
         echo $(date) "Syncing world to backup"
 
-        restic --no-cache backup $DATAFOLDER/mc/world
+        rsync -aP $DATAFOLDER/mc/world $DATAFOLDER/backup
         sleep 10
         {
         echo "/save-on"
@@ -29,7 +29,7 @@ case $TYPE in
 
         echo $(date) "Syncing world to backup"
 
-        restic --no-cache backup $DATAFOLDER/bds/worlds
+        rsync -aP $DATAFOLDER/mc/world $DATAFOLDER/backup
         sleep 10
         {
         echo "save resume"
@@ -37,5 +37,5 @@ case $TYPE in
         } | ncat localhost 7777
 
     ;;
-echo $(date) "Backup done"
 esac
+echo $(date) "Backup done"

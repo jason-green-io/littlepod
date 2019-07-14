@@ -314,7 +314,8 @@ def configbook(uuid, bookname):
 
         for each in items:
             if "shulker_box" in each["id"]:
-                newItems += each["tag"]["BlockEntityTag"]["Items"]
+                if each.get("tag", {}).get("BlockEntityTag", {}).get("Items", ""):
+                    newItems += each["tag"]["BlockEntityTag"]["Items"]
             else:
                 newItems.append(each)
         return newItems

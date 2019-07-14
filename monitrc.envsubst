@@ -30,7 +30,7 @@ set httpd port 2812 and
      use address localhost  # only accept connection from localhost
      allow localhost        # allow localhost to connect to the server and
 
-check process commandblock MATCHING "/usr/bin/java -jar /tmp/server_|bedrock_server"
+check process commandblock MATCHING "/usr/bin/java -jar /tmp/server|bedrock_server"
     start program = "/minecraft/commandblock.sh $MCVERSION"
     stop program = "/usr/bin/pkill commandblock"
     group mc
@@ -58,6 +58,13 @@ check program copypaste
     every "0 * * * *"
     if status != 0 then alert
     group mc
+
+check program restic
+    with path "/bin/bash -c 'restic --no-cache backup $DATAFOLDER/backup'"
+    every "30 * * * *"
+    if status != 0 then alert
+    group mc
+    group bds
 
 check program papyri
     with path "/bin/bash -c '/papyri/papyri.py --mcdata $DATAFOLDER/mc/world --output $WEBDATA --banners 2>&1 | tee -a $DATAFOLDER/logs/papyri.py.log'" timeout 1200 seconds

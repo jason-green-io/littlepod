@@ -1,56 +1,66 @@
-#!/usr/bin/python3
-"""
-dimension@x0,y0,x1,y1+x0,y0,x1,y1 dimension@x0,y0,x1,x1
-"""
+import sys
 import os
 import glob
-import random
+import datetime
+import littlepod_utils
 import logging
-import argparse
-import sys
 
-dims = sys.argv[1:]
-print(dims)
-if not dims:
-    logging.warning("Nothing to do")
-    sys.exit(0)
-regionDict = {"0": "region", "1": "DIM1/region", "-1": "DIM-1/region"}
+logging.basicConfig(level=logging.DEBUG)
 
-for dimRanges in dims:
-    dim, ranges = dimRanges.split("@")
-    safeRanges = ranges.split("+")
-    safeRanges = [r.split(",") for r in safeRanges]
-    logging.warning("Saving regions %s", safeRanges)
+dataFolder = os.environ["DATAFOLDER"]
 
-    region = os.path.join(os.environ["DATAFOLDER"], "mc/world", regionDict[dim])
+worldFolder  = os.path.join(dataFolder, "mc", "world")
 
-    mcaFiles = glob.glob(region + "/*.mca")
-    safeFiles = []
+files = {a: datetime.datetime.fromtimestamp(os.stat(a).st_mtime) for a in glob.glob(os.path.join(worldFolder, "*/*.mca"))}
 
-    for each in safeRanges:
+'''
 
-        safeFiles += ["{}/r.{}.{}.mca".format(region, x, z) for x in range(int(each[0]), int(each[2]) + 1) for z in range(int(each[1]), int(each[3]) + 1) ]
+- something:
+   - 0,20,0
+   - -1,30,0
+- bla:
+    - 70,45
 
-    deletable = []
-    for f in mcaFiles:
-        if f in safeFiles:
-            pass
-        else:
-            deletable.append(f)
-        
-    numFiles = len(deletable)
-    numToDelete = numFiles * 0.75
+- yup:
+    - 60,87
+'''
 
-    numToDelete = int(numToDelete) if numToDelete >= 1 else 1
+buildRegions = littlepod_utils.configbook("6060debe-836f-4a45-95ab-4311a53972f7", "fade")
+#buildRegions = littlepod_utils.configbook("967cae4f-c09e-4ac0-aaff-bfc9b4e34778", "fade")
+regionDict = {"0": "region", "-1": "DIM-1", "1": "DIM1"}
 
 
-    if deletable:
-        logging.warning("Out of %s, randomly deleting %s", numFiles, numToDelete)
-        deleteFiles = random.sample(deletable, numToDelete)
+buildRegionFiles = set()
+expiredRegionFiles = set()
+
+if buildRegions:
+
+    for permit in buildRegions:
+        for name, drList in permit.items():
+            logging.info("%s %s", name, drList)
+            for dr in drList:
+                d, x, z = dr.split(',')
+                buildRegionFiles.add("{}/{}/r.{}.{}.mca".format(worldFolder, regionDict[d], x, z))
+
+for f in files.items():
+    if f[1] <= datetime.datetime.now() - datetime.timedelta(days=64):
+        expiredRegionFiles.add(f[0])
 
 
-        for each in deleteFiles:
-            logging.warning("Deleting file %s", each)
-            os.remove(each)
-    else:
-        logging.warning("Nothing to delete")
+logging.info("Build permit regions %s", len(buildRegionFiles))
+
+#for a in buildRegionFiles:
+#    logging.info(a)
+
+logging.info("Expired regions %s", len(expiredRegionFiles))
+
+#for a in expiredRegionFiles:
+#    logging.info(a)
+
+deleteRegionFiles = expiredRegionFiles - buildRegionFiles
+
+
+logging.info("Deletable regions %s", len(deleteRegionFiles))
+
+#for a in deleteRegionFiles:
+#    logging.info(a)

@@ -6,7 +6,6 @@
     /usr/bin/flock -n 9 || exit 1
     trap "kill 0" EXIT
 
-    MCVERSION=$1
     function commands () {
         echo "$(printenv | grep MC_ | cut -d "_" -f2-)" | while read -r PROP; do
             if [ ! -z "$PROP" ]; then
@@ -75,15 +74,15 @@
 
 
 
-            if [[ ! -f /tmp/server_$MCVERSION.jar ]]; then
+            if [[ ! -f "/tmp/server_$MCVERSION.jar" ]]; then
                 echo $(date) "Downloading server version $MCVERSION"
-                curl -o /tmp/server_$MCVERSION.jar $(curl $(curl https://launchermeta.mojang.com/mc/game/version_manifest.json | jq --arg ver $MCVERSION -r '.versions[] | select(.id == $ver).url') | jq -r '.downloads.server.url')
+                curl -o "/tmp/server_$MCVERSION.jar" $(curl $(curl https://launchermeta.mojang.com/mc/game/version_manifest.json | jq --arg ver "$MCVERSION" -r '.versions[] | select(.id == $ver).url') | jq -r '.downloads.server.url')
             fi
 
             echo $(date) "Starting server version $MCVERSION"
 
             coproc ncat -lkp 7777
-            /usr/bin/java -jar /tmp/server_$MCVERSION.jar nogui <&${COPROC[0]} >&${COPROC[1]} 2>&1
+            /usr/bin/java -jar "/tmp/server_$MCVERSION.jar" nogui <&${COPROC[0]} >&${COPROC[1]} 2>&1
             echo $(date) "Server has stopped"
 
         ;;
