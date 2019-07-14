@@ -67,7 +67,7 @@ check program restic
     group bds
 
 check program papyri
-    with path "/bin/bash -c '/papyri/papyri.py --mcdata $DATAFOLDER/mc/world --output $WEBDATA --banners 2>&1 | tee -a $DATAFOLDER/logs/papyri.py.log'" timeout 1200 seconds
+    with path "/bin/bash -c '/papyri/papyri.py --mcdata $DATAFOLDER/backup/world --output $WEBDATA 2>&1 | tee -a $DATAFOLDER/logs/papyri.py.log'" timeout 1200 seconds
     every "5,15,25,35,45,55 * * * *" 
     if status != 0 then alert
     group mc
