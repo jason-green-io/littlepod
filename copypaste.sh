@@ -29,7 +29,7 @@ case $TYPE in
 
         echo $(date) "Syncing world to backup"
 
-        rsync -aP $DATAFOLDER/mc/world $DATAFOLDER/backup
+        rsync -aP $DATAFOLDER/bds/worlds $DATAFOLDER/backup
         rm $DATAFOLDER/backup/world/db/LOCK
         sleep 10
         {
