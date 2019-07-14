@@ -45,6 +45,7 @@ check process chatterbox pidfile $DATAFOLDER/state/chatterbox.py.pid
     start program = "/minecraft/pywrap.sh chatterbox.py start"
     stop program = "/minecraft/pywrap.sh chatterbox.py stop"
     group mc
+    group bds
 
 check program restart
     with path "/bin/bash -c 'echo "say Server restarting in 10s" | ncat localhost 7777; sleep 10; echo stop | ncat localhost 7777 2>&1 | tee -a $DATAFOLDER/logs/restart.log'"
@@ -55,19 +56,21 @@ check program restart
 
 check program copypaste
     with path "/bin/bash -c '/minecraft/copypaste.sh  2>&1 | tee -a $DATAFOLDER/logs/copypaste.sh.log'"
-    every "0 * * * *"
+    every "0,20,40 * * * *"
     if status != 0 then alert
     group mc
+    group bds
 
 check program restic
     with path "/bin/bash -c 'restic --no-cache backup $DATAFOLDER/backup'"
-    every "30 * * * *"
+    every "10 * * * *"
     if status != 0 then alert
     group mc
     group bds
 
 check program papyri
-    with path "/bin/bash -c '/papyri/papyri.py --mcdata $DATAFOLDER/backup/world --output $WEBDATA 2>&1 | tee -a $DATAFOLDER/logs/papyri.py.log'" timeout 1200 seconds
-    every "5,15,25,35,45,55 * * * *" 
+    with path "/bin/bash -c 'cd /papyri; ./papyri.py --world $DATAFOLDER/backup/world --output $WEBDATA 2>&1 | tee -a $DATAFOLDER/logs/papyri.py.log'" timeout 1200 seconds
+    every "5,25,45 * * * *" 
     if status != 0 then alert
     group mc
+    group bds
