@@ -5,12 +5,7 @@ ENV    DEBIAN_FRONTEND noninteractive
 MAINTAINER Jason Green <jason@green.io>
 
 RUN    apt-get --yes update; \
-       apt-get --yes install software-properties-common; \ 
-       apt-add-repository --yes ppa:webupd8team/java; \
-       apt-get --yes update; \
-       echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections  && \
-       echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections  && \
-       apt-get --no-install-recommends --yes install less unzip restic jq curl oracle-java8-installer libvips gettext-base nmap locales monit python3-pip libffi-dev sudo wget software-properties-common libxft-dev libfreetype6-dev tmux man git build-essential vim htop rsync; \
+       apt-get --no-install-recommends --yes install less unzip restic jq curl openjdk libvips gettext-base nmap locales monit python3-pip libffi-dev sudo wget software-properties-common libxft-dev libfreetype6-dev tmux man git build-essential vim htop rsync; \
        apt-get clean
 
 RUN    pip3 install setuptools; pip3 install  schedule nbt oauth2 watchdog requests python-daemon discord.py pyvips Pillow
