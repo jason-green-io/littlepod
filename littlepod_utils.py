@@ -226,7 +226,7 @@ def getWhitelistByIGN():
 def getNameFromAPI(uuid):
     return requests.get('https://api.mojang.com/user/profiles/{}/names'.format(uuid.replace('-', ''))).json()[-1].get("name", "")
 
-def getPlayerStatus(whitelist=getWhitelist(), usercache=getUserCache()):
+def getPlayerStatus(whitelist, usercache):
     expired = []
     active = []
     for each in sorted(usercache, key=usercache.get):

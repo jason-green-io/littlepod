@@ -191,8 +191,8 @@ async def discordMain():
 
             add = set(discordWhitelistedPlayers) - set(mcWhitelistedPlayersUUID)
             remove = set(mcWhitelistedPlayersUUID) - set(discordWhitelistedPlayers)
-
-            playerStatus = littlepod_utils.getPlayerStatus(whitelist=discordWhitelistedPlayers)
+            usercache = littlepod_utils.getUserCache()
+            playerStatus = littlepod_utils.getPlayerStatus(discordWhitelistedPlayers, usercache)
             if updateRoles:
 
                 for each in playerStatus["expired"]:
@@ -467,9 +467,9 @@ def eventLogged(data):
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     yield from client.send_message(channelobject, "▶️ `{}` joined the game".format(player))
-    
+
     ip = data[2].split(':')[0]
-    
+
     if ip:
 
         message = "joined"
