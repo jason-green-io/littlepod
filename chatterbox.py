@@ -296,11 +296,9 @@ def on_member_update(before, after):
         vanillabean.send("/whitelist add {}".format(player))
 '''
 
-@client.async_event
 def on_status(member, old_game, old_status):
     logging.info("%s %s %s", old_status, member.name, member.status)
 
-@client.async_event
 def on_message(message):
     server =  client.get_server("140194383118073856")
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
@@ -402,7 +400,6 @@ def on_message(message):
 
 
 
-@client.async_event
 def on_ready():
     logging.info('Logged in as %s %s', client.user.name, client.user.id)
     global server
