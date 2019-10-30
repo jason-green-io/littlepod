@@ -56,21 +56,28 @@ check program restart
 
 check program copypaste
     with path "/bin/bash -c '/minecraft/copypaste.sh  2>&1 | tee -a $DATAFOLDER/logs/copypaste.sh.log'"
-    every "0,20,40 * * * *"
+    every "55,15,35 * * * *"
     if status != 0 then alert
     group mc
     group bds
 
-check program restic
-    with path "/bin/bash -c 'restic --no-cache backup $DATAFOLDER/backup'"
-    every "10 * * * *"
+# check program restic
+#     with path "/bin/bash -c 'restic --no-cache backup $DATAFOLDER/backup'"
+#     every "0 * * * *"
+#     if status != 0 then alert
+#     group mc
+#     group bds
+
+check program rsync
+    with path "/bin/bash -c 'sshpass -e rsync -aP -e "ssh -o StrictHostKeyChecking=no" $DATAFOLDER/backup $RSYNCNETUSERHOST:$SERVERNAME'"
+    every "0 * * * *"
     if status != 0 then alert
     group mc
     group bds
 
 check program papyri
     with path "/bin/bash -c 'cd /papyri; ./papyri.py --world $DATAFOLDER/backup/world --output $WEBDATA 2>&1 | tee -a $DATAFOLDER/logs/papyri.py.log'" timeout 1200 seconds
-    every "5,25,45 * * * *" 
+    every "0,20,40 * * * *" 
     if status != 0 then alert
     group mc
     group bds
