@@ -5,7 +5,7 @@ ENV    DEBIAN_FRONTEND noninteractive
 MAINTAINER Jason Green <jason@green.io>
 
 RUN    apt-get --yes update; \
-       apt-get --no-install-recommends --yes install less unzip restic jq curl default-jre gettext-base nmap locales monit python3-pip sudo wget tmux man git vim htop; \
+       apt-get --no-install-recommends --yes install less unzip rsync sshpass ssh jq curl default-jre gettext-base nmap locales monit python3-pip sudo wget tmux man git vim htop; \
        apt-get clean
 
 RUN    pip3 install setuptools wheel; pip3 install schedule nbt oauth2 watchdog requests python-daemon discord.py Pillow
