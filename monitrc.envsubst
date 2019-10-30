@@ -69,7 +69,7 @@ check program copypaste
 #     group bds
 
 check program rsync
-    with path "/bin/bash -c 'sshpass -e rsync -aP -e "ssh -o StrictHostKeyChecking=no" $DATAFOLDER/backup $RSYNCNETUSERHOST:$SERVERNAME'"
+    with path "/bin/bash -c 'sshpass -e rsync -aP -e "ssh -o StrictHostKeyChecking=no" $DATAFOLDER/backup/ $RSYNCNETUSERHOST:$SERVERNAME'"
     every "0 * * * *"
     if status != 0 then alert
     group mc
