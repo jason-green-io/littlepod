@@ -1,8 +1,6 @@
 #!/usr/bin/python3 -u
 import logging
 import json
-import sqlite3
-import asyncio
 import os
 import codecs
 import stat
@@ -12,10 +10,10 @@ import re
 import requests
 import sys
 import discord
+from discord.ext import tasks, commands
 import showandtellraw
 import uuid
 import littlepod_utils
-import socket
 import turtlesin
 
 
@@ -30,11 +28,11 @@ servername = os.environ.get('SERVERNAME', "Littlepod")
 updateRoles = os.environ.get("UPDATEROLES", False)
 webfolder = os.environ.get('WEBDATA', "/minecraft/shared/web/www/Littlepod")
 
-discordChannel = os.environ.get("DISCORDCHANNEL", "")
-discordPrivChannel = os.environ.get("DISCORDPRIVCHANNEL", "")
+discordChannel = int(os.environ.get("DISCORDCHANNEL", ""))
+discordPrivChannel = int(os.environ.get("DISCORDPRIVCHANNEL", ""))
 discordToken = os.environ.get("DISCORDTOKEN", "")
-discordBannerChannel = os.environ.get("DISCORDBANNERCHANNEL", "")
-discordInfoChannel = os.environ.get("DISCORDINFOCHANNEL", "")
+discordBannerChannel = int(os.environ.get("DISCORDBANNERCHANNEL", ""))
+discordInfoChannel = int(os.environ.get("DISCORDINFOCHANNEL", ""))
 
 if not all([discordChannel, discordPrivChannel, discordToken, discordBannerChannel, discordInfoChannel]):
     logging.critical("Not all env variables are set")
@@ -60,24 +58,16 @@ if not discordToken:
 
 dimColors = {"575757": "overworld", "overworld": "575757", "3E1A19": "nether", "nether": "3E1A19", "C2C688": "end", "end": "C2C688"}
 
+worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
 channelobject = discord.Object(id=discordChannel)
 privchannelobject = discord.Object(id=discordPrivChannel)
-infochannelobject = discord.Object(id=discordInfoChannel)
 
-client = discord.Client()
+bot = commands.Bot(command_prefix='$')
 
 brailleOrds = [chr(58)] + [chr(x) for x in range(10241, 10241 + 255)]
 
 emojis = []
 currentPlayers = []
-
-def custom_exception_handler(loop, context):
-    # first, handle with default handler
-    loop.default_exception_handler(context)
-    exception = context.get('exception')
-    logging.info("Exception happened: %s", context)
-    loop.stop()
-
 
 def toBraille( inputuuid ):
     uuidBytes = uuid.UUID("{{{}}}".format(inputuuid))
@@ -116,58 +106,57 @@ def tellcoords( reCoords, reDim ):
         x, z = each
         littlepod_utils.send(tellrawCommand.format(selector="@a", json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dim} {x}, {z}_|{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL))))
 
+class mainLoop(commands.Cog):
+    def __init__(self, bot):
+        logging.info("Init main loop")
+        self.server =  bot.get_guild(140194383118073856)
+        self.main.start()
+        self.emojis = {e.name: e for e in bot.emojis}
+        self.bot = bot
+        self.infochannelobject = bot.get_channel(discordInfoChannel)
 
 
-async def discordMain():
+    def cog_unload(self):
+        self.main.cancel()
+
+    @tasks.loop(seconds=60)
+    async def main(self):
+
+        logging.info("Updating topic")
+        info = open(datafolder + "/info.md", "r").read()
+
+        activity = turtlesin.getActivity()
+
+        allMessages = [message async for message in self.infochannelobject.history( limit=200, after=None) if message.author == self.bot.user]
+
+        infoFinal = info + "\n" + activity
+
+        if not allMessages:
+            await infochannelobject.send(infoFinal)
+
+        else:
+            keepMessage = allMessages.pop(0)
+            await keepMessage.edit(new_content=infoFinal)
+
+            for message in allMessages:
+                await keepMessage.delete()
 
 
-    await client.wait_until_ready()
+        '''
+            allroles = [r for r in server.roles if len(r.name) == 32]
 
-    global emojis
-    global currentPlayers
-
-    server =  client.get_server("140194383118073856")
-    logging.info("Updating topic")
-    emojis = {e.name: e for e in client.get_all_emojis()}
-
-
-    worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
-
-    info = open(datafolder + "/info.md", "r").read()
-
-    activity = turtlesin.getActivity()
-
-    allMessages = [message async for message in client.logs_from(infochannelobject, limit=200, after=None) if message.author == client.user]
-
-    infoFinal = info + "\n" + activity
-
-    if not allMessages:
-        await client.send_message(infochannelobject, infoFinal)
-
-    else:
-        keepMessage = allMessages.pop(0)
-        await client.edit_message(keepMessage, new_content=infoFinal)
-
-    for message in allMessages:
-        await client.delete_message(message)
-
-
-    '''
-    allroles = [r for r in server.roles if len(r.name) == 32]
-
-    allmembers = list(client.get_all_members())
-    for r in allroles:
-        for m in allmembers:
-            if r in m.roles:
-                if m.nick:
+            allmembers = list(bot.get_all_members())
+            for r in allroles:
+                for m in allmembers:
+                    if r in m.roles:
+                    if m.nick:
                     if len(m.nick) < 17:
-                        print(m.nick + toBraille(r.name))
-                        await client.change_nickname(m, m.nick + toBraille(r.name))
-                elif len(m.name) < 17:
-                    print(m.name + toBraille(r.name))
-                    await client.change_nickname(m, m.name + toBraille(r.name))
-    '''
-    while True:
+            print(m.nick + toBraille(r.name))
+            await bot.change_nickname(m, m.nick + toBraille(r.name))
+            elif len(m.name) < 17:
+        print(m.name + toBraille(r.name))
+        await bot.change_nickname(m, m.name + toBraille(r.name))
+        '''
         if serverType == "mc":
             discordWhitelistedPlayers = {}
             discordWhitelistedPlayersIGN = {}
@@ -175,28 +164,28 @@ async def discordMain():
             mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
             mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
 
-            for member in server.members:
-                if "whitelisted" in [role.name for role in member.roles]:
-                    brailleUUID = member.nick[-16:]
-                    #print(member.nick, brailleUUID)
-                    memberUUID = fromBraille(brailleUUID)
-                    #print(memberUUID)
+        for member in self.server.members:
+            if "whitelisted" in [role.name for role in member.roles]:
+                brailleUUID = member.nick[-16:]
+                #print(member.nick, brailleUUID)
+                memberUUID = fromBraille(brailleUUID)
+                #print(memberUUID)
 
 
-                    discordWhitelistedPlayers[memberUUID] =  member.id
-                    discordWhitelistedPlayersIGN[mcWhitelistedPlayersUUID.get(memberUUID, "").lower()] = member
+                discordWhitelistedPlayers[memberUUID] =  member.id
+                discordWhitelistedPlayersIGN[mcWhitelistedPlayersUUID.get(memberUUID, "").lower()] = member
 
-            mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
-            mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
+        mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
+        mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
 
-            add = set(discordWhitelistedPlayers) - set(mcWhitelistedPlayersUUID)
-            remove = set(mcWhitelistedPlayersUUID) - set(discordWhitelistedPlayers)
-            usercache = littlepod_utils.getUserCache()
-            playerStatus = littlepod_utils.getPlayerStatus(discordWhitelistedPlayers, usercache)
-            if updateRoles:
+        add = set(discordWhitelistedPlayers) - set(mcWhitelistedPlayersUUID)
+        remove = set(mcWhitelistedPlayersUUID) - set(discordWhitelistedPlayers)
 
-                for each in playerStatus["expired"]:
-                    logging.info("Expired %s %s", each, mcWhitelistedPlayersUUID.get(each,""))
+        playerStatus = littlepod_utils.getPlayerStatus(whitelist=discordWhitelistedPlayers)
+        if updateRoles:
+
+            for each in playerStatus["expired"]:
+                logging.info("Expired %s %s", each, mcWhitelistedPlayersUUID.get(each,""))
 
 
             for each in add:
@@ -210,7 +199,7 @@ async def discordMain():
                 logging.info("Removing %s from the whitelist", removeIGN)
                 littlepod_utils.send("/whitelist remove {}".format(removeIGN))
 
-            bannerChannel = client.get_channel(discordBannerChannel)
+            bannerChannel = bot.get_channel(discordBannerChannel)
             try:
                 with open(os.path.join(webfolder, "papyri.json"), "r") as bannerFile:
                     papyriBanners = {"{}, {}".format(b["x"], b["z"]): b for b in json.load(bannerFile)}
@@ -219,16 +208,15 @@ async def discordMain():
 
             # print(papyriBanners)
 
-            allChannelBanners = {message async for message in client.logs_from(bannerChannel, limit=200, after=None) if message.author == client.user}
+            allChannelBanners = {message async for message in bannerChannel.history(limit=200, after=None) if message.author == bot.user}
 
             # print(channelBanners)
             channelBanners = {}
             for each in allChannelBanners:
-                if each.embeds:
-                    embed = each.embeds[0]
+                for embed in each.embeds:
                     #print(embed)
 
-                    match = re.search("\[([0-9 \-,]*)\]", embed["description"])
+                    match = re.search("\[([0-9 \-,]*)\]", embed.description)
                     coords = match.group(1)
                     channelBanners.update({coords: each})
 
@@ -251,15 +239,15 @@ async def discordMain():
                 colour = int(dimColors[b["dim"]], 16)
                 embed = discord.Embed(description=description, colour=colour)
                 logging.info(description)
-                await client.send_message(bannerChannel, embed=embed)
+                await bannerChannel.send(embed=embed)
 
             for each in removeBanners:
                 logging.info("removing banner %s", each)
-                await client.delete_message(channelBanners[each])
+                await bot.delete_message(channelBanners[each])
 
             for each in dupes:
                 logging.info("removing dup banner %s", each.embeds[0]["description"])
-                await client.delete_message(each)
+                await bot.delete_message(each)
 
         versionDict = {"mc": "mc:je", "bds": "mc"}
         version = versionDict[serverType] + " " + serverVersion
@@ -273,15 +261,13 @@ async def discordMain():
 
 
 
-        # print(playerList)
-        await client.change_presence(game=discord.Game(name=topicLine))
+            # print(playerList)
+        await bot.change_presence(activity=discord.Game(name=topicLine))
 
 
-        logging.info("waiting for 60 seconds")
-        await asyncio.sleep(60)
 
 '''
-@client.async_event
+@bot.async_event
 def on_member_update(before, after):
 
     beforeRoles = [role.name for role in before.roles]
@@ -296,20 +282,22 @@ def on_member_update(before, after):
         vanillabean.send("/whitelist add {}".format(player))
 '''
 
-def on_status(member, old_game, old_status):
+@bot.event
+async def on_status(member, old_game, old_status):
     logging.info("%s %s %s", old_status, member.name, member.status)
 
-def on_message(message):
-    server =  client.get_server("140194383118073856")
-    worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
+
+@bot.event
+async def on_message(message):
+    logging.info("Message: %s", message)
     # we do not want the bot to reply to itself
-    if message.author == client.user:
+    if message.author == bot.user:
         return
     # print(message.author.display_name, message.clean_content.encode("utf-8"), message.attachments)
 
     # print("mentioned", message.author)
-    if client.user in message.mentions:
-        adminRole = [role for role in server.roles if role.name == "admin"][0]
+    if bot.user in message.mentions:
+        adminRole = [role for role in message.guild.roles if role.name == "admin"][0]
         if adminRole in message.author.roles and not message.author.bot:
             print("admin mention" + message.content)
             adds = re.findall( "<@!?\d*> add <@!?(\d*)> (.*)", message.content)
@@ -326,27 +314,27 @@ def on_message(message):
 
                 member = server.get_member(addDiscordID)
 
-                yield from client.change_nickname(member, newNickname)
+                bot.change_nickname(member, newNickname)
 
                 whitelistedRole = [role for role in server.roles if role.name == "whitelisted"][0]
 
                 memberRoles = {role for role in member.roles}
                 if whitelistedRole not in memberRoles:
 
-                    yield from client.add_roles(member, whitelistedRole)
-                    yield from client.send_message(privchannelobject, str(rDict) + newNickname)
+                    bot.add_roles(member, whitelistedRole)
+                    privchannelobject.send(str(rDict) + newNickname)
 
         if "list" in message.content:
-            delMessage = yield from client.send_message(message.channel, " ".join(['`{}`'.format(name) for name in currentPlayers]))
-            yield from asyncio.sleep(10)
-            yield from client.delete_message(delMessage)
-            yield from client.delete_message(message)
+            delMessage = message.channel.send(" ".join(['`{}`'.format(name) for name in currentPlayers]))
+            asyncio.sleep(10)
+            bot.delete_message(delMessage)
+            bot.delete_message(message)
 
-        reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message.content)
+    reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message.content)
 
-        if reCoords:
-            reDim = re.findall("nether|end|over| o | e | n ", message.content)
-            if reDim:
+    if reCoords:
+        reDim = re.findall("nether|end|over| o | e | n ", message.content)
+        if reDim:
 
                 if reDim[0] in ["over", " o "]:
                     dim = "o"
@@ -354,13 +342,13 @@ def on_message(message):
                     dim = "n"
                 elif reDim[0] in ["end", " e "]:
                     dim = "e"
-            else:
-                dim = "o"
+        else:
+            dim = "o"
 
-            logging.info("coords to Discord %s %s", reCoords, reDim)
+        logging.info("coords to Discord %s %s", reCoords, reDim)
 
-            yield from client.send_message(message.channel, coordsmessage( reCoords, dim ))
-            tellcoords(reCoords, dim)
+        message.channel.send(coordsmessage( reCoords, dim ))
+        tellcoords(reCoords, dim)
 
 
 
@@ -399,12 +387,11 @@ def on_message(message):
            telllinks( links )
 
 
+@bot.event
+async def on_ready():
+    logging.info('Logged in as %s %s', bot.user.name, bot.user.id)
+    bot.add_cog(mainLoop(bot))
 
-def on_ready():
-    logging.info('Logged in as %s %s', client.user.name, client.user.id)
-    global server
-
-    yield from client.send_message(discord.Object(id=discordPrivChannel),"I crashed, but I'm back now.")
 
 def getgeo(ip):
     FREEGEOPIP_URL = 'http://ip-api.com/json/'
@@ -414,7 +401,6 @@ def getgeo(ip):
     response.raise_for_status()
     return response.json()
 
-@asyncio.coroutine
 def eventIp(data):
     name = data[1]
     ip = data[2].split(':')[0]
@@ -428,26 +414,23 @@ def eventIp(data):
         ipstat = " ".join( [ip, hostaddr, ipinfo.get("countryCode", "??"), str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
     else:
         ipstat = " ".join([ip, hastaddr])
-    yield from client.send_message(privchannelobject, "`{}` !!!DENIED!!! {}".format(name, ipstat))
+    yield from bot.send_message(privchannelobject, "`{}` !!!DENIED!!! {}".format(name, ipstat))
 
 
-@asyncio.coroutine
 def eventDeath1(data):
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     message = data[2:]
-    yield from client.send_message(channelobject, "⏸ `{}` {}".format(player, "".join(message)))
+    yield from bot.send_message(channelobject, "⏸ `{}` {}".format(player, "".join(message)))
 
-@asyncio.coroutine
 def eventDeath2(data):
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
     message = list(data[2:])
     message[1] = "`{}`".format(message[1])
-    yield from client.send_message(channelobject, "⏸ `{}` {}".format(player, "".join(message)))
+    yield from bot.send_message(channelobject, "⏸ `{}` {}".format(player, "".join(message)))
 
 
-@asyncio.coroutine
 def eventDeath3(data):
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
@@ -455,18 +438,17 @@ def eventDeath3(data):
     message[1] = "`{}`".format(message[1])
     message[1] = re.sub(r"\?\d(.*)\?r",r"\1", message[1])
     message[3] = "`{}`".format(message[3])
-    yield from client.send_message(channelobject, "⏸ `{}` {}".format(player, "".join(message)))
+    yield from bot.send_message(channelobject, "⏸ `{}` {}".format(player, "".join(message)))
 
 
-@asyncio.coroutine
 def eventLogged(data):
-    server =  client.get_server("140194383118073856")
+    server =  bot.get_guild("140194383118073856")
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-    yield from client.send_message(channelobject, "▶️ `{}` joined the game".format(player))
-
+    yield from bot.send_message(channelobject, "▶️ `{}` joined the game".format(player))
+    
     ip = data[2].split(':')[0]
-
+    
     if ip:
 
         message = "joined"
@@ -478,40 +460,34 @@ def eventLogged(data):
         cc = ipinfo.get("countryCode", "XX")
         ipstat= u" ".join( [ip, hostaddr, cc, str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
 
-        yield from client.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
+        yield from bot.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
 
-@asyncio.coroutine
 def eventWhitelistAdd(data):
     player = data[1]
-    yield from client.send_message(privchannelobject, "`{}` {}".format(player, "added to whitelist"))
+    yield from bot.send_message(privchannelobject, "`{}` {}".format(player, "added to whitelist"))
 
-@asyncio.coroutine
 def eventWhitelistRemove(data):
     player = data[1]
-    yield from client.send_message(privchannelobject, "`{}` {}".format(player, "removed from whitelist"))
+    yield from bot.send_message(privchannelobject, "`{}` {}".format(player, "removed from whitelist"))
 
 
 
 
 
 
-@asyncio.coroutine
 def eventUUID(data):
-    server =  client.get_server("140194383118073856")
     player = data[1]
 
     UUID = data[2]
 
 
-@asyncio.coroutine
 def eventLeft(data):
     player = data[1]
     player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-    yield from client.send_message(channelobject, "⏹ `{}` left the game".format(player))
+    yield from bot.send_message(channelobject, "⏹ `{}` left the game".format(player))
 
 
 
-@asyncio.coroutine
 def eventChat(data):
 
     links = re.findall('<(https?://\S+)>', data[2])
@@ -525,7 +501,7 @@ def eventChat(data):
     for each in re.findall("@\S+", message):
         memberfrommc = each.lstrip("@")
         # print(memberfrommc)
-        member = discord.utils.find(lambda m: m.name == memberfrommc, client.get_all_members())
+        member = discord.utils.find(lambda m: m.name == memberfrommc, bot.get_all_members())
         if member:
             membermention = member.mention
             message = message.replace( each, membermention)
@@ -539,7 +515,7 @@ def eventChat(data):
         player = re.sub(r"\?\d(.*)\?r",r"\1", player)
         finalmessage = "`<{}>` {}".format(player, message)
         # print(repr(finalmessage))
-        yield from client.send_message(channelobject, finalmessage)
+        yield from bot.send_message(channelobject, finalmessage)
 
 
     reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message)
@@ -559,112 +535,43 @@ def eventChat(data):
             dim = "o"
 
 
-        yield from client.send_message(channelobject, coordsmessage( reCoords, dim ))
+        yield from bot.send_message(channelobject, coordsmessage( reCoords, dim ))
         tellcoords(reCoords, dim)
 
 
-@asyncio.coroutine
-def minecraftMain():
-    yield from client.wait_until_ready()
+"""        
+        if event == "UUID":
+            yield from eventUUID(data)
 
-    while not client.is_closed:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = "127.0.0.1"
-        port = 7777
-        s.connect(('127.0.0.1',7777))
-        s.settimeout(1)
-        trailing = ""
-        lines = []
-        try:
-            data = s.recv(128)
-            lines = trailing + data.decode("UTF-8")
-            lines = lines.splitlines(True)
-            trailing = lines.pop() if len(lines) > 1 else ""
-        except socket.timeout as e:
-            err = e.args[0]
-            # this next if/else is a bit redundant, but illustrates how the
-            # timeout exception is setup
-            if err == 'timed out':
-                yield from asyncio.sleep(0.1)
-                continue
-            else:
-                logging.info(e)
-                sys.exit(1)
-        except socket.error as e:
-            # Something else happened, handle error, exit, etc.
-            logging.info(e)
-            sys.exit(1)
-        else:
-            if len(data) == 0:
-                logging.info('ncat listener is gone')
-                sys.exit(0)
-            else:
-                #print(data)
+        if event == "chat":
+            yield from eventChat(data)
+
+        if event in ["logged", "loggedbds"]:
+            yield from eventLogged(data)
+
+        if event == "ip":
+            yield from eventIp(data)
+
+        if event.startswith("deathWeapon"):
+            yield from eventDeath3(data)
+
+        elif event.startswith("deathEnemy"):
+            yield from eventDeath2(data)
+
+        elif event.startswith("death"):
+            yield from eventDeath1(data)
+
+        elif event.startswith("whitelistAdd"):
+            yield from eventWhitelistAdd(data)
+
+        elif event.startswith("whitelistRemove"):
+            yield from eventWhitelistRemove(data)
+
+        if event in ["left", "lost", "leftbds"]:
+            yield from eventLeft(data)
+"""
 
 
-                for line in lines:
-                    line = line.strip()
-                    logging.info(repr(line))
-                    eventData = littlepod_utils.genEvent(line)
-
-                    if eventData:
-                        logging.info(eventData)
-                        event, data = eventData
-
-                        if event == "UUID":
-                            yield from eventUUID(data)
-
-                        if event == "chat":
-                            yield from eventChat(data)
-
-                        if event in ["logged", "loggedbds"]:
-                            yield from eventLogged(data)
-
-                        if event == "ip":
-                            yield from eventIp(data)
-
-                        if event.startswith("deathWeapon"):
-                            yield from eventDeath3(data)
-
-                        elif event.startswith("deathEnemy"):
-                            yield from eventDeath2(data)
-
-                        elif event.startswith("death"):
-                            yield from eventDeath1(data)
-
-                        elif event.startswith("whitelistAdd"):
-                            yield from eventWhitelistAdd(data)
-
-                        elif event.startswith("whitelistRemove"):
-                            yield from eventWhitelistRemove(data)
-
-                        if event in ["left", "lost", "leftbds"]:
-                            yield from eventLeft(data)
-
-
-
-def minecraftMainWrapper():
-    try:
-        logging.info("Starting main background task")
-        yield from minecraftMain()
-    except Exception:
-        logging.info("Main background task exception")
-        client.close()
-        sys.exit(1)
-
-try:
-    client.loop.set_exception_handler(custom_exception_handler)
-    client.loop.create_task(minecraftMainWrapper())
-    client.loop.create_task(discordMain())
-    client.run(discordToken)
-
-except Exception:
-    logging.info("I crashed amd actually exited")
-    client.close()
-    sys.exit()
-
-
-
-
+bot.run(discordToken)
 
 

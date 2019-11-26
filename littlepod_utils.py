@@ -4,12 +4,14 @@ import os
 import json
 import time
 import glob
+import socket
+import threading
 import re
 import io
 import sys
 import urllib.parse
 import oauth2 as oauth
-from collections import OrderedDict
+from collections import OrderedDict, deque
 import socket
 from nbt.nbt import NBTFile, TAG_Long_Array, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
 import yaml
@@ -226,7 +228,7 @@ def getWhitelistByIGN():
 def getNameFromAPI(uuid):
     return requests.get('https://api.mojang.com/user/profiles/{}/names'.format(uuid.replace('-', ''))).json()[-1].get("name", "")
 
-def getPlayerStatus(whitelist, usercache):
+def getPlayerStatus(whitelist=getWhitelist(), usercache=getUserCache()):
     expired = []
     active = []
     for each in sorted(usercache, key=usercache.get):
@@ -327,6 +329,61 @@ def configbook(uuid, bookname):
     if Filtered:
         string = "\n".join(Filtered[0]["tag"]["pages"])
         return yaml.load(string)
+
+class minecraftConsole:
+    def __init__(self):
+        print("Init minectaft console connection")
+        self.host = "127.0.0.1"
+        self.port = 7777
+        self.events = deque()
+    def connect(self):
+        def connectSocket():
+            while True:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                print("Connecting to ncat console")
+                s.connect((self.host, self.port))
+                s.settimeout(1)
+                trailing = ""
+                lines = []
+                data = ""
+                while True:
+                    try:
+                        data = s.recv(128)
+                        lines = trailing + data.decode("UTF-8")
+                        lines = lines.splitlines(True)
+                        #print("raw", lines)
+                        trailing = lines.pop() if len(lines) > 1 else ""
+                    except socket.timeout as e:
+                        err = e.args[0]
+                        # this next if/else is a bit redundant, but illustrates how the
+                        # timeout exception is setup
+                        if err == 'timed out':
+                            time.sleep(0.1)
+                        else:
+                            print(e)
+                            sys.exit(1)
+                    except socket.error as e:
+                        # Something else happened, handle error, exit, etc.
+                        print(e)
+                        sys.exit(1)
+                    else:
+                        if len(data) == 0:
+                            print('ncat listener is gone')
+                            sys.exit(0)
+                        else:
+
+
+                            for line in lines:
+                                line = line.strip()
+                                #print("stripped", line)
+                                eventData = genEvent(line)
+
+                                if eventData:
+                                    print(eventData)
+                                    self.events.append(eventData)
+
+        minecraftThread = threading.Thread(target=connectSocket)
+        minecraftThread.start()
 
 
 if __name__ == "__main__":
