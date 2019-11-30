@@ -106,23 +106,218 @@ def tellcoords( reCoords, reDim ):
         x, z = each
         littlepod_utils.send(tellrawCommand.format(selector="@a", json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dim} {x}, {z}_|{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL))))
 
+class serverLoop(commands.Cog):
+    def __init__(self, bot):
+        logging.info("Init server loop")
+        self.server = bot.get_guild(140194383118073856)
+        self.serverTask.start()
+        self.bot = bot
+        s = littlepod_utils.minecraftConsole()
+        s.connect()
+        self.events = s.events
+        self.discordchannelobject = bot.get_channel(discordChannel)
+        self.privchannelobject = bot.get_channel(discordPrivChannel)
+
+    @tasks.loop(seconds=1)
+    async def serverTask(self):
+        def getgeo(ip):
+            FREEGEOPIP_URL = 'http://ip-api.com/json/'
+            url = '{}/{}'.format(FREEGEOPIP_URL, ip)
+
+            response = requests.get(url)
+            response.raise_for_status()
+            return response.json()
+
+        async def eventIp(data):
+            name = data[1]
+            ip = data[2].split(':')[0]
+            try:
+                hostaddr = socket.gethostbyaddr( ip )[0]
+            except:
+                hostaddr = "none"
+
+            ipinfo = getgeo( ip )
+            if not ipinfo["status"] == "fail":
+                ipstat = " ".join( [ip, hostaddr, ipinfo.get("countryCode", "??"), str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
+            else:
+                ipstat = " ".join([ip, hastaddr])
+            await self.discordchannobject.send("`{}` !!!DENIED!!! {}".format(name, ipstat))
+
+
+        async def eventDeath1(data):
+            player = data[1]
+            player = re.sub(r"\?\d(.*)\?r",r"\1", player)
+            message = data[2:]
+            
+            await self.discordchannelobject.send("⏸ `{}` {}".format(player, "".join(message)))
+
+        async def eventDeath2(data):
+            player = data[1]
+            player = re.sub(r"\?\d(.*)\?r",r"\1", player)
+            message = list(data[2:])
+            message[1] = "`{}`".format(message[1])
+            await self.discordchannelobject.send("⏸ `{}` {}".format(player, "".join(message)))
+
+
+        async def eventDeath3(data):
+            player = data[1]
+            player = re.sub(r"\?\d(.*)\?r",r"\1", player)
+            message = list(data[2:])
+            message[1] = "`{}`".format(message[1])
+            message[1] = re.sub(r"\?\d(.*)\?r",r"\1", message[1])
+            message[3] = "`{}`".format(message[3])
+            await self.discordchannelobject.send("⏸ `{}` {}".format(player, "".join(message)))
+
+
+        async def eventLogged(data):
+            server =  bot.get_guild("140194383118073856")
+            player = data[1]
+            player = re.sub(r"\?\d(.*)\?r",r"\1", player)
+            await self.discordchannelobject.send("▶️ `{}` joined the game".format(player))
+            
+            ip = data[2].split(':')[0]
+            
+            if ip:
+
+                message = "joined"
+                try:
+                    hostaddr = socket.gethostbyaddr( ip )[0]
+                except:
+                    hostaddr = "none"
+                ipinfo = getgeo( ip )
+                cc = ipinfo.get("countryCode", "XX")
+                ipstat= u" ".join( [ip, hostaddr, cc, str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
+
+                await self.privchannelobject.send("`{}` {}".format(player, ipstat))
+
+        async def eventWhitelistAdd(data):
+            player = data[1]
+            await self.privchannelobject.send("`{}` {}".format(player, "added to whitelist"))
+
+        async def eventWhitelistRemove(data):
+            player = data[1]
+            await self.privchannelobject.send("`{}` {}".format(player, "removed from whitelist"))
+
+
+
+
+
+
+        async def eventUUID(data):
+            player = data[1]
+
+            UUID = data[2]
+
+
+        async def eventLeft(data):
+            player = data[1]
+            player = re.sub(r"\?\d(.*)\?r",r"\1", player)
+            await self.discordchannelobject.send("⏹ `{}` left the game".format(player))
+
+
+
+        async def eventChat(data):
+
+            links = re.findall('<(https?://\S+)>', data[2])
+
+            player = data[1]
+            message = data[2]
+
+            if player == "greener_ca" and message == "die":
+                assert False
+
+            for each in re.findall("@\S+", message):
+                memberfrommc = each.lstrip("@")
+                # print(memberfrommc)
+                member = discord.utils.find(lambda m: m.name == memberfrommc, bot.get_all_members())
+                if member:
+                    membermention = member.mention
+                    message = message.replace( each, membermention)
+                # print(message)
+
+
+            if links:
+                telllinks( links )
+
+            if not player.startswith("?7"):
+                player = re.sub(r"\?\d(.*)\?r",r"\1", player)
+                finalmessage = "`<{}>` {}".format(player, message)
+                # print(repr(finalmessage))
+                await self.discordchannelobject.send(finalmessage)
+
+
+            reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message)
+
+            logging.info("Found coords: %s", reCoords)
+            if reCoords:
+                reDim = re.findall("nether|end|over| o | e | n ", message)
+                if reDim:
+
+                    if reDim[0] in ["over", " o "]:
+                        dim = "o"
+                    elif reDim[0] in ["nether", " n "]:
+                        dim = "n"
+                    elif reDim[0] in ["end", " e "]:
+                        dim = "e"
+                else:
+                    dim = "o"
+
+
+                await self.discordchannelobject.send(coordsmessage( reCoords, dim ))
+                tellcoords(reCoords, dim)
+
+
+        while self.events:
+            event, data = self.events.pop()
+            print("events:", event)
+            
+            if event == "UUID":
+                await eventUUID(data)
+
+            if event == "chat":
+                await eventChat(data)
+
+            if event in ["logged", "loggedbds"]:
+                await eventLogged(data)
+
+            if event == "ip":
+                await eventIp(data)
+
+            if event.startswith("deathWeapon"):
+                await eventDeath3(data)
+
+            elif event.startswith("deathEnemy"):
+                await eventDeath2(data)
+
+            elif event.startswith("death"):
+                await eventDeath1(data)
+
+            elif event.startswith("whitelistAdd"):
+                await eventWhitelistAdd(data)
+
+            elif event.startswith("whitelistRemove"):
+                await eventWhitelistRemove(data)
+
+            if event in ["left", "lost", "leftbds"]:
+                await eventLeft(data)
+
 class mainLoop(commands.Cog):
     def __init__(self, bot):
         logging.info("Init main loop")
-        self.server =  bot.get_guild(140194383118073856)
-        self.main.start()
+        self.server = bot.get_guild(140194383118073856)
+        self.mainTask.start()
         self.emojis = {e.name: e for e in bot.emojis}
         self.bot = bot
         self.infochannelobject = bot.get_channel(discordInfoChannel)
 
 
     def cog_unload(self):
-        self.main.cancel()
+        self.mainTask.cancel()
 
-    @tasks.loop(seconds=60)
-    async def main(self):
+    @tasks.loop(minutes=1)
+    async def mainTask(self):
 
-        logging.info("Updating topic")
+        logging.info("Running main loop")
         info = open(datafolder + "/info.md", "r").read()
 
         activity = turtlesin.getActivity()
@@ -391,185 +586,9 @@ async def on_message(message):
 async def on_ready():
     logging.info('Logged in as %s %s', bot.user.name, bot.user.id)
     bot.add_cog(mainLoop(bot))
+    bot.add_cog(serverLoop(bot))
 
 
-def getgeo(ip):
-    FREEGEOPIP_URL = 'http://ip-api.com/json/'
-    url = '{}/{}'.format(FREEGEOPIP_URL, ip)
-
-    response = requests.get(url)
-    response.raise_for_status()
-    return response.json()
-
-def eventIp(data):
-    name = data[1]
-    ip = data[2].split(':')[0]
-    try:
-        hostaddr = socket.gethostbyaddr( ip )[0]
-    except:
-        hostaddr = "none"
-
-    ipinfo = getgeo( ip )
-    if not ipinfo["status"] == "fail":
-        ipstat = " ".join( [ip, hostaddr, ipinfo.get("countryCode", "??"), str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
-    else:
-        ipstat = " ".join([ip, hastaddr])
-    yield from bot.send_message(privchannelobject, "`{}` !!!DENIED!!! {}".format(name, ipstat))
-
-
-def eventDeath1(data):
-    player = data[1]
-    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-    message = data[2:]
-    yield from bot.send_message(channelobject, "⏸ `{}` {}".format(player, "".join(message)))
-
-def eventDeath2(data):
-    player = data[1]
-    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-    message = list(data[2:])
-    message[1] = "`{}`".format(message[1])
-    yield from bot.send_message(channelobject, "⏸ `{}` {}".format(player, "".join(message)))
-
-
-def eventDeath3(data):
-    player = data[1]
-    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-    message = list(data[2:])
-    message[1] = "`{}`".format(message[1])
-    message[1] = re.sub(r"\?\d(.*)\?r",r"\1", message[1])
-    message[3] = "`{}`".format(message[3])
-    yield from bot.send_message(channelobject, "⏸ `{}` {}".format(player, "".join(message)))
-
-
-def eventLogged(data):
-    server =  bot.get_guild("140194383118073856")
-    player = data[1]
-    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-    yield from bot.send_message(channelobject, "▶️ `{}` joined the game".format(player))
-    
-    ip = data[2].split(':')[0]
-    
-    if ip:
-
-        message = "joined"
-        try:
-            hostaddr = socket.gethostbyaddr( ip )[0]
-        except:
-            hostaddr = "none"
-        ipinfo = getgeo( ip )
-        cc = ipinfo.get("countryCode", "XX")
-        ipstat= u" ".join( [ip, hostaddr, cc, str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
-
-        yield from bot.send_message(privchannelobject, "`{}` {}".format(player, ipstat))
-
-def eventWhitelistAdd(data):
-    player = data[1]
-    yield from bot.send_message(privchannelobject, "`{}` {}".format(player, "added to whitelist"))
-
-def eventWhitelistRemove(data):
-    player = data[1]
-    yield from bot.send_message(privchannelobject, "`{}` {}".format(player, "removed from whitelist"))
-
-
-
-
-
-
-def eventUUID(data):
-    player = data[1]
-
-    UUID = data[2]
-
-
-def eventLeft(data):
-    player = data[1]
-    player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-    yield from bot.send_message(channelobject, "⏹ `{}` left the game".format(player))
-
-
-
-def eventChat(data):
-
-    links = re.findall('<(https?://\S+)>', data[2])
-
-    player = data[1]
-    message = data[2]
-
-    if player == "greener_ca" and message == "die":
-        assert False
-
-    for each in re.findall("@\S+", message):
-        memberfrommc = each.lstrip("@")
-        # print(memberfrommc)
-        member = discord.utils.find(lambda m: m.name == memberfrommc, bot.get_all_members())
-        if member:
-            membermention = member.mention
-            message = message.replace( each, membermention)
-        # print(message)
-
-
-    if links:
-        telllinks( links )
-
-    if not player.startswith("?7"):
-        player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-        finalmessage = "`<{}>` {}".format(player, message)
-        # print(repr(finalmessage))
-        yield from bot.send_message(channelobject, finalmessage)
-
-
-    reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message)
-
-    logging.info("Found coords: %s", reCoords)
-    if reCoords:
-        reDim = re.findall("nether|end|over| o | e | n ", message)
-        if reDim:
-
-            if reDim[0] in ["over", " o "]:
-                dim = "o"
-            elif reDim[0] in ["nether", " n "]:
-                dim = "n"
-            elif reDim[0] in ["end", " e "]:
-                dim = "e"
-        else:
-            dim = "o"
-
-
-        yield from bot.send_message(channelobject, coordsmessage( reCoords, dim ))
-        tellcoords(reCoords, dim)
-
-
-"""        
-        if event == "UUID":
-            yield from eventUUID(data)
-
-        if event == "chat":
-            yield from eventChat(data)
-
-        if event in ["logged", "loggedbds"]:
-            yield from eventLogged(data)
-
-        if event == "ip":
-            yield from eventIp(data)
-
-        if event.startswith("deathWeapon"):
-            yield from eventDeath3(data)
-
-        elif event.startswith("deathEnemy"):
-            yield from eventDeath2(data)
-
-        elif event.startswith("death"):
-            yield from eventDeath1(data)
-
-        elif event.startswith("whitelistAdd"):
-            yield from eventWhitelistAdd(data)
-
-        elif event.startswith("whitelistRemove"):
-            yield from eventWhitelistRemove(data)
-
-        if event in ["left", "lost", "leftbds"]:
-            yield from eventLeft(data)
-"""
 
 
 bot.run(discordToken)

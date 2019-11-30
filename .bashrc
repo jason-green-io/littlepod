@@ -16,4 +16,5 @@ function who ()
 }
 
 TERM=screen-256color
-PATH=$HOME:$PATH
+export PATH=$HOME:$PATH
+echo Read .bashrc

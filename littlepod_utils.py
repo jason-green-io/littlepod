@@ -379,7 +379,6 @@ class minecraftConsole:
                                 eventData = genEvent(line)
 
                                 if eventData:
-                                    print(eventData)
                                     self.events.append(eventData)
 
         minecraftThread = threading.Thread(target=connectSocket)
