@@ -542,7 +542,7 @@ async def on_message(message):
 
         logging.info("coords to Discord %s %s", reCoords, reDim)
 
-        message.channel.send(coordsmessage( reCoords, dim ))
+        await message.channel.send(coordsmessage( reCoords, dim ))
         tellcoords(reCoords, dim)
 
 

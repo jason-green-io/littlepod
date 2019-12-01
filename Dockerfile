@@ -8,7 +8,7 @@ RUN    apt-get --yes update; \
        apt-get --no-install-recommends --yes install less unzip rsync sshpass ssh jq curl default-jre gettext-base nmap locales monit python3-pip sudo wget tmux man git vim htop; \
        apt-get clean
 
-RUN    pip3 install setuptools wheel; pip3 install schedule nbt oauth2 watchdog requests python-daemon discord.py Pillow
+RUN    pip3 install setuptools wheel; pip3 install schedule numpy tqdm nbt oauth2 watchdog requests python-daemon discord.py Pillow
 
 RUN    locale-gen en_US.UTF-8  
 ENV    LANG en_US.UTF-8  
