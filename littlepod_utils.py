@@ -12,7 +12,6 @@ import sys
 import urllib.parse
 import oauth2 as oauth
 from collections import OrderedDict, deque
-import socket
 from nbt.nbt import NBTFile, TAG_Long_Array, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
 import yaml
 
@@ -341,7 +340,13 @@ class minecraftConsole:
             while True:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 print("Connecting to ncat console")
-                s.connect((self.host, self.port))
+                try:
+                    s.connect((self.host, self.port))
+                    print("connected to ncat console")
+                except:
+                    print("not ready")
+                    time.sleep(1)
+                    continue
                 s.settimeout(1)
                 trailing = ""
                 lines = []
@@ -361,15 +366,13 @@ class minecraftConsole:
                             time.sleep(0.1)
                         else:
                             print(e)
-                            sys.exit(1)
                     except socket.error as e:
                         # Something else happened, handle error, exit, etc.
                         print(e)
-                        sys.exit(1)
                     else:
                         if len(data) == 0:
                             print('ncat listener is gone')
-                            sys.exit(0)
+                            break
                         else:
 
 
