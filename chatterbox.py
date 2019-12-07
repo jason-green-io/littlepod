@@ -322,19 +322,15 @@ class mainLoop(commands.Cog):
 
         activity = turtlesin.getActivity()
 
-        allMessages = [message async for message in self.infochannelobject.history( limit=200, after=None) if message.author == self.bot.user]
-
         infoFinal = info + "\n" + activity
-
-        if not allMessages:
-            await infochannelobject.send(infoFinal)
-
-        else:
-            keepMessage = allMessages.pop(0)
-            await keepMessage.edit(new_content=infoFinal)
-
+        
+        allMessages = await self.infochannelobject.history( limit=200, after=None).flatten()
+        if allMessages:
             for message in allMessages:
-                await keepMessage.delete()
+                if message.author == self.bot.user:
+                    await message.edit(content=infoFinal)
+        else:
+            await infochannelobject.send(infoFinal)
 
 
         '''
