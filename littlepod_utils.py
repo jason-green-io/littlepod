@@ -155,10 +155,11 @@ def genEvent(line):
                                 ("ip", "^\[(.*)\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$"),
                                 ("command", "^\[(.*)\] \[Server thread/INFO\]: \<(.*)\> !(.*)$"),
                                 ("chat", "^\[(.*)\] \[Server thread/INFO\]: \<(.*)\> (.*)$"),
-                                ("playerList", "^\[(.*)\] \[Server thread/INFO]: There are (.*)/(.*) players online:$"),
+                                ("serverchat", "^\[(.*)\] \[Server thread/INFO\]: \[Server\] (.*)$"),
+                                ("playerList", "^\[(.*)\] \[Server thread/INFO\]: There are (.*)/(.*) players online:$"),
                                 ("UUID", "^\[(.*)\] \[User Authenticator #.*/INFO\]: UUID of player (.*) is (.*)$"),
-                                ("whitelistAdd", "^\[(.*)\] \[Server thread/INFO]: Added (.*) to the whitelist"),
-                                ("whitelistRemove", "^\[(.*)\] \[Server thread/INFO]: Removed (.*) from the whitelist"),
+                                ("whitelistAdd", "^\[(.*)\] \[Server thread/INFO\]: Added (.*) to the whitelist"),
+                                ("whitelistRemove", "^\[(.*)\] \[Server thread/INFO\]: Removed (.*) from the whitelist"),
                                 ("achievement", "^\[(.*)\] \[Server thread/INFO\]: (\w*) has just earned the achievement \[(.*)\]$"),
                                 ("lag", "^\[(.*)\] \[Server thread/WARN\]: Can't keep up! Did the system time change, or is the server overloaded\? Running (\d*)ms behind, skipping (\d*) tick\(s\)$")])
 
@@ -385,6 +386,7 @@ class minecraftConsole:
                                     self.events.append(eventData)
 
         minecraftThread = threading.Thread(target=connectSocket)
+        minecraftThread.daemon = True
         minecraftThread.start()
 
 

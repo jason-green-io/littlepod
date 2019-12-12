@@ -110,11 +110,11 @@ class serverLoop(commands.Cog):
     def __init__(self, bot):
         logging.info("Init server loop")
         self.server = bot.get_guild(140194383118073856)
-        self.serverTask.start()
-        self.bot = bot
         s = littlepod_utils.minecraftConsole()
         s.connect()
         self.events = s.events
+        self.serverTask.start()
+        self.bot = bot
         self.discordchannelobject = bot.get_channel(discordChannel)
         self.privchannelobject = bot.get_channel(discordPrivChannel)
 
@@ -199,7 +199,8 @@ class serverLoop(commands.Cog):
             await self.privchannelobject.send("`{}` {}".format(player, "removed from whitelist"))
 
 
-
+        async def eventServerChat(data):
+            await self.privchannelobject.send(data[1])
 
 
 
@@ -274,8 +275,11 @@ class serverLoop(commands.Cog):
             if event == "UUID":
                 await eventUUID(data)
 
+            if event == "serverchat":
+                await eventServerChat(data)
+
             if event == "chat":
-                await eventChat(data)
+                await  eventChat(data)
 
             if event in ["logged", "loggedbds"]:
                 await eventLogged(data)
