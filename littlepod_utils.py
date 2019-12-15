@@ -1,4 +1,5 @@
 import datetime
+import logging
 import requests
 import os
 import json
@@ -87,7 +88,7 @@ def send(command, host="localhost", port=7777):
         data = s.recv(4096)
         if not data:
             break
-        print(repr(data))
+        logging.info(repr(data))
     s.close()
 
 def oauth_req( url, key, secret, http_method="GET", post_body="", http_headers=None ):
@@ -213,14 +214,21 @@ def getOnlinePlayers():
     playerFiles = glob.glob(os.path.join(mcfolder, "world/playerdata/*.dat"))
     playerUUIDTime = [os.path.basename(f).rsplit(".")[0]  for f in playerFiles if os.path.getmtime(f) > time.time() - 300]
     whitelist = getWhitelist()
-    return [whitelist[p] for p in playerUUIDTime]
+    if whitelist:
 
+        return [whitelist[p] for p in playerUUIDTime]
+    else:
+        return []
 
 def getUserCache():
     return {each["uuid"]: (datetime.datetime.strptime(each["expiresOn"][:19], "%Y-%m-%d %H:%M:%S") - datetime.timedelta(days=30), each["name"]) for each in json.load(open(mcfolder + "/usercache.json"))}
 
 def getWhitelist():
-    return {each["uuid"]: each["name"] for each in json.load(open(mcfolder + "/whitelist.json"))}
+    try:
+        jsonWhitelist = json.load(open(mcfolder + "/whitelist.json"))
+    except:
+        jsonWhitelist = {}
+    return {each["uuid"]: each["name"] for each in jsonWhitelist}
 
 def getWhitelistByIGN():
     return {each["name"].lower(): each["uuid"] for each in json.load(open(mcfolder + "/whitelist.json"))}
@@ -332,7 +340,7 @@ def configbook(uuid, bookname):
 
 class minecraftConsole:
     def __init__(self):
-        print("Init minectaft console connection")
+        logging.info("Init minectaft console connection")
         self.host = "127.0.0.1"
         self.port = 7777
         self.events = deque()
@@ -340,10 +348,10 @@ class minecraftConsole:
         def connectSocket():
             while True:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                print("Connecting to ncat console")
+                logging.info("Connecting to ncat console")
                 try:
                     s.connect((self.host, self.port))
-                    print("connected to ncat console")
+                    logging.info("connected to ncat console")
                 except:
                     print("not ready")
                     time.sleep(1)
@@ -366,13 +374,13 @@ class minecraftConsole:
                         if err == 'timed out':
                             time.sleep(0.1)
                         else:
-                            print(e)
+                            logging.info(e)
                     except socket.error as e:
                         # Something else happened, handle error, exit, etc.
-                        print(e)
+                        logging.info(e)
                     else:
                         if len(data) == 0:
-                            print('ncat listener is gone')
+                            logging.info('ncat listener is gone')
                             break
                         else:
 

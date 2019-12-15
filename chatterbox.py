@@ -15,7 +15,7 @@ import showandtellraw
 import uuid
 import littlepod_utils
 import turtlesin
-
+from mcrcon import MCRcon
 
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
@@ -56,7 +56,7 @@ if not discordToken:
     sys.exit()
 
 
-dimColors = {"575757": "overworld", "overworld": "575757", "3E1A19": "nether", "nether": "3E1A19", "C2C688": "end", "end": "C2C688"}
+dimColors = {"4e7b44": "overworld", "overworld": "4e7b44", "3E1A19": "nether", "nether": "3E1A19", "C2C688": "end", "end": "C2C688"}
 
 worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
 channelobject = discord.Object(id=discordChannel)
@@ -66,7 +66,6 @@ bot = commands.Bot(command_prefix='$')
 
 brailleOrds = [chr(58)] + [chr(x) for x in range(10241, 10241 + 255)]
 
-emojis = []
 currentPlayers = []
 
 def toBraille( inputuuid ):
@@ -311,6 +310,7 @@ class mainLoop(commands.Cog):
         self.server = bot.get_guild(140194383118073856)
         self.mainTask.start()
         self.emojis = {e.name: e for e in bot.emojis}
+        print(self.emojis)
         self.bot = bot
         self.infochannelobject = bot.get_channel(discordInfoChannel)
 
@@ -394,55 +394,62 @@ class mainLoop(commands.Cog):
                 logging.info("Removing %s from the whitelist", removeIGN)
                 littlepod_utils.send("/whitelist remove {}".format(removeIGN))
 
-            bannerChannel = bot.get_channel(discordBannerChannel)
-            try:
-                with open(os.path.join(webfolder, "papyri.json"), "r") as bannerFile:
-                    papyriBanners = {"{}, {}".format(b["x"], b["z"]): b for b in json.load(bannerFile)}
-            except:
-                papyriBanners = {}
+        bannerChannel = bot.get_channel(discordBannerChannel)
+        try:
+            with open(os.path.join(webfolder, "banners.json"), "r") as bannerFile:
+                bannerJson = json.load(bannerFile)
+                print(bannerJson)
+                papyriBanners = {"{}, {}".format(b["X"], b["Z"]): b for b in bannerJson}
+        except:
+            logging.info(sys.exc_info()[0])
+            papyriBanners = {}
 
-            # print(papyriBanners)
+        logging.info("json: %s", papyriBanners)
 
-            allChannelBanners = {message async for message in bannerChannel.history(limit=200, after=None) if message.author == bot.user}
+        allChannelBanners = {message async for message in bannerChannel.history(limit=200, after=None) if message.author == bot.user}
 
-            # print(channelBanners)
-            channelBanners = {}
-            for each in allChannelBanners:
-                for embed in each.embeds:
-                    #print(embed)
+        channelBanners = {}
+        for each in allChannelBanners:
+            for embed in each.embeds:
+                #print(embed)
 
-                    match = re.search("\[([0-9 \-,]*)\]", embed.description)
-                    coords = match.group(1)
-                    channelBanners.update({coords: each})
+                match = re.search("\[([0-9 \-,]*)\]", embed.description)
+                coords = match.group(1)
+                channelBanners.update({coords: each})
 
-            # print("channel: ", channelBanners)
+        logging.info("channel: %s", channelBanners)
 
-            dupes = allChannelBanners - set(channelBanners.values())
+        dupes = allChannelBanners - set(channelBanners.values())
 
-            addBanners = set(papyriBanners) - set(channelBanners)
-            removeBanners = set(channelBanners) - set(papyriBanners)
+        addBanners = set(papyriBanners) - set(channelBanners)
+        removeBanners = set(channelBanners) - set(papyriBanners)
 
-            def IGNtoMention( match ):
-                return discordWhitelistedPlayersIGN[match.group(1).lower()].mention
+        def IGNtoMention( match ):
+            return discordWhitelistedPlayersIGN[match.group(1).lower()].mention
 
-            for each in addBanners:
-                logging.info("adding banner %s", each)
-                b = papyriBanners[each]
-                title = b["title"]
-                title = re.sub("@([a-zA-Z0-9_]*)", IGNtoMention, title)
-                description = "{} {} [{}, {}]({}/{})".format(str(emojis[b["color"] + "banner"]), title, b["x"], b["z"], URL, b["maplink"])
-                colour = int(dimColors[b["dim"]], 16)
-                embed = discord.Embed(description=description, colour=colour)
-                logging.info(description)
-                await bannerChannel.send(embed=embed)
+        for each in addBanners:
+            logging.info("adding banner %s", each)
+            b = papyriBanners[each]
+            X = b["X"]
+            Z = b["Z"]
+            dim = b["Dimension"]
+            title = b["Name"]
+            title = re.sub("@([a-zA-Z0-9_]*)", IGNtoMention, title)
+            mapLinkCoords = "#17/{}/{}".format(X, Z)
+            mapLink = "/".join([URL, mapLinkCoords, dim.capitalize()])
+            description = "{} {} [{}, {}]({})".format(str(self.emojis[b["Color"] + "banner"]), title, X, Z, mapLink)
+            colour = int(dimColors[dim], 16)
+            embed = discord.Embed(description=description, colour=colour)
+            logging.info(description)
+            await bannerChannel.send(embed=embed)
 
-            for each in removeBanners:
-                logging.info("removing banner %s", each)
-                await bot.delete_message(channelBanners[each])
+        for each in removeBanners:
+            logging.info("removing banner %s", each)
+            await bot.delete_message(channelBanners[each])
 
-            for each in dupes:
-                logging.info("removing dup banner %s", each.embeds[0]["description"])
-                await bot.delete_message(each)
+        for each in dupes:
+            logging.info("removing dup banner %s", each.embeds[0]["description"])
+            await bot.delete_message(each)
 
         versionDict = {"mc": "mc:je", "bds": "mc"}
         version = versionDict[serverType] + " " + serverVersion
@@ -491,39 +498,45 @@ async def on_message(message):
     # print(message.author.display_name, message.clean_content.encode("utf-8"), message.attachments)
 
     # print("mentioned", message.author)
-    if bot.user in message.mentions:
-        adminRole = [role for role in message.guild.roles if role.name == "admin"][0]
-        if adminRole in message.author.roles and not message.author.bot:
-            print("admin mention" + message.content)
-            adds = re.findall( "<@!?\d*> add <@!?(\d*)> (.*)", message.content)
+
+    if message.author.id == 140194230168453120 and message.channel.type == discord.ChannelType.private:
+        logging.info("Admin message")
+        if message.content.startswith("/"):
+            logging.info("Sending command %s", message.content)
+            with MCRcon("0.0.0.0", "secret") as rcon:
+                resp = rcon.command(message.clean_content)
+                chunks, chunk_size = len(resp), 2000
+                respList = [ resp[i:i+chunk_size] for i in range(0, chunks,
+                chunk_size) ]
+                print(resp)
+                for r in respList:
+                    await message.channel.send(r)
+
+        adds = re.findall( "<@!?\d*> add <@!?(\d*)> (.*)", message.content)
+        if adds:
+
             logging.info("adding player: %s", adds)
-            if adds:
 
-                addDiscordID, addIGN = adds[0]
-                r = requests.get('https://api.mojang.com/users/profiles/minecraft/{}'.format(addIGN))
-                rDict = r.json()
-                UUID = rDict["id"]
-                UUIDBraille = toBraille(UUID)
-                newNickname = rDict["name"] + UUIDBraille
-                logging.info("nicknameing: %s %s", rDict, newNickname)
+            addDiscordID, addIGN = adds[0]
+            r = requests.get('https://api.mojang.com/users/profiles/minecraft/{}'.format(addIGN))
+            rDict = r.json()
+            UUID = rDict["id"]
+            UUIDBraille = toBraille(UUID)
+            newNickname = rDict["name"] + UUIDBraille
+            logging.info("nicknameing: %s %s", rDict, newNickname)
 
-                member = server.get_member(addDiscordID)
+            member = server.get_member(addDiscordID)
 
-                bot.change_nickname(member, newNickname)
+            bot.change_nickname(member, newNickname)
 
-                whitelistedRole = [role for role in server.roles if role.name == "whitelisted"][0]
+            whitelistedRole = [role for role in server.roles if role.name == "whitelisted"][0]
 
-                memberRoles = {role for role in member.roles}
-                if whitelistedRole not in memberRoles:
+            memberRoles = {role for role in member.roles}
+            if whitelistedRole not in memberRoles:
 
-                    bot.add_roles(member, whitelistedRole)
-                    privchannelobject.send(str(rDict) + newNickname)
+                bot.add_roles(member, whitelistedRole)
+                privchannelobject.send(str(rDict) + newNickname)
 
-        if "list" in message.content:
-            delMessage = message.channel.send(" ".join(['`{}`'.format(name) for name in currentPlayers]))
-            asyncio.sleep(10)
-            bot.delete_message(delMessage)
-            bot.delete_message(message)
 
     reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message.content)
 
@@ -544,8 +557,6 @@ async def on_message(message):
 
         await message.channel.send(coordsmessage( reCoords, dim ))
         tellcoords(reCoords, dim)
-
-
 
 
 
