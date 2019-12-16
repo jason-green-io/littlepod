@@ -214,7 +214,9 @@ class serverLoop(commands.Cog):
             player = re.sub(r"\?\d(.*)\?r",r"\1", player)
             await self.discordchannelobject.send("⏹ `{}` left the game".format(player))
 
-
+        async def eventLost(data):
+            player = data[1]
+            await self.discordchannelobject.send("⏹ `{}` lost connection".format(player))
 
         async def eventChat(data):
 
@@ -301,8 +303,11 @@ class serverLoop(commands.Cog):
             elif event.startswith("whitelistRemove"):
                 await eventWhitelistRemove(data)
 
-            if event in ["left", "lost", "leftbds"]:
+            elif event in ["left", "leftbds"]:
                 await eventLeft(data)
+            
+            if event in ["lost"]:
+                await eventLost(data)
 
 class mainLoop(commands.Cog):
     def __init__(self, bot):
@@ -313,6 +318,7 @@ class mainLoop(commands.Cog):
         print(self.emojis)
         self.bot = bot
         self.infochannelobject = bot.get_channel(discordInfoChannel)
+        self.privchannelobject = bot.get_channel(discordPrivChannel)
 
 
     def cog_unload(self):
@@ -383,28 +389,27 @@ class mainLoop(commands.Cog):
                 logging.info("Expired %s %s", each, mcWhitelistedPlayersUUID.get(each,""))
 
 
-            for each in add:
-                addIGN = littlepod_utils.getNameFromAPI(each)
-                logging.info("Adding %s from the whitelist", addIGN)
-                littlepod_utils.send("/whitelist add {}".format(addIGN))
+        for each in add:
+            addIGN = littlepod_utils.getNameFromAPI(each)
+            logging.info("Adding %s from the whitelist", addIGN)
+            littlepod_utils.send("/whitelist add {}".format(addIGN))
 
 
-            for each in remove:
-                removeIGN = mcWhitelistedPlayersUUID.get(each,"")
-                logging.info("Removing %s from the whitelist", removeIGN)
-                littlepod_utils.send("/whitelist remove {}".format(removeIGN))
+        for each in remove:
+            removeIGN = mcWhitelistedPlayersUUID.get(each,"")
+            logging.info("Removing %s from the whitelist", removeIGN)
+            littlepod_utils.send("/whitelist remove {}".format(removeIGN))
 
         bannerChannel = bot.get_channel(discordBannerChannel)
         try:
             with open(os.path.join(webfolder, "banners.json"), "r") as bannerFile:
                 bannerJson = json.load(bannerFile)
-                print(bannerJson)
                 papyriBanners = {"{}, {}".format(b["X"], b["Z"]): b for b in bannerJson}
         except:
             logging.info(sys.exc_info()[0])
             papyriBanners = {}
 
-        logging.info("json: %s", papyriBanners)
+        # logging.info("json: %s", papyriBanners)
 
         allChannelBanners = {message async for message in bannerChannel.history(limit=200, after=None) if message.author == bot.user}
 
@@ -417,7 +422,7 @@ class mainLoop(commands.Cog):
                 coords = match.group(1)
                 channelBanners.update({coords: each})
 
-        logging.info("channel: %s", channelBanners)
+        # logging.info("channel: %s", channelBanners)
 
         dupes = allChannelBanners - set(channelBanners.values())
 
@@ -511,10 +516,10 @@ async def on_message(message):
                 print(resp)
                 for r in respList:
                     await message.channel.send(r)
-
-        adds = re.findall( "<@!?\d*> add <@!?(\d*)> (.*)", message.content)
+    if message.channel.id == int(discordPrivChannel):
+        adds = re.findall( "<@!?(\d*)> link (.*)", message.content)
         if adds:
-
+            
             logging.info("adding player: %s", adds)
 
             addDiscordID, addIGN = adds[0]
@@ -525,17 +530,17 @@ async def on_message(message):
             newNickname = rDict["name"] + UUIDBraille
             logging.info("nicknameing: %s %s", rDict, newNickname)
 
-            member = server.get_member(addDiscordID)
+            member = message.guild.get_member(int(addDiscordID))
 
-            bot.change_nickname(member, newNickname)
+            await member.edit(nick=newNickname)
 
-            whitelistedRole = [role for role in server.roles if role.name == "whitelisted"][0]
+            whitelistedRole = [role for role in message.guild.roles if role.name == "whitelisted"][0]
 
-            memberRoles = {role for role in member.roles}
-            if whitelistedRole not in memberRoles:
+            newMemberRoles = member.roles + [whitelistedRole]
 
-                bot.add_roles(member, whitelistedRole)
-                privchannelobject.send(str(rDict) + newNickname)
+            await member.edit(roles=newMemberRoles)
+            
+            await message.channel.send(str(rDict) + newNickname)
 
 
     reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message.content)
