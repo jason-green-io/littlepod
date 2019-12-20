@@ -12,7 +12,7 @@ case $TYPE in
 
         echo $(date) "Syncing world to backup"
 
-        rsync -aP $DATAFOLDER/mc/world $DATAFOLDER/backup
+        rsync -aP --delete $DATAFOLDER/mc/world $DATAFOLDER/backup
         sleep 10
         {
         echo "/save-on"
@@ -29,7 +29,7 @@ case $TYPE in
 
         echo $(date) "Syncing world to backup"
 
-        rsync -aP $DATAFOLDER/bds/worlds/ $DATAFOLDER/backup
+        rsync -aP --delete $DATAFOLDER/bds/worlds/ $DATAFOLDER/backup
         rm $DATAFOLDER/backup/world/db/LOCK
         sleep 10
         {
