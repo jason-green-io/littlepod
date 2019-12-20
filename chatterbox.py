@@ -450,11 +450,11 @@ class mainLoop(commands.Cog):
 
         for each in removeBanners:
             logging.info("removing banner %s", each)
-            await bot.delete_message(channelBanners[each])
+            await channelBanners[each].delete()
 
         for each in dupes:
             logging.info("removing dup banner %s", each.embeds[0]["description"])
-            await bot.delete_message(each)
+            await each.delete()
 
         versionDict = {"mc": "mc:je", "bds": "mc"}
         version = versionDict[serverType] + " " + serverVersion
@@ -517,7 +517,7 @@ async def on_message(message):
                 for r in respList:
                     await message.channel.send(r)
     if message.channel.id == int(discordPrivChannel):
-        adds = re.findall( "<@!?(\d*)> link (.*)", message.content)
+        adds = re.findall( "(\d*) link (.*)", message.content)
         if adds:
             
             logging.info("adding player: %s", adds)
