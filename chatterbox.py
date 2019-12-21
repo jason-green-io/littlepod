@@ -220,7 +220,6 @@ class serverLoop(commands.Cog):
 
         async def eventChat(data):
 
-            links = re.findall('<(https?://\S+)>', data[2])
 
             player = data[1]
             message = data[2]
@@ -238,8 +237,6 @@ class serverLoop(commands.Cog):
                 # print(message)
 
 
-            if links:
-                telllinks( links )
 
             if not player.startswith("?7"):
                 player = re.sub(r"\?\d(.*)\?r",r"\1", player)
@@ -472,23 +469,6 @@ class mainLoop(commands.Cog):
         await bot.change_presence(activity=discord.Game(name=topicLine))
 
 
-
-'''
-@bot.async_event
-def on_member_update(before, after):
-
-    beforeRoles = [role.name for role in before.roles]
-    afterRoles = [role.name for role in after.roles]
-    # print(beforeRoles, afterRoles)
-    player = before.nick if before.nick else before.name
-    if "whitelisted" in beforeRoles and "whitelisted" not in afterRoles:
-        print("Unwhitelisting")
-        vanillabean.send("/whitelist remove {}".format(player))
-    elif "whitelisted" not in beforeRoles and "whitelisted" in afterRoles:
-        print("Whitelisting")
-        vanillabean.send("/whitelist add {}".format(player))
-'''
-
 @bot.event
 async def on_status(member, old_game, old_status):
     logging.info("%s %s %s", old_status, member.name, member.status)
@@ -543,59 +523,36 @@ async def on_message(message):
             await message.channel.send(str(rDict) + newNickname)
 
 
-    reCoords =  re.findall( "(-?\d+), ?(-?\d+)", message.content)
-
-    if reCoords:
-        reDim = re.findall("nether|end|over| o | e | n ", message.content)
-        if reDim:
-
-                if reDim[0] in ["over", " o "]:
-                    dim = "o"
-                elif reDim[0] in ["nether", " n "]:
-                    dim = "n"
-                elif reDim[0] in ["end", " e "]:
-                    dim = "e"
-        else:
-            dim = "o"
-
-        logging.info("coords to Discord %s %s", reCoords, reDim)
-
-        await message.channel.send(coordsmessage( reCoords, dim ))
-        tellcoords(reCoords, dim)
 
 
+        if message.channel.id == discordChannel:
 
-    if message.channel.id == discordChannel:
-        links = re.findall('(https?://\S+)', message.content)
+            display_name = str(message.author.display_name)
+            discordName = str(message.author)
+            messagetext = str(message.clean_content)
 
-        display_name = str(message.author.display_name)
-        discordName = str(message.author)
-        messagetext = str(message.clean_content)
-
-        # messagetext = messagetext.replace('"', r"\"")
-        discordtext =  u'{"text" : "\u2689 ", "color" : "blue" }'
+            # messagetext = messagetext.replace('"', r"\"")
+            discordtext =  u'{"text" : "\u2689 ", "color" : "blue" }'
 
 
-        if message.author.bot:
-            nameFormat = '§9\<{{§a{}~{}}}§9\>§r '
-            mcplayer, mcmessage = messagetext.split(" ", 1)
-            messagetext = mcplayer.strip('`') + " " + mcmessage
-        elif "patrons" in [a.name for a in message.author.roles]:
+            if message.author.bot:
+                nameFormat = '§9\<{{§a{}~{}}}§9\>§r '
+                mcplayer, mcmessage = messagetext.split(" ", 1)
+                messagetext = mcplayer.strip('`') + " " + mcmessage
+            elif "patrons" in [a.name for a in message.author.roles]:
 
-            nameFormat = '§9\<{{§c{}~{}}}§9\>§r '
-        else:
-            nameFormat = '§9\<{{§f{}~{}}}§9\>§r '
+                nameFormat = '§9\<{{§c{}~{}}}§9\>§r '
+            else:
+                nameFormat = '§9\<{{§f{}~{}}}§9\>§r '
 
-        #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
-        tellrawText =  nameFormat.format(display_name.replace("_", "\_").replace("~",""), discordName.replace("_", "\_").replace("@","\@").replace("~",""))
-        finalline = tellrawCommand.format(selector="@a", json=showandtellraw.tojson(tellrawText, noparse=messagetext))
-        logging.info(finalline)
+            #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
+            tellrawText =  nameFormat.format(display_name.replace("_", "\_").replace("~",""), discordName.replace("_", "\_").replace("@","\@").replace("~",""))
+            finalline = tellrawCommand.format(selector="@a", json=showandtellraw.tojson(tellrawText, noparse=messagetext))
+            logging.info(finalline)
 
-        littlepod_utils.send(finalline)
+            littlepod_utils.send(finalline)
 
 
-        if links:
-           telllinks( links )
 
 
 @bot.event
