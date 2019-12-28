@@ -525,32 +525,32 @@ async def on_message(message):
 
 
 
-        if message.channel.id == discordChannel:
+    if message.channel.id == discordChannel:
 
-            display_name = str(message.author.display_name)
-            discordName = str(message.author)
-            messagetext = str(message.clean_content)
+        display_name = str(message.author.display_name)
+        discordName = str(message.author)
+        messagetext = str(message.clean_content)
 
-            # messagetext = messagetext.replace('"', r"\"")
-            discordtext =  u'{"text" : "\u2689 ", "color" : "blue" }'
+        # messagetext = messagetext.replace('"', r"\"")
+        discordtext =  u'{"text" : "\u2689 ", "color" : "blue" }'
 
 
-            if message.author.bot:
-                nameFormat = '§9\<{{§a{}~{}}}§9\>§r '
-                mcplayer, mcmessage = messagetext.split(" ", 1)
-                messagetext = mcplayer.strip('`') + " " + mcmessage
-            elif "patrons" in [a.name for a in message.author.roles]:
+        if message.author.bot:
+            nameFormat = '§9\<{{§a{}~{}}}§9\>§r '
+            mcplayer, mcmessage = messagetext.split(" ", 1)
+            messagetext = mcplayer.strip('`') + " " + mcmessage
+        elif "patrons" in [a.name for a in message.author.roles]:
 
-                nameFormat = '§9\<{{§c{}~{}}}§9\>§r '
-            else:
-                nameFormat = '§9\<{{§f{}~{}}}§9\>§r '
+            nameFormat = '§9\<{{§c{}~{}}}§9\>§r '
+        else:
+            nameFormat = '§9\<{{§f{}~{}}}§9\>§r '
 
-            #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
-            tellrawText =  nameFormat.format(display_name.replace("_", "\_").replace("~",""), discordName.replace("_", "\_").replace("@","\@").replace("~",""))
-            finalline = tellrawCommand.format(selector="@a", json=showandtellraw.tojson(tellrawText, noparse=messagetext))
-            logging.info(finalline)
+        #finalline = '/tellraw @a[team=!mute] {{"text" : "", "extra" : [{}, {{"color" : "gold", "text" : "{} "}}, {{"text" : "{}"}}]}}'.format(discordtext, display_name, messagetext)
+        tellrawText =  nameFormat.format(display_name.replace("_", "\_").replace("~",""), discordName.replace("_", "\_").replace("@","\@").replace("~",""))
+        finalline = tellrawCommand.format(selector="@a", json=showandtellraw.tojson(tellrawText, noparse=messagetext))
+        logging.info(finalline)
 
-            littlepod_utils.send(finalline)
+        littlepod_utils.send(finalline)
 
 
 
