@@ -30,7 +30,7 @@ set httpd port 2812 and
      use address localhost  # only accept connection from localhost
      allow localhost        # allow localhost to connect to the server and
 
-check process commandblock MATCHING "/usr/bin/java -jar /tmp/server|bedrock_server"
+check process commandblock MATCHING "/tmp/server_|bedrock_server"
     start program = "/minecraft/commandblock.sh $MCVERSION"
     stop program = "/usr/bin/pkill commandblock"
     group mc

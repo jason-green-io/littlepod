@@ -82,7 +82,7 @@
             echo $(date) "Starting server version $MCVERSION"
 
             coproc ncat -lkp 7777
-            /usr/bin/java -jar "/tmp/server_$MCVERSION.jar" nogui <&${COPROC[0]} >&${COPROC[1]} 2>&1
+            /usr/bin/java -Xmx8G -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M -jar "/tmp/server_$MCVERSION.jar" nogui <&${COPROC[0]} >&${COPROC[1]} 2>&1
             echo $(date) "Server has stopped"
 
         ;;
