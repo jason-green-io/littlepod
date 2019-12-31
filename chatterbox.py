@@ -140,7 +140,7 @@ class serverLoop(commands.Cog):
                 ipstat = " ".join( [ip, hostaddr, ipinfo.get("countryCode", "??"), str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
             else:
                 ipstat = " ".join([ip, hastaddr])
-            await self.discordchannobject.send("`{}` !!!DENIED!!! {}".format(name, ipstat))
+            await self.discordchannelobject.send("`{}` !!!DENIED!!! {}".format(name, ipstat))
 
 
         async def eventDeath1(data):
@@ -504,6 +504,7 @@ async def on_message(message):
 
             addDiscordID, addIGN = adds[0]
             r = requests.get('https://api.mojang.com/users/profiles/minecraft/{}'.format(addIGN))
+            print(str(r))
             rDict = r.json()
             UUID = rDict["id"]
             UUIDBraille = toBraille(UUID)
