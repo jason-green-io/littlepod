@@ -310,12 +310,12 @@ class mainLoop(commands.Cog):
     def __init__(self, bot):
         logging.info("Init main loop")
         self.server = bot.get_guild(140194383118073856)
-        self.mainTask.start()
         self.emojis = {e.name: e for e in bot.emojis}
         print(self.emojis)
         self.bot = bot
         self.infochannelobject = bot.get_channel(discordInfoChannel)
         self.privchannelobject = bot.get_channel(discordPrivChannel)
+        self.mainTask.start()
 
 
     def cog_unload(self):
@@ -327,18 +327,26 @@ class mainLoop(commands.Cog):
         logging.info("Running main loop")
         info = open(datafolder + "/info.md", "r").read()
 
-        activity = turtlesin.getActivity()
+        activityFinal = "__Player Activity__\n\n" + turtlesin.getActivity()
 
-        infoFinal = info + "\n" + activity
+        infoFinal = info
+        
         
         allMessages = await self.infochannelobject.history( limit=200, after=None).flatten()
         if allMessages:
             for message in allMessages:
-                if message.author == self.bot.user:
+                if message.author == self.bot.user and message.content.startswith("__About__"):
                     await message.edit(content=infoFinal)
-        else:
-            await infochannelobject.send(infoFinal)
+                    break
+            else:
+                await self.infochannelobject.send(infoFinal)
 
+            for message in allMessages:
+                if message.author == self.bot.user and message.content.startswith("__Player Activity__"):
+                    await message.edit(content=activityFinal)
+                    break
+            else:
+                await self.infochannelobject.send(activityFinal)
 
         '''
             allroles = [r for r in server.roles if len(r.name) == 32]
@@ -362,40 +370,40 @@ class mainLoop(commands.Cog):
             mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
             mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
 
-        for member in self.server.members:
-            if "whitelisted" in [role.name for role in member.roles]:
-                brailleUUID = member.nick[-16:]
-                #print(member.nick, brailleUUID)
-                memberUUID = fromBraille(brailleUUID)
-                #print(memberUUID)
+            for member in self.server.members:
+                if "whitelisted" in [role.name for role in member.roles]:
+                    brailleUUID = member.nick[-16:]
+                    #print(member.nick, brailleUUID)
+                    memberUUID = fromBraille(brailleUUID)
+                    #print(memberUUID)
 
 
-                discordWhitelistedPlayers[memberUUID] =  member.id
-                discordWhitelistedPlayersIGN[mcWhitelistedPlayersUUID.get(memberUUID, "").lower()] = member
+                    discordWhitelistedPlayers[memberUUID] =  member.id
+                    discordWhitelistedPlayersIGN[mcWhitelistedPlayersUUID.get(memberUUID, "").lower()] = member
 
-        mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
-        mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
+            mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
+            mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
 
-        add = set(discordWhitelistedPlayers) - set(mcWhitelistedPlayersUUID)
-        remove = set(mcWhitelistedPlayersUUID) - set(discordWhitelistedPlayers)
+            add = set(discordWhitelistedPlayers) - set(mcWhitelistedPlayersUUID)
+            remove = set(mcWhitelistedPlayersUUID) - set(discordWhitelistedPlayers)
 
-        playerStatus = littlepod_utils.getPlayerStatus(whitelist=discordWhitelistedPlayers)
-        if updateRoles:
+            playerStatus = littlepod_utils.getPlayerStatus(whitelist=discordWhitelistedPlayers)
+            if updateRoles:
 
-            for each in playerStatus["expired"]:
-                logging.info("Expired %s %s", each, mcWhitelistedPlayersUUID.get(each,""))
-
-
-        for each in add:
-            addIGN = littlepod_utils.getNameFromAPI(each)
-            logging.info("Adding %s from the whitelist", addIGN)
-            littlepod_utils.send("/whitelist add {}".format(addIGN))
+                for each in playerStatus["expired"]:
+                    logging.info("Expired %s %s", each, mcWhitelistedPlayersUUID.get(each,""))
 
 
-        for each in remove:
-            removeIGN = mcWhitelistedPlayersUUID.get(each,"")
-            logging.info("Removing %s from the whitelist", removeIGN)
-            littlepod_utils.send("/whitelist remove {}".format(removeIGN))
+            for each in add:
+                addIGN = littlepod_utils.getNameFromAPI(each)
+                logging.info("Adding %s from the whitelist", addIGN)
+                littlepod_utils.send("/whitelist add {}".format(addIGN))
+
+
+            for each in remove:
+                removeIGN = mcWhitelistedPlayersUUID.get(each,"")
+                logging.info("Removing %s from the whitelist", removeIGN)
+                littlepod_utils.send("/whitelist remove {}".format(removeIGN))
 
         bannerChannel = bot.get_channel(discordBannerChannel)
         try:
