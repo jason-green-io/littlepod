@@ -443,10 +443,11 @@ class mainLoop(commands.Cog):
             X = b["X"]
             Z = b["Z"]
             dim = b["Dimension"]
+            dimLayer = "{0}-{0}B".format(dim[0].capitalize())
             title = b["Name"]
             title = re.sub("@([a-zA-Z0-9_]*)", IGNtoMention, title)
-            mapLinkCoords = "#17/{}/{}".format(X, Z)
-            mapLink = "/".join([URL, mapLinkCoords, dim.capitalize()])
+            mapLinkCoords = "#20/{}/{}".format(X, Z)
+            mapLink = "/".join([URL, mapLinkCoords, dimLayer])
             description = "{} {} [{}, {}]({})".format(str(self.emojis[b["Color"] + "banner"]), title, X, Z, mapLink)
             colour = int(dimColors[dim], 16)
             embed = discord.Embed(description=description, colour=colour)
