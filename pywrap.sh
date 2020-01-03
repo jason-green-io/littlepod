@@ -3,7 +3,7 @@
 
 BASEDIR="/minecraft"
 LOG="$DATAFOLDER/logs/$1.log"
-STATE="$DATAFOLDER/state"
+STATE="/tmp"
 
 export PYTHONIOENCODING="utf-8"
 case "$2" in

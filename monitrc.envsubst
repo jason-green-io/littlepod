@@ -1,12 +1,12 @@
 set daemon 30
 
 
-set logfile $DATAFOLDER/logs/monit.log
-set idfile $DATAFOLDER/state/monitid
-set statefile $DATAFOLDER/state/monitstate
+set logfile /minecraft/data/logs/monit.log
+set idfile /minecraft/data/state/monitid
+set statefile /minecraft/data/state/monitstate
 
 set eventqueue
-    basedir $DATAFOLDER/logs/monitevents # set the base directory where events will be stored
+    basedir /minecraft/data/logs/monitevents # set the base directory where events will be stored
     slots 100                     # optionally limit the queue size
 
 SET MAILSERVER smtp.gmail.com PORT 587
@@ -31,52 +31,52 @@ set httpd port 2812 and
      allow localhost        # allow localhost to connect to the server and
 
 check process commandblock MATCHING "/tmp/server_|bedrock_server"
-    start program = "/minecraft/commandblock.sh $MCVERSION"
+    start program = "/minecraft/commandblock.sh"
     stop program = "/usr/bin/pkill commandblock"
     group mc
     group bds
     
-check process seapigeon pidfile $DATAFOLDER/state/seapigeon.py.pid
+check process seapigeon pidfile /tmp/seapigeon.py.pid
     start program = "/minecraft/pywrap.sh seapigeon.py start"
     stop program = "/minecraft/pywrap.sh seapigeon.py stop"
     group mc
 
-check process chatterbox pidfile $DATAFOLDER/state/chatterbox.py.pid
+check process chatterbox pidfile /tmp/chatterbox.py.pid
     start program = "/minecraft/pywrap.sh chatterbox.py start"
     stop program = "/minecraft/pywrap.sh chatterbox.py stop"
     group mc
     group bds
 
 check program restart
-    with path "/bin/bash -c 'echo "say Server restarting in 10s" | ncat localhost 7777; sleep 10; echo stop | ncat localhost 7777 2>&1 | tee -a $DATAFOLDER/logs/restart.log'"
+    with path "/minecraft/restart.sh"
     every "0 12 * * *"
     if status != 0 then alert
     group mc
     group bds
 
-check program copypaste
-    with path "/bin/bash -c '/minecraft/copypaste.sh  2>&1 | tee -a $DATAFOLDER/logs/copypaste.sh.log'"
+check program localbackup
+    with path "/minecraft/localbackup.sh"
     every "55,15,35 * * * *"
     if status != 0 then alert
     group mc
     group bds
 
 # check program restic
-#     with path "/bin/bash -c 'restic --no-cache backup $DATAFOLDER/backup'"
+#     with path "/bin/bash -c 'restic --no-cache backup $DATAFOLDER/data/backup'"
 #     every "0 * * * *"
 #     if status != 0 then alert
 #     group mc
 #     group bds
 
-check program rsync
-    with path "/bin/bash -c 'sshpass -e rsync -aP -e "ssh -o StrictHostKeyChecking=no" $DATAFOLDER/backup/ $RSYNCNETUSERHOST:$SERVERNAME'"
+check program remotebackup
+    with path "/minecraft/remotebackup.sh"
     every "0 * * * *"
     if status != 0 then alert
     group mc
     group bds
 
 check program papyri
-    with path "/bin/bash -c 'cd /papyri; ./papyri.py --world $DATAFOLDER/backup/world --output $WEBDATA 2>&1 | tee -a $DATAFOLDER/logs/papyri.py.log'" timeout 1200 seconds
+    with path "/minecraft/papyri.sh" timeout 1200 seconds
     every "0,20,40 * * * *" 
     if status != 0 then alert
     group mc

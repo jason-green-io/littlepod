@@ -11,11 +11,11 @@ import requests
 import sys
 import discord
 from discord.ext import tasks, commands
-import showandtellraw
 import uuid
-import littlepod_utils
-import turtlesin
 from mcrcon import MCRcon
+import lib.showandtellraw as showandtellraw
+import lib.littlepod as littlepod
+import lib.turtlesin as turtlesin
 
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
@@ -85,7 +85,7 @@ def fromBraille( braille ):
 def telllinks( links ):
     for each in links:
         logging.info("Found link: %s", each)
-        littlepod_utils.send(tellrawCommand.format(selector="@a", json=showandtellraw.tojson((serverFormat + " [_Link_|{}]").format(servername, each))))
+        littlepod.send(tellrawCommand.format(selector="@a", json=showandtellraw.tojson((serverFormat + " [_Link_|{}]").format(servername, each))))
 
 
 def coordsmessage( reCoords, reDim ):
@@ -103,13 +103,13 @@ def tellcoords( reCoords, reDim ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     for each in reCoords:
         x, z = each
-        littlepod_utils.send(tellrawCommand.format(selector="@a", json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dim} {x}, {z}_|{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL))))
+        littlepod.send(tellrawCommand.format(selector="@a", json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dim} {x}, {z}_|{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL))))
 
 class serverLoop(commands.Cog):
     def __init__(self, bot):
         logging.info("Init server loop")
         self.server = bot.get_guild(140194383118073856)
-        s = littlepod_utils.minecraftConsole()
+        s = littlepod.minecraftConsole()
         s.connect()
         self.events = s.events
         self.serverTask.start()
@@ -367,8 +367,8 @@ class mainLoop(commands.Cog):
             discordWhitelistedPlayers = {}
             discordWhitelistedPlayersIGN = {}
 
-            mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
-            mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
+            mcWhitelistedPlayersUUID = littlepod.getWhitelist()
+            mcWhitelistedPlayersIGN = littlepod.getWhitelistByIGN()
 
             for member in self.server.members:
                 if "whitelisted" in [role.name for role in member.roles]:
@@ -381,13 +381,13 @@ class mainLoop(commands.Cog):
                     discordWhitelistedPlayers[memberUUID] =  member.id
                     discordWhitelistedPlayersIGN[mcWhitelistedPlayersUUID.get(memberUUID, "").lower()] = member
 
-            mcWhitelistedPlayersUUID = littlepod_utils.getWhitelist()
-            mcWhitelistedPlayersIGN = littlepod_utils.getWhitelistByIGN()
+            mcWhitelistedPlayersUUID = littlepod.getWhitelist()
+            mcWhitelistedPlayersIGN = littlepod.getWhitelistByIGN()
 
             add = set(discordWhitelistedPlayers) - set(mcWhitelistedPlayersUUID)
             remove = set(mcWhitelistedPlayersUUID) - set(discordWhitelistedPlayers)
 
-            playerStatus = littlepod_utils.getPlayerStatus(whitelist=discordWhitelistedPlayers)
+            playerStatus = littlepod.getPlayerStatus(whitelist=discordWhitelistedPlayers)
             if updateRoles:
 
                 for each in playerStatus["expired"]:
@@ -395,15 +395,15 @@ class mainLoop(commands.Cog):
 
 
             for each in add:
-                addIGN = littlepod_utils.getNameFromAPI(each)
+                addIGN = littlepod.getNameFromAPI(each)
                 logging.info("Adding %s from the whitelist", addIGN)
-                littlepod_utils.send("/whitelist add {}".format(addIGN))
+                littlepod.send("/whitelist add {}".format(addIGN))
 
 
             for each in remove:
                 removeIGN = mcWhitelistedPlayersUUID.get(each,"")
                 logging.info("Removing %s from the whitelist", removeIGN)
-                littlepod_utils.send("/whitelist remove {}".format(removeIGN))
+                littlepod.send("/whitelist remove {}".format(removeIGN))
 
         bannerChannel = bot.get_channel(discordBannerChannel)
         try:
@@ -466,7 +466,7 @@ class mainLoop(commands.Cog):
         version = versionDict[serverType] + " " + serverVersion
 
         if serverType == "mc":
-            players = littlepod_utils.getOnlinePlayers()
+            players = littlepod.getOnlinePlayers()
             playerList = " ".join(players) if players else ""
             topicLine = "{} w/ {}".format(version, playerList)
         elif serverType == "bds":
@@ -560,7 +560,7 @@ async def on_message(message):
         finalline = tellrawCommand.format(selector="@a", json=showandtellraw.tojson(tellrawText, noparse=messagetext))
         logging.info(finalline)
 
-        littlepod_utils.send(finalline)
+        littlepod.send(finalline)
 
 
 

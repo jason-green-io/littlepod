@@ -1,18 +1,13 @@
 #/bin/bash
 mkdir -p $DATAFOLDER/logs
-mkdir -p $DATAFOLDER/state
 
-rm -f $DATAFOLDER/state/*.pid
+rm -f /tmp/*.pid
 
-/usr/bin/envsubst '$GMAILPASSWORD $GMAILUSER $MCVERSION $DATAFOLDER $WEBDATA' < /minecraft/monitrc.envsubst > /minecraft/.monitrc
+/usr/bin/envsubst '$GMAILPASSWORD $GMAILUSER' < /minecraft/monitrc.envsubst > /minecraft/.monitrc
 chmod 0700 /minecraft/.monitrc
 
 /usr/bin/monit
-/usr/bin/monit unmonitor all
-/usr/bin/monit monitor $HOSTNAME
+/usr/bin/monit reload
 
-for UNIT in $MONITMONITOR; do
-    /usr/bin/monit monitor $UNIT
-done
 
 tail -f /dev/null

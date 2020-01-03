@@ -1,4 +1,5 @@
 #!/bin/bash
+{
 echo $(date) "Starting backup"
 
 case $TYPE in
@@ -40,3 +41,4 @@ case $TYPE in
     ;;
 esac
 echo $(date) "Backup done"
+} | tee -a $DATAFOLDER/logs/copypaste.log 
