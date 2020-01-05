@@ -236,9 +236,13 @@ def getWhitelistByIGN():
 def getNameFromAPI(uuid):
     return requests.get('https://api.mojang.com/user/profiles/{}/names'.format(uuid.replace('-', ''))).json()[-1].get("name", "")
 
-def getPlayerStatus(whitelist=getWhitelist(), usercache=getUserCache()):
+def getPlayerStatus(whitelist=None):
     expired = []
     active = []
+    if not whitelist:
+        whitelist = getWhitelist()
+    usercache = getUserCache()
+
     for each in sorted(usercache, key=usercache.get):
         if each in whitelist and usercache[each][0] <= datetime.datetime.now() - datetime.timedelta(days=120):
             # print(each, usercache[each])
