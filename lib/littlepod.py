@@ -149,7 +149,8 @@ def genEvent(line):
                                 ("deathEnemyPummeled", "^\[(.*)\] \[Server thread/INFO\]: (.*) (was pummeled by )(.*)$"),
                                 ("joined", "^\[(.*)\] \[Server thread/INFO\]: (.*) joined the game$"),
                                 ("loggedbds", "^\[(.*?) INFO\] Player connected: (.*?), xuid:(.*?)$"),
-                                ("left", "^\[(.*)\] \[Server thread/INFO\]: (.*) left the game$"),
+                                ("left", "^\[(.*)\] \[Server thread/INFO\]:
+                                ([0-9_a-zA-Z]*) left the game$"),
                                 ("leftbds",   "^\[(.*?) INFO\] Player disconnected: (.*?), xuid:(.*?)$"),
                                 ("lost", "^\[(.*)\] \[Server thread/INFO\]: (.*) lost.*"),
                                 ("logged", "^\[(.*)\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$"),
