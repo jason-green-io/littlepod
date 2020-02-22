@@ -140,7 +140,7 @@ class serverLoop(commands.Cog):
                 ipstat = " ".join( [ip, hostaddr, ipinfo.get("countryCode", "??"), str(ipinfo.get("regionName", "??")), str(ipinfo.get("city", "??")), str(ipinfo.get("as", "??")) ] )
             else:
                 ipstat = " ".join([ip, hastaddr])
-            await self.discordchannelobject.send("`{}` !!!DENIED!!! {}".format(name, ipstat))
+            await self.privchannelobject.send("`{}` !!!DENIED!!! {}".format(name, ipstat))
 
 
         async def eventDeath1(data):
