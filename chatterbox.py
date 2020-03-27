@@ -94,7 +94,7 @@ def coordsmessage( reCoords, reDim ):
     for each in reCoords:
         logging.info("Coords, %s, %s", each[0], each[1])
         x, z = each
-        message = "Map: {dim} {x}, {z}\n{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL)
+        message = "Map: {dimtext} {x}, {z}\n{URL}#20/{x}/{z}/{dim}".format(dimtext=worlddict[reDim][0], dim=reDim.upper(), x=x, z=z, URL=URL)
 
     return message
 
@@ -103,7 +103,8 @@ def tellcoords( reCoords, reDim ):
     worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     for each in reCoords:
         x, z = each
-        littlepod.send(tellrawCommand.format(selector="@a", json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dim} {x}, {z}_|{URL}/map/{dim}/#zoom=0.02&x={x}&y={z}]".format(dim=worlddict[reDim][0], x=x, z=z, URL=URL))))
+        littlepod.send(tellrawCommand.format(selector="@a",
+        json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dimitext} {x}, {z}_|{URL}/#20/{x}/{z}/{dim}]".format(dimtext=worlddict[reDim][0], dim=reDim.upper(), x=x, z=z, URL=URL))))
 
 class serverLoop(commands.Cog):
     def __init__(self, bot):
@@ -148,14 +149,14 @@ class serverLoop(commands.Cog):
             player = re.sub(r"\?\d(.*)\?r",r"\1", player)
             message = data[2:]
             
-            await self.discordchannelobject.send("⏸ `{}` {}".format(player, "".join(message)))
+            await self.discordchannelobject.send("\u2297 `{}` {}".format(player, "".join(message)))
 
         async def eventDeath2(data):
             player = data[1]
             player = re.sub(r"\?\d(.*)\?r",r"\1", player)
             message = list(data[2:])
             message[1] = "`{}`".format(message[1])
-            await self.discordchannelobject.send("⏸ `{}` {}".format(player, "".join(message)))
+            await self.discordchannelobject.send("\u2297 `{}` {}".format(player, "".join(message)))
 
 
         async def eventDeath3(data):
@@ -165,14 +166,14 @@ class serverLoop(commands.Cog):
             message[1] = "`{}`".format(message[1])
             message[1] = re.sub(r"\?\d(.*)\?r",r"\1", message[1])
             message[3] = "`{}`".format(message[3])
-            await self.discordchannelobject.send("⏸ `{}` {}".format(player, "".join(message)))
+            await self.discordchannelobject.send("\u2297 `{}` {}".format(player, "".join(message)))
 
 
         async def eventLogged(data):
             server =  bot.get_guild("140194383118073856")
             player = data[1]
             player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-            await self.discordchannelobject.send("▶️ `{}` joined the game".format(player))
+            await self.discordchannelobject.send("\u2295 `{}` joined the game".format(player))
             
             ip = data[2].split(':')[0]
             
@@ -212,11 +213,11 @@ class serverLoop(commands.Cog):
         async def eventLeft(data):
             player = data[1]
             player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-            await self.discordchannelobject.send("⏹ `{}` left the game".format(player))
+            await self.discordchannelobject.send("\u2296 `{}` left the game".format(player))
 
         async def eventLost(data):
             player = data[1]
-            await self.discordchannelobject.send("⏹ `{}` lost connection".format(player))
+            await self.discordchannelobject.send("\u2296 `{}` lost connection".format(player))
 
         async def eventChat(data):
 
