@@ -6,7 +6,7 @@ import datetime
 import os
 
 
-path = os.path.join(os.environ.get("DATAFOLDER", "/minecraft/data"), "mc/logs/")
+path = os.path.join(os.environ.get("DATAFOLDER", "/data"), "mc/logs/")
 
 def getActivity(days=14):
     base = datetime.datetime.today()

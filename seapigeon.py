@@ -1,49 +1,23 @@
 #!/usr/bin/python3 -u
-'''
-Created on 2014-07-03
-'''
 import codecs
-import threading
-import shutil
-import sys
 import datetime
 import time
 import os
 import json
-from collections import OrderedDict
 from watchdog.observers import Observer
-from watchdog.events import PatternMatchingEventHandler
-from watchdog.events import FileSystemEventHandler
-import nbt
-from nbt.nbt import NBTFile, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
+from watchdog.events import PatternMatchingEventHandler, FileSystemEventHandler
+import nbtlib
+import pymongo
 
-
-mcfolder = os.path.join(os.environ.get('DATAFOLDER', "/minecraft/data"), "mc")
+mcfolder = os.path.join(os.environ.get('DATAFOLDER', "/data"), "mc")
 datafolder = os.environ.get("DATAFOLDER")
 
-os.makedirs(os.path.join(datafolder, "seapigeon"), exist_ok=True)
+client = pymongo.MongoClient("tesseract_mongo_1")
 
-def unpack_nbt(tag):
-    """
-    Unpack an NBT tag into a native Python data structure.
-    """
+db = client["testing"]
 
-    if isinstance(tag, TAG_List):
-        return [unpack_nbt(i) for i in tag.tags]
-    elif isinstance(tag, TAG_Compound):
-        return dict((i.name, unpack_nbt(i)) for i in tag.tags)
-    else:
-        return tag.value
+col = db["seapigeon"]
 
-
-def getnbt(filename):
-    nbtdata = NBTFile(filename)
-    return unpack_nbt(nbtdata)
-
-
-'''
-Extend FileSystemEventHandler to be able to write custom on_any_event method
-'''
 class FileHandler(PatternMatchingEventHandler):
     '''
     Overwrite the methods for creation, deletion, modification, and moving
@@ -57,14 +31,13 @@ class FileHandler(PatternMatchingEventHandler):
             datFile = event.dest_path
 
             UUID = datFile.split("/")[-1].split(".")[0]
-            
-            newItems = getnbt(datFile)
-            print(datFile)
-            with codecs.open(os.path.join(datafolder, "seapigeon", UUID + "." + str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))) + ".json", "w", "utf-8") as f:
-                json.dump(newItems, f)
-            
-
-            
+            timeNow =  datetime.datetime.now()
+            nbtFile = nbtlib.load(datFile)
+            nbt = nbtFile.root
+            insert = {"UUID": UUID, "time": timeNow}
+            insert.update(nbt)
+            _id = col.insert_one(insert)
+            print(_id)
 
 file_watch_directory = mcfolder + "/world/playerdata"       # Get watch_directory parameter
 

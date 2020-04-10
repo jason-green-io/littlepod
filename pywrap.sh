@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-BASEDIR="/minecraft"
+BASEDIR="/littlepod"
 LOG="$DATAFOLDER/logs/$1.log"
 STATE="/tmp"
 

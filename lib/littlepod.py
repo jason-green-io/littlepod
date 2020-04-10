@@ -16,7 +16,7 @@ from collections import OrderedDict, deque
 from nbt.nbt import NBTFile, TAG_Long_Array, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
 import yaml
 
-mcfolder = os.path.join(os.environ.get('DATAFOLDER', "/minecraft/data"), "mc")
+mcfolder = os.path.join(os.environ.get('DATAFOLDER', "/data"), "mc")
 
 '''
 ConsumerKey = config['ConsumerKey']
@@ -151,7 +151,7 @@ def genEvent(line):
                                 ("loggedbds", "^\[(.*?) INFO\] Player connected: (.*?), xuid:(.*?)$"),
                                 ("left", "^\[(.*)\] \[Server thread/INFO\]: (\w*) left the game$"),
                                 ("leftbds",   "^\[(.*?) INFO\] Player disconnected: (.*?), xuid:(.*?)$"),
-                                ("lost", "^\[(.*)\] \[Server thread/INFO\]: (\w*) lost connection .*"),
+                                ("lost", "^\[(.*)\] \[Server thread/INFO\]: (\w*) lost connection: (.*)"),
                                 ("logged", "^\[(.*)\] \[Server thread/INFO\]: (.*)\[/(.*)\] logged in.*$"),
                                 ("ip", "^\[(.*)\] \[Server thread/INFO\]: Disc.*name=(.*),pro.*\(/(.*)\).*$"),
                                 ("command", "^\[(.*)\] \[Server thread/INFO\]: \<(\w*)\> !(.*)$"),

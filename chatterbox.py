@@ -19,14 +19,14 @@ import lib.turtlesin as turtlesin
 
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
-datafolder = os.environ.get('DATAFOLDER', "/minecraft/data/")
+datafolder = os.environ.get('DATAFOLDER', "/data/")
 serverType = os.environ.get('TYPE', "mc")
 serverVersion = os.environ.get('MCVERSION', "Unknown")
 
 URL = os.environ.get('SERVERURL', "https://localhost/")
 servername = os.environ.get('SERVERNAME', "Littlepod")
 updateRoles = os.environ.get("UPDATEROLES", False)
-webfolder = os.environ.get('WEBDATA', "/minecraft/shared/web/www/Littlepod")
+webfolder = os.environ.get('WEBFOLDER', "/web")
 
 discordChannel = int(os.environ.get("DISCORDCHANNEL", ""))
 discordPrivChannel = int(os.environ.get("DISCORDPRIVCHANNEL", ""))
@@ -104,7 +104,7 @@ def tellcoords( reCoords, reDim ):
     for each in reCoords:
         x, z = each
         littlepod.send(tellrawCommand.format(selector="@a",
-        json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dimitext} {x}, {z}_|{URL}/#20/{x}/{z}/{dim}]".format(dimtext=worlddict[reDim][0], dim=reDim.upper(), x=x, z=z, URL=URL))))
+        json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dimtext} {x}, {z}_|{URL}/#20/{x}/{z}/{dim}]".format(dimtext=worlddict[reDim][0], dim=reDim.upper(), x=x, z=z, URL=URL))))
 
 class serverLoop(commands.Cog):
     def __init__(self, bot):
@@ -217,7 +217,9 @@ class serverLoop(commands.Cog):
 
         async def eventLost(data):
             player = data[1]
-            await self.discordchannelobject.send("\u2296 `{}` lost connection".format(player))
+            reason = data[2]
+
+            await self.discordchannelobject.send("\u2296 `{}` lost connection: {}".format(player, reason))
 
         async def eventChat(data):
 
