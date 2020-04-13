@@ -36,10 +36,10 @@ check process commandblock MATCHING "/tmp/server_|bedrock_server"
     group mc
     group bds
     
-check process seapigeon pidfile /tmp/seapigeon.py.pid
-    start program = "/littlepod/pywrap.sh seapigeon.py start"
-    stop program = "/littlepod/pywrap.sh seapigeon.py stop"
-    group mc
+#check process seapigeon pidfile /tmp/seapigeon.py.pid
+#    start program = "/littlepod/pywrap.sh seapigeon.py start"
+#    stop program = "/littlepod/pywrap.sh seapigeon.py stop"
+#    group mc
 
 check process chatterbox pidfile /tmp/chatterbox.py.pid
     start program = "/littlepod/pywrap.sh chatterbox.py start"

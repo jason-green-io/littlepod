@@ -1,6 +1,10 @@
 #!/bin/bash
 
-for file in $(jq -r '.[] | select(.Color | contains("black"))|.Filename' $WEBFOLDER/mca.json); do
-    echo Deleting $DATAFOLDER/mc/world/$file
-    rm $DATAFOLDER/mc/world/$file
+if [[ -z $1 ]]; then
+	echo "Provide rm, echo or something"
+	exit
+fi
+
+for file in $(jq -r '.[] | select(.properties.protected == false) | .properties.filename' $WEBFOLDER/regions.json); do
+    $1 $DATAFOLDER/mc/world/$file
 done
