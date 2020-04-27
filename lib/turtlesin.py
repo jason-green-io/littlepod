@@ -6,9 +6,12 @@ import datetime
 import os
 
 
-path = os.path.join(os.environ.get("DATAFOLDER", "/data"), "mc/logs/")
+dataFolder = os.environ.get("DATAFOLDER", "/data")
+serverType = os.environ.get("TYPE", "mc")
 
-def getActivity(days=14):
+
+
+def getActivity(days=14, serverType=serverType):
     base = datetime.datetime.today()
     date_list = [base - datetime.timedelta(days=x) for x in range(0, days)]
     dateStr_list = [d.strftime("%Y-%m-%d") for d in date_list]
@@ -34,37 +37,52 @@ def getActivity(days=14):
                  "withered"]
 
     files = []
-
-    for d in dateStr_list:
-        files += glob.glob(path + d + "*")
-        
+    
     activity = collections.defaultdict(set)
     deaths = collections.defaultdict(set)
     advancements = collections.defaultdict(set)
 
-    for fStr in files:
-        date = fStr.rsplit('/', 1)[-1].split('.')[0].rsplit('-', 1)[0]
-        with gzip.open(fStr, 'r') as f:
-            file_content = f.readlines()
-            for line in file_content:
-                lineStr = line.decode('utf-8').strip()
-                lineStrSplit = lineStr.split()
+    if serverType == "mc":
+        path = os.path.join(dataFolder, "mc/logs/")
+        for d in dateStr_list:
+            files += glob.glob(path + d + "*")
+        
+        for fStr in files:
+            with gzip.open(fStr, 'r') as f:
+                date = fStr.rsplit('/', 1)[-1].split('.')[0].rsplit('-', 1)[0]
+                file_content = f.readlines()
+                for line in file_content:
+                    lineStr = line.decode('utf-8').strip()
+                    lineStrSplit = lineStr.split()
 
+                    if len(lineStrSplit) >= 5:
+                        if "<" not in lineStrSplit[3]:
+                            player = lineStrSplit[3].split('[')[0]
+                            if lineStrSplit[4] == "logged":
+                                #                    print(lineStrSplit)                    
+
+                                activity[player].add(date)
+                            elif lineStrSplit[4] in deathVerbs:
+                                deaths[player].add(date)
+                                # print(lineStrSplit)
+                            elif lineStrSplit[4] == "has":
+                                advancements[player].add(date)
+                                # print(lineStrSplit)
+                                pass
+    else:
+        with open(os.path.join(dataFolder, "logs/bds.log")) as f:
+            for line in f.readlines():
+                lineStrSplit = line.split()
                 if len(lineStrSplit) >= 5:
-                    if "<" not in lineStrSplit[3]:
-                        player = lineStrSplit[3].split('[')[0]
-                        if lineStrSplit[4] == "logged":
-                            #                    print(lineStrSplit)                    
-
+                    date = lineStrSplit[0].strip("[")
+                    if lineStrSplit[3] == "Player":
+                        if lineStrSplit[4] == "connected:":
+                            print(date, lineStrSplit[5])
+                            player = lineStrSplit[5].strip().strip(',')
                             activity[player].add(date)
-                        elif lineStrSplit[4] in deathVerbs:
-                            deaths[player].add(date)
-                            # print(lineStrSplit)
-                        elif lineStrSplit[4] == "has":
-                            advancements[player].add(date)
-                            # print(lineStrSplit)
-                            pass
-                            # print(lineStrSplit)
+
+
+    
     sortedActivity = list(activity.items())
 
     sortedActivity.sort(reverse=True, key=lambda x: len(x[1]))
@@ -94,4 +112,4 @@ def getActivity(days=14):
         return "No player activity."
 
 if __name__ == "__main__":
-    print(getActivity())
+    print(getActivity(serverType=serverType))

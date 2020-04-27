@@ -44,7 +44,7 @@
             echo $(date) "Starting server version $MCVERSION"
 
             sed -i.bak -f <(commands) /tmp/server_$MCVERSION/server.properties
-            coproc ncat -lkp 7777
+            coproc ncat -lkp 7777 -o $DATAFOLDER/logs/bds.log
             export LD_LIBRARY_PATH=/tmp/server_$MCVERSION
             ./bedrock_server <&${COPROC[0]} >&${COPROC[1]} 2>&1
             echo $(date) "Server has stopped"
