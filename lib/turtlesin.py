@@ -70,16 +70,22 @@ def getActivity(days=14, serverType=serverType):
                                 # print(lineStrSplit)
                                 pass
     else:
-        with open(os.path.join(dataFolder, "logs/bds.log")) as f:
-            for line in f.readlines():
-                lineStrSplit = line.split()
-                if len(lineStrSplit) >= 5:
-                    date = lineStrSplit[0].strip("[")
-                    if lineStrSplit[3] == "Player":
-                        if lineStrSplit[4] == "connected:":
-                            print(date, lineStrSplit[5])
-                            player = lineStrSplit[5].strip().strip(',')
-                            activity[player].add(date)
+        path = os.path.join(dataFolder, "bds/logs/")
+        for d in dateStr_list:
+            files += glob.glob(path + d + "*")
+
+        for fStr in files:
+
+            with open(fStr) as f:
+                for line in f.readlines():
+                    lineStrSplit = line.split()
+                    if len(lineStrSplit) >= 5:
+                        date = lineStrSplit[0].strip("[")
+                        if lineStrSplit[3] == "Player":
+                            if lineStrSplit[4] == "connected:":
+                                print(date, lineStrSplit[5])
+                                player = lineStrSplit[5].strip().strip(',')
+                                activity[player].add(date)
 
 
     

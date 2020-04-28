@@ -20,6 +20,7 @@
             if [[ ! -d $DATAFOLDER/bds ]]; then
                 echo $(date) "Creating folder for Minecraft world data"
                 mkdir $DATAFOLDER/bds
+                mkdir $DATAFOLDER/bbds/logs
 
             else
                 echo $(date) "Found Minecraft world folder"
@@ -44,7 +45,7 @@
             echo $(date) "Starting server version $MCVERSION"
 
             sed -i.bak -f <(commands) /tmp/server_$MCVERSION/server.properties
-            coproc ncat -lkp 7777 --append-output -o $DATAFOLDER/logs/bds.log
+            coproc ncat -lkp 7777 --append-output -o $DATAFOLDER/bds/logs/$(date +%F).log
             export LD_LIBRARY_PATH=/tmp/server_$MCVERSION
             ./bedrock_server <&${COPROC[0]} >&${COPROC[1]} 2>&1
             echo $(date) "Server has stopped"
