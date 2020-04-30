@@ -3,7 +3,7 @@ mkdir -p $DATAFOLDER/logs
 
 rm -f /tmp/*.pid
 
-/usr/bin/envsubst '$DATAFOLDER $GMAILPASSWORD $GMAILUSER' < /littlepod/monitrc.envsubst > /etc/monitrc
+/usr/bin/envsubst '$DATAFOLDER' < /littlepod/monitrc.envsubst > /etc/monitrc
 
 chmod 0700 /etc/monitrc
 

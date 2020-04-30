@@ -1,6 +1,6 @@
 #!/bin/bash
 # vim: ts=4 sw=4 sts=4 et :
-
+/littlepod/alert.sh
 (
 
     /usr/bin/flock -n 9 || exit 1

@@ -9,23 +9,6 @@ set eventqueue
     basedir $DATAFOLDER/logs/monitevents # set the base directory where events will be stored
     slots 100                     # optionally limit the queue size
 
-SET MAILSERVER smtp.gmail.com PORT 587
-    username "$GMAILUSER" password "$GMAILPASSWORD" using tlsv1
-    with timeout 30 seconds
-
-set alert trigger@applet.ifttt.com                       # receive all alerts
-
-
-set mail-format {
-    from: monit@$HOST
-    subject: $HOST $EVENT $SERVICE $ACTION $DESCRIPTION <@140194230168453120>
-    message: $EVENT Service $SERVICE
-                   Date:        $DATE
-                   Action:      $ACTION
-                   Description: $DESCRIPTION
-   }
-
-
 set httpd port 2812 and
      use address localhost  # only accept connection from localhost
      allow localhost        # allow localhost to connect to the server and
@@ -33,44 +16,50 @@ set httpd port 2812 and
 check process commandblock MATCHING "/tmp/server_|bedrock_server"
     start program = "/littlepod/commandblock.sh"
     stop program = "/usr/bin/pkill commandblock"
+    if not exist then exec "/littlepod/commandblock.sh"
+    if exist then exec "/littlepod/alert.sh"
     group mc
     group bds
     
 #check process seapigeon pidfile /tmp/seapigeon.py.pid
 #    start program = "/littlepod/pywrap.sh seapigeon.py start"
 #    stop program = "/littlepod/pywrap.sh seapigeon.py stop"
+#    if not exist then exec "/littlepod/pywrap.sh seapigeon.py start"
+#    if exist then exec "/littlepod/alert.sh"
 #    group mc
 
 check process chatterbox pidfile /tmp/chatterbox.py.pid
     start program = "/littlepod/pywrap.sh chatterbox.py start"
     stop program = "/littlepod/pywrap.sh chatterbox.py stop"
+    if not exist then exec "/littlepod/pywrap.sh chatterbox.py start"
+    if exist then exec "/littlepod/alert.sh"
     group mc
     group bds
 
 check program restart
     with path "/littlepod/restart.sh"
     every "0 12 * * *"
-    if status != 0 then alert
+    if status != 0 then exec "/littlepod/alert.sh"
     group mc
     group bds
 
 check program localbackup
     with path "/littlepod/localbackup.sh"
     every "55,15,35 * * * *"
-    if status != 0 then alert
+    if status != 0 then exec "/littlepod/alert.sh"
     group mc
     group bds
 
 check program remotebackup
     with path "/littlepod/remotebackup.sh"
     every "0 * * * *"
-    if status != 0 then alert
+    if status != 0 then exec "/littlepod/alert.sh"
     group mc
     group bds
 
 check program papyri
     with path "/littlepod/papyri.sh" timeout 1200 seconds
     every "0,20,40 * * * *" 
-    if status != 0 then alert
+    if status != 0 then exec "/littlepod/alert.sh"
     group mc
     group bds

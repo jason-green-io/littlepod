@@ -5,6 +5,8 @@ BASEDIR="/littlepod"
 LOG="$DATAFOLDER/logs/$1.log"
 STATE="/tmp"
 
+$BASEDIR/alert.sh
+
 export PYTHONIOENCODING="utf-8"
 case "$2" in
     start)
