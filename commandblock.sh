@@ -20,7 +20,9 @@
             if [[ ! -d $DATAFOLDER/bds ]]; then
                 echo $(date) "Creating folder for Minecraft world data"
                 mkdir $DATAFOLDER/bds
-                mkdir $DATAFOLDER/bbds/logs
+            if [[ ! -d $DATAFOLDER/bds/logs ]]; then
+                echo $(date) "Creating folder for Minecraft logs"
+                mkdir $DATAFOLDER/bds/logs
 
             else
                 echo $(date) "Found Minecraft world folder"
