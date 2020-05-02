@@ -17,7 +17,7 @@ check process commandblock MATCHING "/tmp/server_|bedrock_server"
     start program = "/littlepod/commandblock.sh"
     stop program = "/usr/bin/pkill commandblock"
     if not exist then exec "/littlepod/commandblock.sh"
-    if exist then exec "/littlepod/alert.sh"
+    else if succeeded then exec "/littlepod/alert.sh"
     group mc
     group bds
     
@@ -25,14 +25,14 @@ check process commandblock MATCHING "/tmp/server_|bedrock_server"
 #    start program = "/littlepod/pywrap.sh seapigeon.py start"
 #    stop program = "/littlepod/pywrap.sh seapigeon.py stop"
 #    if not exist then exec "/littlepod/pywrap.sh seapigeon.py start"
-#    if exist then exec "/littlepod/alert.sh"
+#    else if succeeded then exec "/littlepod/alert.sh"
 #    group mc
 
 check process chatterbox pidfile /tmp/chatterbox.py.pid
     start program = "/littlepod/pywrap.sh chatterbox.py start"
     stop program = "/littlepod/pywrap.sh chatterbox.py stop"
     if not exist then exec "/littlepod/pywrap.sh chatterbox.py start"
-    if exist then exec "/littlepod/alert.sh"
+    else if succeeded then exec "/littlepod/alert.sh"
     group mc
     group bds
 
