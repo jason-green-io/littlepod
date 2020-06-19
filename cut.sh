@@ -5,6 +5,6 @@ if [[ -z $1 ]]; then
 	exit
 fi
 
-for file in $(jq -r '.[] | select(.properties.protected == false) | .properties.filename' $WEBFOLDER/regions.json); do
+for file in $(jq -r '.[] | select(.properties.protected == false) | .properties.filename' $WEBFOLDER/custom.json); do
     $1 $DATAFOLDER/mc/world/$file
 done
