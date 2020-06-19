@@ -11,6 +11,7 @@ logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 logger.addHandler(ch)
 
+regionGradient = ["#fb0004","#f70008","#f3000c","#ef0010","#eb0014","#e70018","#e4001b","#e0001f","#dc0023","#d80027","#d4002b","#d0002f","#cc0033","#c80037","#c4003b","#c0003f","#bc0043","#b80047","#b4004b","#b1004e","#ad0052","#a90056","#a5005a","#a1005e","#9d0062","#990066","#95006a","#91006e","#8d0072","#890076","#85007a","#81007e","#7e0081","#7a0085","#760089","#72008d","#6e0091","#6a0095","#660099","#62009d","#5e00a1","#5a00a5","#5600a9","#5200ad","#4e00b1","#4b00b4","#4700b8","#4300bc","#3f00c0","#3b00c4","#3700c8","#3300cc","#2f00d0","#2b00d4","#2700d8","#2300dc","#1f00e0","#1b00e4","#1800e7","#1400eb","#1000ef","#0c00f3","#0800f7","#0400fb"];
 
 dimDict = {-1: "nether",
            0: "overworld",
@@ -108,9 +109,13 @@ def genRegionMarkers(mcaFileList, outputFolder, keepMcaFiles):
         
         if (dimension, Xregion, Zregion) in keepMcaFiles:
             protected = True
+            color = "blue"
         else:
             protected = False
-
+            if age > 63:
+                color = "black"
+            else:
+                color = regionGradient[age]
         
 
         TL = [X, Z]
@@ -120,6 +125,8 @@ def genRegionMarkers(mcaFileList, outputFolder, keepMcaFiles):
 
         coordinates = [[TL, TR, BL, BR, TL]]
         
+        style = {"fill": color}
+
         properties = {"protected": protected,
                       "dimension": dimDict[dimension],
                       "age": age,
