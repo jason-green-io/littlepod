@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import struct
 import sys
 import logging
@@ -68,7 +69,7 @@ def getRegionFiles():
             age = datetime.datetime.now() - regionResult
             name = f.rsplit("/")[-1]
             mca = {"name": name, "age": age.days, "dim": d}
-            logger.info("%s", mca)
+            # logger.info("%s", mca)
             mcaList.append(mca)
     
     return mcaList
@@ -109,7 +110,7 @@ def genRegionMarkers(mcaFileList, outputFolder, keepMcaFiles):
         
         if (dimension, Xregion, Zregion) in keepMcaFiles:
             protected = True
-            color = "blue"
+            color = "yellow"
         else:
             protected = False
             if age > 63:
@@ -133,7 +134,8 @@ def genRegionMarkers(mcaFileList, outputFolder, keepMcaFiles):
                       "filename": filename}
         
         geometry = {"type": "Polygon",
-                    "coordinates": coordinates}
+                    "coordinates": coordinates,
+                    "style": style}
         
         feature = {"type": "Feature",
                    "properties": properties,
@@ -149,7 +151,5 @@ if __name__ == "__main__":
     mcaFileList = getRegionFiles()
     with open(outputPath + "/banners.json") as f:
         banners = json.load(f)
-    print(banners)
     keepMcaFiles = genKeepMcaFiles(banners)
-    print(keepMcaFiles)
     genRegionMarkers(mcaFileList, outputPath, keepMcaFiles)

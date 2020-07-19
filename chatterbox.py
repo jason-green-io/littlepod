@@ -173,7 +173,7 @@ class serverLoop(commands.Cog):
             server =  bot.get_guild("140194383118073856")
             player = data[1]
             player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-            await self.discordchannelobject.send("\u2295 `{}` joined the game".format(player))
+            await self.discordchannelobject.send("\u2295 `{}` joined the game".format(player), delete_after=15)
             
             ip = data[2].split(':')[0]
             
@@ -213,13 +213,13 @@ class serverLoop(commands.Cog):
         async def eventLeft(data):
             player = data[1]
             player = re.sub(r"\?\d(.*)\?r",r"\1", player)
-            await self.discordchannelobject.send("\u2296 `{}` left the game".format(player))
+            await self.discordchannelobject.send("\u2296 `{}` left the game".format(player), delete_after=15)
 
         async def eventLost(data):
             player = data[1]
             reason = data[2]
 
-            await self.discordchannelobject.send("\u2296 `{}` lost connection: {}".format(player, reason))
+            await self.discordchannelobject.send("\u2296 `{}` lost connection: {}".format(player, reason), delete_after=15)
 
         async def eventChat(data):
 
@@ -481,6 +481,11 @@ class mainLoop(commands.Cog):
         await bot.change_presence(activity=discord.Game(name=topicLine))
 
 
+    @mainTask.after_loop
+    async def restartMainTask(self):
+        if self.mainTask.is_being_cancelled():
+            logging.info("Task was cancelled, restarting")
+            await self.mainTask.start()
 @bot.event
 async def on_status(member, old_game, old_status):
     logging.info("%s %s %s", old_status, member.name, member.status)
