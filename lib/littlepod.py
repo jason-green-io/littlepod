@@ -15,6 +15,8 @@ import oauth2 as oauth
 from collections import OrderedDict, deque
 from nbt.nbt import NBTFile, TAG_Long_Array, TAG_Long, TAG_Int, TAG_String, TAG_List, TAG_Compound
 import yaml
+from mcrcon import MCRcon
+
 
 mcfolder = os.path.join(os.environ.get('DATAFOLDER', "/data"), "mc")
 
@@ -76,6 +78,15 @@ mobList = ["Bat",
             "Evoker",
             "Vindicator"]
 
+def rcon(command):
+
+    with MCRcon("0.0.0.0", "secret") as rcon:
+        resp = rcon.command(command)
+        chunks, chunk_size = len(resp), 2000
+        respList = [ resp[i:i+chunk_size] for i in range(0, chunks,
+        chunk_size) ]
+        response = resp if len(respList) > 0 else respList
+        return response
 
 
 def send(command, host="localhost", port=7777):

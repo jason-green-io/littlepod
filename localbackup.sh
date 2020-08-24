@@ -28,6 +28,10 @@ case $TYPE in
         sleep 10
         } | ncat localhost 7777
 
+        {
+        echo "save query"
+        sleep 10
+        } | ncat localhost 7777
         echo $(date) "Syncing world to backup"
 
         rsync -aP --delete $DATAFOLDER/bds/worlds/ $DATAFOLDER/backup
