@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 dataFolder = os.environ["DATAFOLDER"]
 
-worldFolder  = os.path.join(dataFolder, "mc", "world")
+worldFolder  = os.path.join(dataFolder, "java", "world")
 
 files = {a: datetime.datetime.fromtimestamp(os.stat(a).st_mtime) for a in glob.glob(os.path.join(worldFolder, "*/*.mca"))}
 

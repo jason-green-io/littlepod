@@ -58,7 +58,7 @@
         ;;
 
     
-        mc)
+        java)
 
             if [[ ! -d $DATAFOLDER/mc ]]; then
                 echo $(date) "Creating folder for Minecraft world data"

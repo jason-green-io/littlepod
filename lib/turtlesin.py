@@ -7,7 +7,7 @@ import os
 
 
 dataFolder = os.environ.get("DATAFOLDER", "/data")
-serverType = os.environ.get("TYPE", "mc")
+serverType = os.environ.get("TYPE", "java")
 
 
 

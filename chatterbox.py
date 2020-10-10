@@ -20,7 +20,7 @@ import lib.turtlesin as turtlesin
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
 datafolder = os.environ.get('DATAFOLDER', "/data/")
-serverType = os.environ.get('TYPE', "mc")
+serverType = os.environ.get('TYPE', "java")
 serverVersion = os.environ.get('MCVERSION', "Unknown")
 
 URL = os.environ.get('SERVERURL', "https://localhost/")
@@ -46,7 +46,7 @@ patronFormat = "§9\<§c{}§9\>§r"
 mcTellraw = "tellraw {selector} {json}"
 bdsTellraw = 'tellraw {selector} {{"rawtext":{json}}}'
 
-if serverType == "mc":
+if serverType == "java":
     tellrawCommand = mcTellraw
 elif serverType == "bds":
     tellrawCommand = bdsTellraw
@@ -56,9 +56,9 @@ if not discordToken:
     sys.exit()
 
 
-dimColors = {"4e7b44": "overworld", "overworld": "4e7b44", "3E1A19": "nether", "nether": "3E1A19", "C2C688": "end", "end": "C2C688"}
+dimColors = {"4e7b44": "minecraft:overworld", "minecraft:overworld": "4e7b44", "3E1A19": "minecraft:the_nether", "minecraft:the_nether": "3E1A19", "C2C688": "minecraft:the_end", "minecraft:the_end": "C2C688"}
 
-worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
+worlddict = { "o" : "minecraft:overworld", "n" : "mimecraft:the_nether", "e" : "monecraft:the_end" }
 channelobject = discord.Object(id=discordChannel)
 privchannelobject = discord.Object(id=discordPrivChannel)
 
@@ -89,22 +89,20 @@ def telllinks( links ):
 
 
 def coordsmessage( reCoords, reDim ):
-    worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
 
     for each in reCoords:
         logging.info("Coords, %s, %s", each[0], each[1])
         x, z = each
-        message = "Map: {dimtext} {x}, {z}\n{URL}#20/{x}/{z}/{dim}".format(dimtext=worlddict[reDim][0], dim=reDim.upper(), x=x, z=z, URL=URL)
+        message = "Map: {dimtext} {x}, {z}\n{URL}#20/{x}/{z}/{dim}".format(dimtext=worlddict[reDim], dim=reDim.upper(), x=x, z=z, URL=URL)
 
     return message
 
 
 def tellcoords( reCoords, reDim ):
-    worlddict = { "o" : ["overworld", "0"], "n" : ["nether", "2"], "e" : ["end", "1"] }
     for each in reCoords:
         x, z = each
         littlepod.send(tellrawCommand.format(selector="@a",
-        json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dimtext} {x}, {z}_|{URL}/#20/{x}/{z}/{dim}]".format(dimtext=worlddict[reDim][0], dim=reDim.upper(), x=x, z=z, URL=URL))))
+        json=showandtellraw.tojson(serverFormat.format(servername) + " [Map: _{dimtext} {x}, {z}_|{URL}/#20/{x}/{z}/{dim}]".format(dimtext=worlddict[reDim], dim=reDim.upper(), x=x, z=z, URL=URL))))
 
 class serverLoop(commands.Cog):
     def __init__(self, bot):
@@ -366,7 +364,7 @@ class mainLoop(commands.Cog):
         print(m.name + toBraille(r.name))
         await bot.change_nickname(m, m.name + toBraille(r.name))
         '''
-        if serverType == "mc":
+        if serverType == "java":
             discordWhitelistedPlayers = {}
             discordWhitelistedPlayersIGN = {}
 
@@ -446,7 +444,7 @@ class mainLoop(commands.Cog):
             X = b["X"]
             Z = b["Z"]
             dim = b["dimension"]
-            dimLayer = "{0}-{0}B".format(dim[0].capitalize())
+            dimLayer = "{0}-{0}_banners".format(dim[0].capitalize())
             title = b["name"]
             title = re.sub("@([a-zA-Z0-9_]*)", IGNtoMention, title)
             mapLinkCoords = "#20/{}/{}".format(X, Z)
@@ -465,10 +463,10 @@ class mainLoop(commands.Cog):
             logging.info("removing dup banner %s", each.embeds[0]["description"])
             await each.delete()
 
-        versionDict = {"mc": "mc:je", "bds": "mc"}
+        versionDict = {"java": "mc:je", "bds": "mc"}
         version = versionDict[serverType] + " " + serverVersion
 
-        if serverType == "mc":
+        if serverType == "java":
             players = littlepod.getOnlinePlayers()
             playerList = " ".join(players) if players else ""
             topicLine = "{} w/ {}".format(version, playerList)
