@@ -433,7 +433,7 @@ class mainLoop(commands.Cog):
 
         # logging.info("channel: %s", channelBanners)
 
-        dupes = allChannelBanners - set(channelBanners.values())
+        # dupes = allChannelBanners - set(channelBanners.values())
 
         addBanners = set(papyriBanners) - set(channelBanners)
         removeBanners = set(channelBanners) - set(papyriBanners)
@@ -462,9 +462,9 @@ class mainLoop(commands.Cog):
             logging.info("removing banner %s", each)
             await channelBanners[each].delete()
 
-        for each in dupes:
-            logging.info("removing dup banner %s", each.embeds[0]["description"])
-            await each.delete()
+        # for each in dupes:
+        #     logging.info("removing dup banner %s", each.embeds[0]["description"])
+        #     await each.delete()
 
         versionDict = {"java": "mc:je", "bds": "mc"}
         version = versionDict[serverType] + " " + serverVersion
