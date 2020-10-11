@@ -62,7 +62,10 @@ worlddict = { "o" : "minecraft:overworld", "n" : "mimecraft:the_nether", "e" : "
 channelobject = discord.Object(id=discordChannel)
 privchannelobject = discord.Object(id=discordPrivChannel)
 
-bot = commands.Bot(command_prefix='$')
+intents = discord.Intents.default()
+intents.members = True
+
+bot = commands.Bot(command_prefix='$', intents=intents)
 
 brailleOrds = [chr(58)] + [chr(x) for x in range(10241, 10241 + 255)]
 
