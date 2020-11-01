@@ -42,7 +42,7 @@ def getActivity(days=14, serverType=serverType):
     deaths = collections.defaultdict(set)
     advancements = collections.defaultdict(set)
 
-    if serverType == "mc":
+    if serverType == "java":
         path = os.path.join(dataFolder, "mc/logs/")
         for d in dateStr_list:
             files += glob.glob(path + d + "*")
