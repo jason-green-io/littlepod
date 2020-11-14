@@ -3,7 +3,7 @@
 echo $(date) "Starting backup"
 
 case $TYPE in
-    mc)
+    java)
         {
         echo "/save-off"
         sleep 2
