@@ -413,7 +413,7 @@ class mainLoop(commands.Cog):
         try:
             with open(os.path.join(webfolder, "banners.json"), "r") as bannerFile:
                 bannerJson = json.load(bannerFile)
-                papyriBanners = {"{}, {}".format(b["X"], b["Z"]): b for b in bannerJson}
+                papyriBanners = {"{URL}/#20/{X}/{Z}/{dim}-{dim}_banners".format(URL=URL, X=b["X"], Z=b["Z"], dim=b["dimension"]): b for b in bannerJson}
         except:
             logging.info(sys.exc_info()[0])
             papyriBanners = {}
@@ -427,7 +427,7 @@ class mainLoop(commands.Cog):
             for embed in each.embeds:
                 #print(embed)
 
-                match = re.search("\[([0-9 \-,]*)\]", embed.description)
+                match = re.search("\[[0-9 \-,]*\]\((.*)\)", embed.description)
                 coords = match.group(1)
                 channelBanners.update({coords: each})
 
@@ -447,11 +447,9 @@ class mainLoop(commands.Cog):
             X = b["X"]
             Z = b["Z"]
             dim = b["dimension"]
-            dimLayer = "{0}-{0}_banners".format(dim[0].capitalize())
             title = b["name"]
             title = re.sub("@([a-zA-Z0-9_]*)", IGNtoMention, title)
-            mapLinkCoords = "#20/{}/{}".format(X, Z)
-            mapLink = "/".join([URL, mapLinkCoords, dimLayer])
+            mapLink = each
             description = "{} {} [{}, {}]({})".format(str(self.emojis[b["color"] + "banner"]), title, X, Z, mapLink)
             colour = int(dimColors[dim], 16)
             embed = discord.Embed(description=description, colour=colour)
