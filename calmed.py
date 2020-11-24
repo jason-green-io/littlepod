@@ -14,12 +14,12 @@ logger.addHandler(ch)
 
 regionGradient = ["#fb0004","#f70008","#f3000c","#ef0010","#eb0014","#e70018","#e4001b","#e0001f","#dc0023","#d80027","#d4002b","#d0002f","#cc0033","#c80037","#c4003b","#c0003f","#bc0043","#b80047","#b4004b","#b1004e","#ad0052","#a90056","#a5005a","#a1005e","#9d0062","#990066","#95006a","#91006e","#8d0072","#890076","#85007a","#81007e","#7e0081","#7a0085","#760089","#72008d","#6e0091","#6a0095","#660099","#62009d","#5e00a1","#5a00a5","#5600a9","#5200ad","#4e00b1","#4b00b4","#4700b8","#4300bc","#3f00c0","#3b00c4","#3700c8","#3300cc","#2f00d0","#2b00d4","#2700d8","#2300dc","#1f00e0","#1b00e4","#1800e7","#1400eb","#1000ef","#0c00f3","#0800f7","#0400fb"];
 
-dimDict = {-1: "nether",
-           0: "overworld",
-           1: "end",
-           "nether": -1,
-           "overworld": 0,
-           "end": 1}
+dimDict = {-1: "minecraft:the_nether",
+           0: "minecraft:overworld",
+           1: "minecraft:the_end",
+           "minecraft:the_nether": -1,
+           "minecraft:overworld": 0,
+           "minecraft:the_end": 1}
 
 # same but for the dimension paths
 regionDict = {"region": 0,
@@ -55,8 +55,11 @@ def parseRegionHeader(regionFile):
     for offset in range(0, 1024):
         coords = divmod(offset, 32)
         #logger.info("coords: %s timestamp: %s chunk: %s", coords, timestamps[offset], chunkOffsets[offset])
-    return max(timestamps)
-
+    
+    if timestamps:
+        return max(timestamps)
+    else:
+        return datetime.datetime.fromtimestamp(0)
 
 
 
@@ -126,21 +129,21 @@ def genRegionMarkers(mcaFileList, outputFolder, keepMcaFiles):
 
         coordinates = [[TL, TR, BL, BR, TL]]
         
-        style = {"fill": color}
+        style = {"color": color}
 
         properties = {"protected": protected,
                       "dimension": dimDict[dimension],
                       "age": age,
-                      "filename": filename}
+                      "filename": filename,
+                      "style": style}
         
         geometry = {"type": "Polygon",
-                    "coordinates": coordinates,
-                    "style": style}
+                    "coordinates": coordinates}
         
         feature = {"type": "Feature",
                    "properties": properties,
                    "geometry": geometry}
-        
+        logger.info(feature) 
         regionList.append(feature)
         
     with open(os.path.join(outputFolder, "custom.json"), "+w", encoding="utf-8") as f:

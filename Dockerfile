@@ -51,8 +51,6 @@ ENV    LC_ALL en_US.UTF-8
 
 COPY . /littlepod
 
-RUN cd /littlepod; curl -LO https://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-jvm/1.6.2/jolokia-jvm-1.6.2-agent.jar
-
 RUN git clone https://github.com/jason-green-io/papyri.git /papyri
 
 ENTRYPOINT /littlepod/init.sh
